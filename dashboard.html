@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المركز المالي | SEMO ERP</title>
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <script src="https://jsdelivr.net"></script>
+    <script src="https://cloudflare.com"></script>
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+    <style>
+        :root { --primary: #0f172a; --accent: #2563eb; --bg: #f8fafc; }
+        body { background: var(--bg); font-family: sans-serif; display: flex; height: 100vh; margin: 0; }
+        aside { width: 260px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 20px; }
+        main { flex: 1; padding: 25px; overflow-y: auto; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 10px; width: 100%; margin: 8px 0; }
+        .btn { padding: 14px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; background: var(--accent); color: white; width: 100%; }
+    </style>
+</head>
+<body>
+    <aside>
+        <h2 style="text-align:center; color:var(--accent);">SEMO ERP</h2>
+        <div style="margin-top:20px; cursor:pointer;" onclick="firebase.auth().signOut()"><i class="fas fa-power-off"></i> خروج</div>
+    </aside>
+    <main>
+        <div class="grid">
+            <div class="card"><h4>ليبي</h4><h2 id="ly">0.00</h2></div>
+            <div class="card"><h4>مصري</h4><h2 id="eg">0.00</h2></div>
+            <div class="card"><h4>سعودي</h4><h2 id="sa">0.00</h2></div>
+        </div>
+        <div class="card"><canvas id="erpChart" style="max-height:250px;"></canvas></div>
+        <div class="card" style="max-width:500px; margin: auto;">
+            <h3>فاتورة سريعة ✅</h3>
+            <input type="text" id="cust" placeholder="العميل">
+            <select id="curr"><option value="د.ل">دينار ليبي</option><option value="ج.م">جنيه مصري</option><option value="ر.س">ريال سعودي</option></select>
+            <input type="number" id="amt" placeholder="المبلغ">
+            <button class="btn" onclick="save()">حفظ ومزامنة سحابية</button>
+        </div>
+    </main>
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyCRhkV4HLp26QMNorerA9nDeRAQSsD0mmU", authDomain: "://firebaseapp.com", projectId: "my-pos-system-33831", databaseURL: "https://firebaseio.com" };
+        firebase.initializeApp(firebaseConfig);
+        const rtdb = firebase.database();
+        let userUID = null, myChart = null;
+
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) { userUID = user.uid; sync(); } else { window.location.replace("index.html"); }
+        });
+
+        function save() {
+            const val = { c: document.getElementById('cust').value, a: parseFloat(document.getElementById('amt').value), curr: document.getElementById('curr').value, d: new Date().toLocaleString() };
+            if(val.c && val.a) { rtdb.ref('users/'+userUID+'/sales').push(val); alert("تم الرفع ✅"); }
+        }
+
+        function sync() {
+            rtdb.ref('users/'+userUID+'/sales').on('value', snap => {
+                const data = snap.val() ? Object.values(snap.val()) : [];
+                const sum = (c) => data.filter(s => s.curr === c).reduce((acc, b) => acc + b.a, 0).toFixed(2);
+                document.getElementById('ly').innerText = sum('د.ل'); document.getElementById('eg').innerText = sum('ج.م'); document.getElementById('sa').innerText = sum('ر.س');
+                updateChart([sum('د.ل'), sum('ج.م'), sum('ر.س')]);
+            });
+        }
+
+        function updateChart(vals) {
+            if(myChart) myChart.destroy();
+            myChart = new Chart(document.getElementById('erpChart'), { type: 'bar', data: { labels: ['ليبي', 'مصري', 'سعودي'], datasets: [{ label: 'المبيعات', data: vals, backgroundColor: ['#2563eb', '#10b981', '#f59e0b'] }] } });
+        }
+    </script>
+</body>
+</html>
