@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SEMO ERP | نظام المحاسبة الموحد</title>
+    <title>SEMO ERP | الدخول الموحد</title>
     
+    <!-- المكتبات -->
     <link rel="stylesheet" href="https://cloudflare.com">
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
@@ -30,25 +31,23 @@
 <body>
 
     <div class="glass" id="auth-box">
-        <h1 style="color: var(--accent);">SEMO ERP</h1>
-        <p style="color: #94a3b8; margin-bottom: 25px;">الدخول الموحد (إيميل أو هاتف)</p>
+        <h1 style="color: var(--accent); font-size: 2.2rem; letter-spacing: 2px;">SEMO ERP</h1>
+        <p style="color: #94a3b8; margin-bottom: 25px;">النظام الموحد للإدارة المالية</p>
         
-        <!-- واجهة الدخول المرنة -->
         <div id="login-view">
-            <input type="text" id="login-id" placeholder="البريد الإلكتروني أو رقم الهاتف">
+            <input type="text" id="login-id" placeholder="الإيميل أو رقم الهاتف">
             <input type="password" id="login-pass" placeholder="كلمة المرور">
-            <button class="btn btn-p" onclick="smartLogin()">دخول النظام</button>
-            <button class="link" onclick="toggle('signup-view')">تأسيس حساب جديد</button>
+            <button class="btn btn-p" onclick="smartLogin()">دخول المؤسسة</button>
+            <button class="link" onclick="toggle('signup-view')">تأسيس حساب جديد (سجل الآن)</button>
         </div>
 
-        <!-- واجهة التسجيل -->
         <div id="signup-view" class="hidden">
-            <h3>تسجيل مؤسسة جديدة</h3>
+            <h3>تأسيس مؤسسة جديدة</h3>
             <input type="email" id="sign-email" placeholder="البريد الإلكتروني">
             <input type="tel" id="sign-phone"> 
             <input type="password" id="sign-pass" placeholder="تعيين كلمة المرور">
-            <button class="btn btn-s" onclick="signup()">إنشاء الحساب بالبيانات</button>
-            <button class="link" onclick="toggle('login-view')">العودة للدخول</button>
+            <button class="btn btn-s" onclick="signup()">إنشاء وتفعيل الحساب</button>
+            <button class="link" onclick="toggle('login-view')">رجوع للدخول</button>
         </div>
     </div>
 
@@ -64,56 +63,43 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const itiOptions = { initialCountry: "ly", separateDialCode: true, utilsScript: "https://cloudflare.com" };
-        const itiS = window.intlTelInput(document.querySelector("#sign-phone"), itiOptions);
+        const itiS = window.intlTelInput(document.querySelector("#sign-phone"), {
+            initialCountry: "ly", separateDialCode: true, utilsScript: "https://cloudflare.com"
+        });
 
         function toggle(id) { document.querySelectorAll('#auth-box > div').forEach(d => d.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
         function notify(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 4000); }
 
-        // تسجيل الحساب وربط الرقم بالإيميل في قاعدة البيانات
         function signup() {
-            const e = document.getElementById('sign-email').value;
-            const p = document.getElementById('sign-pass').value;
-            const ph = itiS.getNumber().replace('+', ''); // إزالة + لتسهيل البحث
+            const e = document.getElementById('sign-email').value, p = document.getElementById('sign-pass').value;
+            const ph = itiS.getNumber().replace('+', '');
 
             if(!e || !p || !ph) { notify("أكمل البيانات أولاً"); return; }
 
             firebase.auth().createUserWithEmailAndPassword(e, p).then(u => {
-                // تخزين رابط (رقم الهاتف -> الإيميل) في قاعدة البيانات للبحث لاحقاً
                 db.ref('phoneToEmail/' + ph).set({ email: e });
-                notify("تم إنشاء الحساب بنجاح ✅");
-                setTimeout(() => window.location.assign("dashboard.html"), 1500);
-            }).catch(err => notify("خطأ: " + err.message));
+                notify("تم الحفظ والمزامنة! جاري الدخول...");
+                setTimeout(() => window.location.assign("dashboard.html"), 1000);
+            }).catch(err => notify(err.message));
         }
 
-        // الدخول الذكي (يفحص إذا كان المدخل إيميل أو رقم هاتف)
         function smartLogin() {
             let id = document.getElementById('login-id').value.trim();
             const p = document.getElementById('login-pass').value;
 
-            if(!id || !p) { notify("أدخل البيانات"); return; }
-
-            // إذا كان المدخل رقماً فقط (بدون @)، نبحث عن الإيميل المرتبط به
-            if (!id.includes('@')) {
+            if(!id.includes('@')) {
                 let cleanPhone = id.replace('+', '');
                 db.ref('phoneToEmail/' + cleanPhone).once('value').then(snap => {
-                    if (snap.exists()) {
-                        let linkedEmail = snap.val().email;
-                        performAuth(linkedEmail, p);
-                    } else {
-                        notify("رقم الهاتف هذا غير مسجل لدينا");
-                    }
+                    if (snap.exists()) performAuth(snap.val().email, p);
+                    else notify("رقم الهاتف غير مسجل");
                 });
-            } else {
-                // إذا كان المدخل إيميل، ندخل به مباشرة
-                performAuth(id, p);
-            }
+            } else { performAuth(id, p); }
         }
 
         function performAuth(email, pass) {
             firebase.auth().signInWithEmailAndPassword(email, pass)
                 .then(() => window.location.assign("dashboard.html"))
-                .catch(() => notify("بيانات الدخول غير صحيحة"));
+                .catch(() => notify("خطأ في البيانات"));
         }
     </script>
 </body>
