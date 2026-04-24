@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SEMO ERP | الدخول الموحد</title>
     
+    <!-- ربط ملف المانيفست لتحويل الموقع لتطبيق -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+
     <!-- مكتبات Firebase الأساسية -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
@@ -28,6 +32,7 @@
     <div class="card">
         <h1>SEMO ERP</h1>
         
+        <!-- واجهة الدخول -->
         <div id="login-view">
             <input type="text" id="log-id" placeholder="الإيميل أو رقم الهاتف">
             <input type="password" id="log-pass" placeholder="كلمة المرور">
@@ -35,6 +40,7 @@
             <span class="link" onclick="toggleView()">تأسيس حساب مؤسسة جديد</span>
         </div>
 
+        <!-- واجهة التسجيل -->
         <div id="signup-view" class="hidden">
             <h3 style="margin-bottom:15px">حساب جديد</h3>
             <input type="email" id="sign-email" placeholder="البريد الإلكتروني">
@@ -46,7 +52,7 @@
     </div>
 
     <script>
-        // البيانات المحدثة بناءً على صورتك لضمان الربط 100%
+        // إعدادات مشروعك المربوط my-pos-system-11dee
         const firebaseConfig = {
             apiKey: "AIzaSyC2EVpNEG9XjcPEelUA8lkIUcUceN6Oh0k",
             authDomain: "://firebaseapp.com",
@@ -61,12 +67,13 @@
             document.getElementById('signup-view').classList.toggle('hidden');
         }
 
+        // إنشاء الحساب والربط الموحد
         function signup() {
             const email = document.getElementById('sign-email').value.trim();
             const password = document.getElementById('sign-pass').value;
             const phone = document.getElementById('sign-phone').value.trim();
 
-            if(!email || !password || !phone) { alert("أكمل البيانات أولاً"); return; }
+            if(!email || !password || !phone) { alert("أكمل البيانات أولاً يا غالي"); return; }
 
             firebase.auth().createUserWithEmailAndPassword(email, password)
             .then((u) => {
@@ -79,6 +86,7 @@
             .catch((error) => { alert("تنبيه: " + error.message); });
         }
 
+        // الدخول الذكي (إيميل أو هاتف)
         function login() {
             const id = document.getElementById('log-id').value.trim();
             const pass = document.getElementById('log-pass').value;
@@ -99,6 +107,15 @@
             firebase.auth().signInWithEmailAndPassword(email, password)
             .then(() => { window.location.href = "dashboard.html"; })
             .catch((error) => { alert("خطأ في البيانات أو كلمة السر"); });
+        }
+
+        // كود تفعيل الـ Service Worker لجعل الموقع يعمل كتطبيق
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('التطبيق جاهز للعمل بدون إنترنت'))
+                    .catch(err => console.log('فشل تفعيل وضع التطبيق'));
+            });
         }
     </script>
 </body>
