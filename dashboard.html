@@ -4,17 +4,16 @@
     <meta charset="UTF-8">
     <title>SEMO ERP | لوحة التحكم</title>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; padding: 50px; text-align: center; }
-        .box { background: #1e293b; padding: 40px; border-radius: 20px; display: inline-block; border: 1px solid #3b82f6; }
+        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .box { background: #1e293b; padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #3b82f6; }
         h1 { color: #3b82f6; }
-        .logout { margin-top: 20px; color: #f87171; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="box">
         <h1>مرحباً بك في SEMO ERP</h1>
-        <p>تم تسجيل دخولك بنجاح إلى النظام.</p>
-        <div class="logout" onclick="location.href='index.html'">تسجيل الخروج</div>
+        <p>تم تسجيل دخولك بنجاح.</p>
+        <button onclick="location.href='index.html'" style="background:none; border:none; color:#f87171; cursor:pointer; text-decoration:underline;">خروج</button>
     </div>
 </body>
 </html>
