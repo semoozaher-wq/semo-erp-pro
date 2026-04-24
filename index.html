@@ -3,36 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEMO ERP</title>
-    <!-- مكتبات فيربيز (نسخة مستقرة جداً) -->
+    <title>SEMO ERP | دخول</title>
+    <!-- مكتبات Firebase الأساسية -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <style>
         body { background: #0f172a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .card { background: #1e293b; padding: 30px; border-radius: 20px; width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; outline: none; font-size: 16px; }
-        .btn { width: 100%; padding: 12px; background: #10b981; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; font-size: 16px; }
-        .link { color: #3b82f6; cursor: pointer; display: block; margin-top: 15px; font-size: 14px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; outline: none; font-size: 16px; background: #0f172a; color: white; }
+        .btn { width: 100%; padding: 12px; background: #3b82f6; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        .link { color: #94a3b8; cursor: pointer; display: block; margin-top: 15px; font-size: 14px; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h1 style="color:#3b82f6">SEMO ERP</h1>
-        <div id="v1">
+        <h1 style="color:#3b82f6; margin-bottom:20px;">SEMO ERP</h1>
+        <div id="login-box">
             <input type="text" id="l-id" placeholder="الإيميل أو الهاتف">
             <input type="password" id="l-p" placeholder="كلمة المرور">
-            <button class="btn" style="background:#3b82f6" onclick="login()">دخول</button>
+            <button class="btn" onclick="login()">دخول</button>
             <span class="link" onclick="toggle()">تأسيس حساب جديد</span>
         </div>
-        <div id="v2" class="hidden">
-            <h3>حساب جديد</h3>
+        <div id="signup-box" class="hidden">
             <input type="email" id="s-e" placeholder="الإيميل">
             <input type="text" id="s-ph" placeholder="رقم الهاتف">
             <input type="password" id="s-p" placeholder="كلمة المرور">
-            <button class="btn" onclick="signup()">إنشاء الحساب والربط ✅</button>
-            <span class="link" onclick="toggle()">رجوع</span>
+            <button class="btn" style="background:#10b981" onclick="signup()">إنشاء حساب</button>
+            <span class="link" onclick="toggle()">رجوع للدخول</span>
         </div>
     </div>
 
@@ -45,21 +44,21 @@
         };
         firebase.initializeApp(config);
 
-        function toggle() { document.getElementById('v1').classList.toggle('hidden'); document.getElementById('v2').classList.toggle('hidden'); }
+        function toggle() { 
+            document.getElementById('login-box').classList.toggle('hidden'); 
+            document.getElementById('signup-box').classList.toggle('hidden'); 
+        }
 
         function signup() {
             const e = document.getElementById('s-e').value, p = document.getElementById('s-p').value, ph = document.getElementById('s-ph').value;
             if(!e || !p || !ph) return alert("أكمل البيانات");
 
-            // هذا التنبيه سيظهر فوراً إذا كان الكود يعمل
-            console.log("محاولة تسجيل...");
-
             firebase.auth().createUserWithEmailAndPassword(e, p).then(() => {
                 firebase.database().ref('users_map/' + ph).set({ email: e }).then(() => {
-                    alert("تم بنجاح! جاري الدخول...");
+                    alert("تم النجاح! جاري التحويل...");
                     window.location.href = "dashboard.html";
                 });
-            }).catch(err => alert("خطأ من جوجل: " + err.message));
+            }).catch(err => alert("خطأ: " + err.message));
         }
 
         function login() {
