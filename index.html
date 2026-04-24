@@ -1,101 +1,77 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEMO ERP | دخول</title>
-    <!-- مكتبات Firebase v8 -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
-    
-    <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .card { background: #1e293b; padding: 30px; border-radius: 20px; width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; outline: none; font-size: 16px; background: #0f172a; color: white; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; background: #3b82f6; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-        .link { color: #94a3b8; cursor: pointer; display: block; margin-top: 15px; font-size: 14px; }
-        .hidden { display: none; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h1 style="color:#3b82f6; margin-bottom:20px;">SEMO ERP</h1>
+import { initializeApp } from "https://gstatic.com";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://gstatic.com";
+import { getDatabase, ref, set, get, child } from "https://gstatic.com";
+
+// إعداداتك التي أرفقتها
+const firebaseConfig = {
+  apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
+  authDomain: "my-pos-system-11dee.firebaseapp.com",
+  projectId: "my-pos-system-11dee",
+  storageBucket: "my-pos-system-11dee.firebasestorage.app",
+  messagingSenderId: "565195477080",
+  appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d"
+};
+
+// تهيئة الخدمة
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// دالة إنشاء حساب (إيميل + هاتف)
+window.signup = async () => {
+    const email = document.getElementById('s-e').value;
+    const password = document.getElementById('s-p').value;
+    const phone = document.getElementById('s-ph').value;
+
+    if(!email || !password || !phone) return alert("يرجى إكمال البيانات");
+
+    try {
+        // 1. إنشاء الحساب في Firebase Auth
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         
-        <!-- صندوق الدخول (إيميل أو هاتف) -->
-        <div id="login-box">
-            <input type="text" id="l-id" placeholder="الإيميل أو رقم الهاتف">
-            <input type="password" id="l-p" placeholder="كلمة المرور">
-            <button class="btn" onclick="login()">دخول</button>
-            <span class="link" onclick="toggle()">إنشاء حساب جديد</span>
-        </div>
+        // 2. ربط الهاتف بالإيميل في الـ Realtime Database
+        await set(ref(db, 'users_map/' + phone), { email: email });
+        
+        alert("تم إنشاء الحساب بنجاح!");
+        window.location.href = "dashboard.html";
+    } catch (error) {
+        alert("خطأ: " + error.message);
+    }
+};
 
-        <!-- صندوق الإنشاء (يتطلب الإيميل والهاتف معاً للربط) -->
-        <div id="signup-box" class="hidden">
-            <input type="email" id="s-e" placeholder="البريد الإلكتروني">
-            <input type="text" id="s-ph" placeholder="رقم الهاتف">
-            <input type="password" id="s-p" placeholder="كلمة المرور">
-            <button class="btn" style="background:#10b981" onclick="signup()">إنشاء حساب</button>
-            <span class="link" onclick="toggle()">رجوع للدخول</span>
-        </div>
-    </div>
+// دالة تسجيل الدخول (إيميل أو هاتف)
+window.login = async () => {
+    const identifier = document.getElementById('l-id').value; // إيميل أو هاتف
+    const password = document.getElementById('l-p').value;
 
-    <script>
-        const config = {
-            apiKey: "AIzaSyC2EVpNEG9XjcPEelUA8lkIUcUceN6Oh0k",
-            authDomain: "://firebaseapp.com",
-            projectId: "my-pos-system-11dee",
-            databaseURL: "https://firebaseio.com"
-        };
-        firebase.initializeApp(config);
+    if(!identifier || !password) return alert("أدخل البيانات");
 
-        function toggle() { 
-            document.getElementById('login-box').classList.toggle('hidden'); 
-            document.getElementById('signup-box').classList.toggle('hidden'); 
-        }
+    try {
+        let emailToLogin = identifier;
 
-        // إنشاء حساب: يخزن الإيميل وكلمة المرور في Auth، ويربط الهاتف بالإيميل في Database
-        function signup() {
-            const e = document.getElementById('s-e').value, 
-                  p = document.getElementById('s-p').value, 
-                  ph = document.getElementById('s-ph').value;
-
-            if(!e || !p || !ph) return alert("أكمل جميع البيانات");
-
-            firebase.auth().createUserWithEmailAndPassword(e, p).then(() => {
-                // تخزين العلاقة بين الرقم والإيميل
-                firebase.database().ref('phone_to_email/' + ph).set({ email: e }).then(() => {
-                    alert("تم التسجيل بنجاح");
-                    window.location.href = "dashboard.html";
-                });
-            }).catch(err => alert("خطأ: " + err.message));
-        }
-
-        function login() {
-            const input = document.getElementById('l-id').value;
-            const p = document.getElementById('l-p').value;
-
-            if(!input || !p) return alert("أدخل البيانات");
-
-            // إذا كان المدخل يحتوي على @ فهو إيميل، وإلا سنبحث عنه كرقم هاتف
-            if(input.includes('@')) {
-                executeAuth(input, p);
+        // إذا كان المدخل رقم هاتف (لا يحتوي على @)
+        if (!identifier.includes('@')) {
+            const dbRef = ref(db);
+            const snapshot = await get(child(dbRef, `users_map/${identifier}`));
+            
+            if (snapshot.exists()) {
+                emailToLogin = snapshot.val().email;
             } else {
-                firebase.database().ref('phone_to_email/' + input).once('value', s => {
-                    if(s.exists()) {
-                        executeAuth(s.val().email, p);
-                    } else {
-                        alert("رقم الهاتف هذا غير مسجل لدينا");
-                    }
-                });
+                throw new Error("رقم الهاتف غير مسجل");
             }
         }
 
-        function executeAuth(email, password) {
-            firebase.auth().signInWithEmailAndPassword(email, password)
-                .then(() => window.location.href = "dashboard.html")
-                .catch(err => alert("خطأ في الدخول: " + err.message));
-        }
-    </script>
-</body>
-</html>
+        // تسجيل الدخول النهائي
+        await signInWithEmailAndPassword(auth, emailToLogin, password);
+        window.location.href = "dashboard.html";
+        
+    } catch (error) {
+        alert("فشل الدخول: " + error.message);
+    }
+};
+
+// دالة التبديل بين الواجهات (Toggle)
+window.toggle = () => {
+    document.getElementById('login-box').classList.toggle('hidden');
+    document.getElementById('signup-box').classList.toggle('hidden');
+};
