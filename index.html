@@ -3,42 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEMO ERP | دخول</title>
+    <title>SEMO ERP | نظام الإدارة</title>
     <style>
         body { background: #0f172a; color: white; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .card { background: #1e293b; padding: 30px; border-radius: 20px; width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #334155; }
         h1 { color: #3b82f6; margin-bottom: 20px; }
         input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #334155; outline: none; font-size: 16px; background: #0f172a; color: white; box-sizing: border-box; }
-        input:focus { border-color: #3b82f6; }
-        .btn { width: 100%; padding: 12px; background: #3b82f6; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; font-size: 16px; }
-        .btn:hover { background: #2563eb; }
+        .btn { width: 100%; padding: 12px; background: #3b82f6; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
         .link { color: #94a3b8; cursor: pointer; display: block; margin-top: 15px; font-size: 14px; text-decoration: underline; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
-
     <div class="card">
         <h1>SEMO ERP</h1>
-
-        <!-- واجهة الدخول -->
         <div id="login-box">
             <input type="text" id="l-id" placeholder="الإيميل أو رقم الهاتف">
             <input type="password" id="l-p" placeholder="كلمة المرور">
             <button class="btn" onclick="login()">دخول</button>
-            <span class="link" onclick="toggle()">تأسيس حساب جديد</span>
+            <span class="link" onclick="toggle()">إنشاء حساب جديد</span>
         </div>
-
-        <!-- واجهة التسجيل -->
         <div id="signup-box" class="hidden">
             <input type="email" id="s-e" placeholder="البريد الإلكتروني">
             <input type="text" id="s-ph" placeholder="رقم الهاتف">
             <input type="password" id="s-p" placeholder="كلمة المرور">
-            <button class="btn" style="background:#10b981" onclick="signup()">إنشاء حساب</button>
+            <button class="btn" style="background:#10b981" onclick="signup()">إنشاء الحساب</button>
             <span class="link" onclick="toggle()">رجوع للدخول</span>
         </div>
     </div>
-
     <script type="module" src="main.js"></script>
 </body>
 </html>
