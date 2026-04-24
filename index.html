@@ -2,107 +2,129 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SEMO ERP | تسجيل الدخول</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المركز المالي | SEMO ERP</title>
     <link rel="stylesheet" href="https://cloudflare.com">
-    <script src="https://cloudflare.com"></script>
+    <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <style>
-        :root { --accent: #3b82f6; --bg: #0f172a; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
-        body { background: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 40px; border-radius: 30px; width: 92%; max-width: 420px; text-align: center; color: white; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; background: rgba(0,0,0,0.3); color: white; font-size: 16px; outline: none; }
-        .iti { width: 100%; margin: 10px 0; text-align: left; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 15px; cursor: pointer; font-weight: 800; margin-top: 15px; transition: 0.3s; }
-        .btn-p { background: var(--accent); color: white; }
-        .btn-s { background: #10b981; color: white; }
-        .hidden { display: none; }
-        .link { color: var(--accent); cursor: pointer; text-decoration: none; font-size: 0.85rem; display: block; margin-top: 15px; background: none; border: none; width: 100%; }
-        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: white; color: var(--bg); padding: 12px 25px; border-radius: 50px; display: none; z-index: 10000; font-weight: bold; }
+        :root { --primary: #0f172a; --accent: #2563eb; --bg: #f8fafc; }
+        body { background: var(--bg); font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; margin: 0; }
+        aside { width: 280px; background: var(--primary); color: white; display: flex; flex-direction: column; transition: 0.3s; z-index: 100; }
+        .nav-item { padding: 18px 25px; cursor: pointer; transition: 0.3s; border-right: 4px solid transparent; display: flex; align-items: center; gap: 12px; font-weight: 500; }
+        .nav-item.active, .nav-item:hover { background: #1e293b; border-right-color: var(--accent); color: #60a5fa; }
+        main { flex: 1; padding: 30px; overflow-y: auto; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.03); margin-bottom: 25px; border: 1px solid #e2e8f0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .val { font-size: 1.8rem; font-weight: 800; color: var(--primary); display: block; margin-top: 10px; }
+        .currency-label { color: #64748b; font-size: 0.9rem; font-weight: 600; }
+        input, select { padding: 14px; border: 1px solid #cbd5e1; border-radius: 12px; width: 100%; margin: 10px 0; font-size: 1rem; outline: none; }
+        input:focus { border-color: var(--accent); ring: 2px solid #bfdbfe; }
+        .btn { padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; width: 100%; background: var(--accent); color: white; transition: 0.3s; font-size: 1rem; }
+        .btn:hover { background: #1d4ed8; box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3); }
+        @media (max-width: 768px) { aside { width: 70px; } aside span { display: none; } .nav-item { justify-content: center; padding: 20px; } }
     </style>
 </head>
 <body>
-    <div class="glass" id="auth-box">
-        <h1 style="color: var(--accent); letter-spacing: 2px;">SEMO ERP</h1>
-        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 30px;">نظام إدارة المؤسسات العالمي</p>
+    <aside>
+        <div style="padding:30px; font-weight:900; font-size:1.4rem; color:var(--accent); text-align:center;">SEMO <span style="color:white">ERP</span></div>
+        <nav>
+            <div class="nav-item active"><i class="fas fa-chart-pie"></i> <span>المركز المالي</span></div>
+            <div class="nav-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>تسجيل الخروج</span></div>
+        </nav>
+    </aside>
+    <main>
+        <div class="card">
+            <h2 id="welcome-msg">مرحباً بك في نظامك السحابي ☁️</h2>
+            <p id="user-display" style="color: #64748b;">جاري تحميل البيانات...</p>
+        </div>
         
-        <div id="login-view">
-            <input type="email" id="email" placeholder="البريد الإلكتروني">
-            <input type="password" id="pass" placeholder="كلمة المرور">
-            <button class="btn btn-p" onclick="login()">دخول المؤسسة</button>
-            <button class="link" onclick="toggle('signup-view')">ليس لديك حساب؟ سجل الآن</button>
-            <button class="link" onclick="toggle('phone-view')" style="opacity: 0.6;">دخول سريع برقم الهاتف</button>
-        </div>
-
-        <div id="signup-view" class="hidden">
-            <h3>تأسيس حساب جديد</h3>
-            <input type="email" id="sign-email" placeholder="البريد الإلكتروني">
-            <input type="tel" id="sign-phone">
-            <input type="password" id="sign-pass" placeholder="كلمة المرور">
-            <button class="btn btn-s" onclick="signup()">إنشاء وتفعيل</button>
-            <button class="link" onclick="toggle('login-view')">رجوع للدخول</button>
-        </div>
-
-        <div id="phone-view" class="hidden">
-            <input type="tel" id="log-phone">
-            <div id="recaptcha-container"></div>
-            <button class="btn btn-p" onclick="sendSMS()">إرسال كود التحقق 💬</button>
-            <div id="otp-sec" class="hidden">
-                <input type="text" id="otp" placeholder="أدخل الكود (6 أرقام)">
-                <button class="btn btn-s" onclick="verifyOTP()">تأكيد ودخول</button>
+        <div class="grid">
+            <div class="card" style="border-top: 4px solid #2563eb;">
+                <span class="currency-label">إجمالي (د.ل)</span>
+                <span class="val" id="st-ly">0.00</span>
             </div>
-            <button class="link" onclick="toggle('login-view')">رجوع</button>
+            <div class="card" style="border-top: 4px solid #10b981;">
+                <span class="currency-label">إجمالي (ج.م)</span>
+                <span class="val" id="st-eg">0.00</span>
+            </div>
+            <div class="card" style="border-top: 4px solid #f59e0b;">
+                <span class="currency-label">إجمالي (ر.س)</span>
+                <span class="val" id="st-sa">0.00</span>
+            </div>
         </div>
-    </div>
-    <div id="toast"></div>
+
+        <div class="card" style="max-width: 500px; margin-top: 30px;">
+            <h3 style="margin-bottom:15px;">تسجيل عملية بيع جديدة</h3>
+            <input type="text" id="cust" placeholder="اسم العميل">
+            <select id="curr">
+                <option value="د.ل">دينار ليبي</option>
+                <option value="ج.م">جنيه مصري</option>
+                <option value="ر.س">ريال سعودي</option>
+            </select>
+            <input type="number" id="amt" placeholder="المبلغ المالي">
+            <button class="btn" onclick="save()">ترحيل البيانات للسحابة ✅</button>
+        </div>
+    </main>
 
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyC2EVpNEG9XjcPEelUA8lkIUcUceN6Oh0k",
-            authDomain: "semo-erp-pro13.firebaseapp.com",
+            authDomain: "://firebaseapp.com",
             projectId: "semo-erp-pro13",
-            storageBucket: "semo-erp-pro13.firebasestorage.app",
-            messagingSenderId: "915256659491",
-            appId: "1:915256659491:web:eb9c8ef55450aedc7c6b96"
+            databaseURL: "https://firebaseio.com" // تأكد من الرابط الصحيح من Firebase Console
         };
         firebase.initializeApp(firebaseConfig);
+        const rtdb = firebase.database();
+        let uID = null;
 
-        const itiConf = { initialCountry: "ly", preferredCountries: ["ly", "eg", "sa"], separateDialCode: true, utilsScript: "https://cloudflare.com" };
-        const itiS = window.intlTelInput(document.querySelector("#sign-phone"), itiConf);
-        const itiL = window.intlTelInput(document.querySelector("#log-phone"), itiConf);
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) { 
+                uID = user.uid; 
+                document.getElementById('user-display').innerText = "المستخدم النشط: " + (user.email || user.phoneNumber);
+                sync(); 
+            } else { 
+                window.location.assign("index.html"); 
+            }
+        });
 
-        function toggle(id) { document.querySelectorAll('#auth-box > div').forEach(d => d.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
-        function notify(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 5000); }
-
-        function signup() {
-            const e = document.getElementById('sign-email').value, p = document.getElementById('sign-pass').value;
-            firebase.auth().createUserWithEmailAndPassword(e, p).then(u => {
-                u.user.sendEmailVerification();
-                notify("تم التسجيل! فعل حسابك من الإيميل ✅");
-                toggle('login-view');
-            }).catch(err => notify(err.message));
+        function save() {
+            let n = document.getElementById('cust').value, 
+                a = parseFloat(document.getElementById('amt').value), 
+                c = document.getElementById('curr').value;
+            
+            if(n && a) {
+                rtdb.ref('users/' + uID + '/sales').push({
+                    customer: n,
+                    amount: a,
+                    currency: c,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                alert("تم الترحيل والمزامنة بنجاح ✅");
+                document.getElementById('cust').value = "";
+                document.getElementById('amt').value = "";
+            } else {
+                alert("برجاء إدخال كافة البيانات");
+            }
         }
 
-        function login() {
-            const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-            firebase.auth().signInWithEmailAndPassword(e, p).then(u => {
-                if(!u.user.emailVerified) { notify("⚠️ فعل إيميلك أولاً!"); u.user.sendEmailVerification(); }
-                else { window.location.assign("dashboard.html"); }
-            }).catch(err => notify("بيانات خاطئة أو إيميل غير مفعل"));
+        function sync() {
+            rtdb.ref('users/' + uID + '/sales').on('value', snap => {
+                const sales = snap.val() ? Object.values(snap.val()) : [];
+                const sum = (curr) => sales.filter(s => s.currency === curr).reduce((acc, b) => acc + b.amount, 0).toLocaleString(undefined, {minimumFractionDigits: 2});
+                
+                document.getElementById('st-ly').innerText = sum('د.ل');
+                document.getElementById('st-eg').innerText = sum('ج.م');
+                document.getElementById('st-sa').innerText = sum('ر.س');
+            });
         }
 
-        function sendSMS() {
-            const num = itiL.getNumber();
-            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
-            firebase.auth().signInWithPhoneNumber(num, window.recaptchaVerifier).then(res => {
-                window.confirmResult = res; document.getElementById('otp-sec').classList.remove('hidden');
-                notify("وصلك كود SMS 📱");
-            }).catch(err => notify("تأكد من إضافة الدومين في Firebase"));
+        function logout() { 
+            if(confirm("هل تريد الخروج من النظام؟")) {
+                firebase.auth().signOut().then(() => window.location.assign("index.html"));
+            }
         }
-
-        function verifyOTP() { confirmResult.confirm(document.getElementById('otp').value).then(() => window.location.assign("dashboard.html")).catch(() => notify("كود خطأ")); }
     </script>
 </body>
 </html>
