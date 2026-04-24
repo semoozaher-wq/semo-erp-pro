@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SEMO ERP | تسجيل الدخول</title>
-    <!-- مكتبات Firebase الأساسية فقط -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
@@ -12,39 +11,39 @@
         :root { --main: #3b82f6; --bg: #0f172a; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg); display: flex; align-items: center; justify-content: center; height: 100vh; color: white; }
-        .login-card { background: rgba(255,255,255,0.05); padding: 40px; border-radius: 20px; width: 90%; max-width: 400px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; background: var(--main); color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .link { color: var(--main); font-size: 0.8rem; cursor: pointer; margin-top: 15px; display: block; text-decoration: none; }
+        .card { background: rgba(255,255,255,0.05); padding: 35px; border-radius: 25px; width: 90%; max-width: 400px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        input { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; background: var(--main); color: white; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        .link { color: var(--main); font-size: 0.85rem; cursor: pointer; margin-top: 15px; display: block; text-decoration: none; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
-    <div class="login-card">
+    <div class="card">
         <h1 style="color:var(--main); margin-bottom: 20px;">SEMO ERP</h1>
         
         <div id="login-form">
             <input type="text" id="log-id" placeholder="الإيميل أو رقم الهاتف">
             <input type="password" id="log-pass" placeholder="كلمة المرور">
-            <button class="btn" onclick="login()">دخول</button>
-            <span class="link" onclick="toggleView()">ليس لديك حساب؟ سجل الآن</span>
+            <button class="btn" onclick="login()">دخول النظام</button>
+            <span class="link" onclick="toggleView()">تأسيس حساب مؤسسة جديد</span>
         </div>
 
         <div id="signup-form" class="hidden">
-            <input type="email" id="sign-email" placeholder="البريد الإلكتروني">
-            <input type="text" id="sign-phone" placeholder="رقم الهاتف (مثال: 091...)">
-            <input type="password" id="sign-pass" placeholder="كلمة المرور">
-            <button class="btn" style="background:#10b981" onclick="signup()">إنشاء حساب</button>
-            <span class="link" onclick="toggleView()">العودة للدخول</span>
+            <input type="email" id="sign-email" placeholder="البريد الإلكتروني الرسمي">
+            <input type="text" id="sign-phone" placeholder="رقم الهاتف (للدخول به)">
+            <input type="password" id="sign-pass" placeholder="كلمة مرور قوية">
+            <button class="btn" style="background:#10b981" onclick="signup()">إنشاء الحساب</button>
+            <span class="link" onclick="toggleView()">العودة لصفحة الدخول</span>
         </div>
     </div>
 
     <script>
-        // إعدادات Firebase الخاصة بك
+        // التعديل بناءً على الصورة المرسلة
         const config = {
             apiKey: "AIzaSyC2EVpNEG9XjcPEelUA8lkIUcUceN6Oh0k",
             authDomain: "://firebaseapp.com",
-            projectId: "semo-erp-pro13",
+            projectId: "my-pos-system-33831",
             databaseURL: "https://firebaseio.com"
         };
         firebase.initializeApp(config);
@@ -58,22 +57,24 @@
             const e = document.getElementById('sign-email').value, 
                   p = document.getElementById('sign-pass').value,
                   ph = document.getElementById('sign-phone').value;
-            if(!e || !p || !ph) return alert("أكمل البيانات");
+            if(!e || !p || !ph) return alert("الرجاء إكمال البيانات");
 
             firebase.auth().createUserWithEmailAndPassword(e, p).then(u => {
                 firebase.database().ref('users_map/' + ph).set({ email: e });
                 window.location.href = "dashboard.html";
-            }).catch(err => alert(err.message));
+            }).catch(err => alert("خطأ: " + err.message));
         }
 
         function login() {
             const id = document.getElementById('log-id').value, p = document.getElementById('log-pass').value;
+            if(!id || !p) return alert("أدخل البيانات");
+
             if(id.includes('@')) {
                 auth(id, p);
             } else {
                 firebase.database().ref('users_map/' + id).once('value', s => {
                     if(s.exists()) auth(s.val().email, p);
-                    else alert("البيانات غير صحيحة");
+                    else alert("رقم الهاتف غير مسجل");
                 });
             }
         }
@@ -81,7 +82,7 @@
         function auth(e, p) {
             firebase.auth().signInWithEmailAndPassword(e, p)
             .then(() => window.location.href = "dashboard.html")
-            .catch(err => alert("خطأ في الدخول"));
+            .catch(err => alert("خطأ في الإيميل أو كلمة السر"));
         }
     </script>
 </body>
