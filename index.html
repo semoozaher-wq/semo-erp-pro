@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SEMO ERP | نظام الإدارة</title>
     <style>
-        body { background: #0f172a; color: white; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .card { background: #1e293b; padding: 30px; border-radius: 20px; width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #334155; }
         h1 { color: #3b82f6; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #334155; outline: none; font-size: 16px; background: #0f172a; color: white; box-sizing: border-box; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #334155; outline: none; background: #0f172a; color: white; box-sizing: border-box; }
         .btn { width: 100%; padding: 12px; background: #3b82f6; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
         .link { color: #94a3b8; cursor: pointer; display: block; margin-top: 15px; font-size: 14px; text-decoration: underline; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
+
     <div class="card">
         <h1>SEMO ERP</h1>
         <div id="login-box">
@@ -27,10 +28,12 @@
             <input type="email" id="s-e" placeholder="البريد الإلكتروني">
             <input type="text" id="s-ph" placeholder="رقم الهاتف">
             <input type="password" id="s-p" placeholder="كلمة المرور">
-            <button class="btn" style="background:#10b981" onclick="signup()">إنشاء الحساب</button>
+            <button class="btn" style="background:#10b981" onclick="signup()">إنشاء حساب</button>
             <span class="link" onclick="toggle()">رجوع للدخول</span>
         </div>
     </div>
+
+    <!-- السطر الوحيد المسؤول عن التشغيل - يحذف أي شيء قبله -->
     <script type="module" src="main.js"></script>
 </body>
 </html>
