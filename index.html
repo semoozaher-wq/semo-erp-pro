@@ -15,6 +15,7 @@
             justify-content: center; 
             height: 100vh; 
             margin: 0; 
+            transition: background 0.3s ease;
         }
 
         /* كارت تسجيل الدخول */
@@ -26,21 +27,51 @@
             text-align: center; 
             box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
             border: 1px solid #334155; 
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease; 
+            position: relative;
         }
 
-        /* تبديل الوضع الفاتح/الداكن */
-        body.dark-mode .card {
-            background: #f8fafc;
-            border-color: #e2e8f0;
+        /* الوضع الفاتح */
+        body.light-mode {
+            background: #f1f5f9;
             color: #1e293b;
+        }
+        body.light-mode .card {
+            background: #ffffff;
+            color: #1e293b;
+            border-color: #e2e8f0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        body.light-mode input {
+            background: #f8fafc;
+            color: #334155;
+            border-color: #cbd5e1;
+        }
+        body.light-mode .link, body.light-mode .forgot-password {
+            color: #64748b;
         }
 
         h1 { 
             color: #3b82f6; 
-            margin-bottom: 30px; 
+            margin-bottom: 10px; 
             font-size: 28px; 
             letter-spacing: 1px;
+        }
+
+        /* شعار التطبيق */
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
         }
 
         /* تصميم الحقول */
@@ -58,15 +89,26 @@
             transition: all 0.3s ease;
         }
 
-        input[type="password"] {
-            background: #0f172a;
-            color: white;
-        }
-
         input:focus { 
             border-color: #3b82f6; 
-            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
         }
+
+        /* زر عرض/إخفاء كلمة السر */
+        .toggle-password {
+            position: absolute;
+            left: 15px; /* لأن الاتجاه RTL */
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #94a3b8;
+            font-size: 18px;
+            background: none;
+            border: none;
+            outline: none;
+            padding: 0;
+        }
+        .toggle-password:hover { color: #3b82f6; }
 
         /* تصميم الأزرار */
         .btn { 
@@ -82,49 +124,13 @@
             font-size: 16px; 
             transition: background 0.3s ease;
         }
+        .btn:hover { background: #2563eb; }
+        .btn-green { background: #10b981 !important; }
+        .btn-green:hover { background: #059669 !important; }
 
-        .btn:hover { 
-            background: #2563eb; 
-        }
-
-        /* زر عرض/إخفاء كلمة السر */
-        .toggle-password {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #94a3b8;
-            font-size: 18px;
-            background: none;
-            border: none;
-            outline: none;
-            transition: color 0.3s ease;
-        }
-
-        .toggle-password:hover { 
-            color: #3b82f6; 
-        }
-
-        /* روابط التنقل بين الواجهات */
-        .link { 
+        /* الروابط */
+        .link, .forgot-password { 
             color: #94a3b8; 
-            cursor: pointer; 
-            display: inline-block; 
-            margin-top: 25px; 
-            font-size: 14px; 
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .link:hover { 
-            color: #3b82f6; 
-            text-decoration: underline;
-        }
-
-        /* زر نسيت كلمة المرور */
-        .forgot-password { 
-            color: #64748b; 
             cursor: pointer; 
             display: block; 
             margin-top: 15px; 
@@ -132,13 +138,9 @@
             text-decoration: none;
             transition: color 0.3s ease;
         }
+        .link:hover, .forgot-password:hover { color: #3b82f6; text-decoration: underline; }
 
-        .forgot-password:hover { 
-            color: #3b82f6; 
-            text-decoration: underline;
-        }
-
-        /* زر تبديل الوضع */
+        /* زر الوضع */
         .mode-toggle { 
             position: absolute; 
             top: 20px; 
@@ -146,36 +148,20 @@
             background: none; 
             border: none; 
             color: #94a3b8; 
-            font-size: 20px; 
+            font-size: 24px; 
             cursor: pointer; 
             transition: color 0.3s ease;
         }
-
-        .mode-toggle:hover { 
-            color: #3b82f6; 
-        }
+        .mode-toggle:hover { color: #3b82f6; }
 
         .hidden { display: none; }
-
-        /* إضافة شعار للتطبيق */
-        .logo {
-            width: 100px;
-            height: 100px;
-            background: #3b82f6;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-        }
     </style>
 </head>
-<body class="dark-mode">
+<body>
 
     <div class="card">
+        <button class="mode-toggle" onclick="toggleMode()">🌙</button>
+        
         <div class="logo">SEMO</div>
         <h1>SEMO ERP</h1>
 
@@ -184,31 +170,118 @@
             <input type="text" id="l-id" placeholder="الإيميل أو رقم الهاتف">
             <div style="position: relative;">
                 <input type="password" id="l-p" placeholder="كلمة المرور">
-                <button class="toggle-password" onclick="togglePassword('l-p')">👁️</button>
+                <button class="toggle-password" type="button" onclick="togglePassword('l-p')">👁️</button>
             </div>
             <button class="btn" onclick="login()">دخول</button>
             <span class="link" onclick="toggle()">تأسيس حساب جديد</span>
-            <a href="#" class="forgot-password" onclick="forgotPassword()">نسيت كلمة المرور</a>
+            <a href="#" class="forgot-password" onclick="forgotPassword()">نسيت كلمة المرور؟</a>
         </div>
 
         <!-- واجهة إنشاء حساب جديد -->
         <div id="signup-box" class="hidden">
             <input type="email" id="s-e" placeholder="البريد الإلكتروني">
-            <input type="text" id="s-ph" placeholder="رقم الهاتف">
+            <input type="tel" id="s-ph" placeholder="رقم الهاتف">
             <div style="position: relative;">
                 <input type="password" id="s-p" placeholder="كلمة المرور">
-                <button class="toggle-password" onclick="togglePassword('s-p')">👁️</button>
+                <button class="toggle-password" type="button" onclick="togglePassword('s-p')">👁️</button>
             </div>
-            <button class="btn" style="background:#10b981" onclick="signup()">إنشاء حساب</button>
+            <button class="btn btn-green" onclick="signup()">إنشاء حساب</button>
             <span class="link" onclick="toggle()">العودة لتسجيل الدخول</span>
         </div>
-
-        <!-- زر تبديل الوضع الفاتح/الداكن -->
-        <button class="mode-toggle" onclick="toggleMode()">🌙</button>
     </div>
 
-    <!-- ربط ملف البرمجة -->
-    <script type="module" src="main.js"></script>
+    <script>
+        // دالة تبديل الوضع الفاتح/الداكن
+        function toggleMode() {
+            const body = document.body;
+            const btn = document.querySelector('.mode-toggle');
+            body.classList.toggle('light-mode');
+            
+            if (body.classList.contains('light-mode')) {
+                btn.textContent = '☀️';
+            } else {
+                btn.textContent = '🌙';
+            }
+        }
 
+        // دالة التبديل بين واجهة الدخول والحساب الجديد
+        function toggle() {
+            const loginBox = document.getElementById('login-box');
+            const signupBox = document.getElementById('signup-box');
+            
+            if (loginBox.classList.contains('hidden')) {
+                loginBox.classList.remove('hidden');
+                signupBox.classList.add('hidden');
+            } else {
+                loginBox.classList.add('hidden');
+                signupBox.classList.remove('hidden');
+            }
+        }
+
+        // دالة عرض/إخفاء كلمة السر
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const btn = document.querySelector(`button[onclick="togglePassword('${inputId}')"]`);
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
+        // دالة تسجيل الدخول
+        function login() {
+            const id = document.getElementById('l-id').value;
+            const password = document.getElementById('l-p').value;
+
+            if (!id || !password) {
+                alert('⚠️ يرجى ملء جميع الحقول');
+                return;
+            }
+            // محاكاة تسجيل الدخول
+            alert(`✅ جاري تسجيل الدخول...\nالبيانات: ${id}`);
+        }
+
+        // دالة إنشاء حساب جديد
+        function signup() {
+            const email = document.getElementById('s-e').value;
+            const phone = document.getElementById('s-ph').value;
+            const password = document.getElementById('s-p').value;
+
+            if (!email || !phone || !password) {
+                alert('⚠️ يرجى ملء جميع الحقول');
+                return;
+            }
+
+            // التحقق من البريد الإلكتروني
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('⚠️ تنسيق البريد الإلكتروني غير صحيح');
+                return;
+            }
+
+            // التحقق من كلمة المرور
+            if (password.length < 6) {
+                alert('⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+                return;
+            }
+
+            // محاكاة إنشاء حساب
+            alert(`✅ جاري إنشاء الحساب...\nالبريد: ${email}\nالهاتف: ${phone}`);
+        }
+
+        // دالة نسيت كلمة المرور
+        function forgotPassword() {
+            const id = document.getElementById('l-id').value;
+            if (!id) {
+                alert('⚠️ يرجى إدخال الإيميل أو الهاتف لاستعادة كلمة المرور');
+                return;
+            }
+            alert(`📧 تم إرسال رابط الاستعادة إلى: ${id}`);
+        }
+    </script>
 </body>
 </html>
