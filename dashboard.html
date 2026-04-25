@@ -2,18 +2,327 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SEMO ERP | لوحة التحكم</title>
+    <!-- مكتبة الأيقونات -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .box { background: #1e293b; padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #3b82f6; }
-        h1 { color: #3b82f6; }
+        /* المتغيرات والألوان */
+        :root {
+            --bg: #0f172a;
+            --sidebar-bg: #1e293b;
+            --primary: #3b82f6;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --danger: #ef4444;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* القائمة الجانبية */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            height: 100vh;
+            position: fixed;
+            border-left: 1px solid var(--border);
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .logo-area {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-area h2 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .menu-item {
+            padding: 14px 15px;
+            margin: 8px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background: var(--primary);
+            color: white;
+            transform: translateX(-5px);
+        }
+
+        .menu-item i { font-size: 20px; }
+
+        .logout-btn {
+            margin-top: auto;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            padding: 14px;
+            border: 1px solid var(--danger);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* المحتوى الرئيسي */
+        .main-content {
+            margin-right: 260px;
+            padding: 30px;
+            width: calc(100% - 260px);
+            box-sizing: border-box;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+        }
+
+        header h1 { margin: 0; font-size: 26px; }
+        #date-display { color: var(--text-muted); font-size: 14px; }
+
+        /* شبكة الإحصائيات */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        .stat-card {
+            background: var(--sidebar-bg);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; width: 4px; height: 100%;
+            background: var(--primary);
+            opacity: 0.5;
+        }
+
+        .stat-card h3 { font-size: 14px; color: var(--text-muted); margin: 0; }
+        .stat-card p { font-size: 28px; font-weight: 700; color: var(--text); margin: 10px 0 0; }
+        .stat-icon { position: absolute; left: 20px; top: 20px; font-size: 32px; color: rgba(59, 130, 246, 0.2); }
+
+        /* الجداول */
+        .table-container {
+            background: var(--sidebar-bg);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: right;
+            padding: 15px;
+            color: var(--text-muted);
+            font-size: 13px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+            font-size: 14px;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-completed { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+        .status-pending { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; padding: 10px; }
+            .sidebar h2, .menu-item span, .logout-btn span { display: none; }
+            .logo-area h2 { font-size: 18px; }
+            .menu-item { justify-content: center; padding: 15px; }
+            .main-content { margin-right: 70px; width: calc(100% - 70px); }
+        }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h1>مرحباً بك في SEMO ERP</h1>
-        <p>تم تسجيل دخولك بنجاح.</p>
-        <button onclick="location.href='index.html'" style="background:none; border:none; color:#f87171; cursor:pointer; text-decoration:underline;">خروج</button>
+
+    <!-- القائمة الجانبية -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <h2><i class="ph ph-cube"></i> SEMO ERP</h2>
+        </div>
+        
+        <div class="menu-item active">
+            <i class="ph ph-squares-four"></i> <span>الرئيسية</span>
+        </div>
+        <div class="menu-item">
+            <i class="ph ph-shopping-cart"></i> <span>المبيعات</span>
+        </div>
+        <div class="menu-item">
+            <i class="ph ph-package"></i> <span>المخزن</span>
+        </div>
+        <div class="menu-item">
+            <i class="ph ph-users"></i> <span>العملاء</span>
+        </div>
+        <div class="menu-item">
+            <i class="ph ph-chart-line-up"></i> <span>التقارير</span>
+        </div>
+
+        <button class="logout-btn" onclick="handleLogout()">
+            <i class="ph ph-sign-out"></i> <span>تسجيل الخروج</span>
+        </button>
     </div>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
+        <header>
+            <div>
+                <h1>مرحباً بك، <span id="user-display">المدير</span> 👋</h1>
+                <div id="date-display" style="color: var(--text-muted); margin-top: 5px; font-size: 14px;"></div>
+            </div>
+            <div style="width: 40px; height: 40px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">A</div>
+        </header>
+
+        <!-- شبكة الإحصائيات -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="ph ph-currency-dollar stat-icon"></i>
+                <h3>إجمالي المبيعات</h3>
+                <p>42,500 ج.م</p>
+            </div>
+            <div class="stat-card">
+                <i class="ph ph-receipt stat-icon"></i>
+                <h3>عدد الفواتير</h3>
+                <p>128</p>
+            </div>
+            <div class="stat-card">
+                <i class="ph ph-package stat-icon"></i>
+                <h3>المنتجات في المخزن</h3>
+                <p>1,450</p>
+            </div>
+            <div class="stat-card">
+                <i class="ph ph-users-three stat-icon"></i>
+                <h3>العملاء النشطون</h3>
+                <p>85</p>
+            </div>
+        </div>
+
+        <!-- جدول المبيعات الأخيرة -->
+        <div class="table-container">
+            <div class="table-header">
+                <h2>أحدث الحركات</h2>
+                <button style="background: var(--primary); border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer;">عرض الكل</button>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>رقم العملية</th>
+                        <th>التاريخ</th>
+                        <th>النوع</th>
+                        <th>المبلغ</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- سيتم ملء البيانات بواسطة JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        // 1. عرض التاريخ الحالي بالعربية
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('date-display').innerText = new Date().toLocaleDateString('ar-EG', options);
+
+        // 2. دالة تسجيل الخروج (محدثة لتعمل مع onclick)
+        window.handleLogout = () => {
+            if(confirm("هل أنت متأكد من رغبتك في تسجيل الخروج؟")) {
+                // تفريغ أي بيانات مؤقتة إن وجدت
+                localStorage.removeItem('userToken');
+                window.location.href = "index.html";
+            }
+        };
+
+        // 3. إضافة بيانات وهمية للجدول (لتبدو الواجهة حية)
+        const dummyData = [
+            { id: "#INV-001", date: "2025-04-25", type: "بيع نقدي", amount: "1,250 ج.م", status: "completed", statusText: "مكتمل" },
+            { id: "#INV-002", date: "2025-04-24", type: "شراء جملة", amount: "4,500 ج.م", status: "pending", statusText: "قيد المراجعة" },
+            { id: "#INV-003", date: "2025-04-24", type: "بيع آجل", amount: "890 ج.م", status: "completed", statusText: "مكتمل" },
+            { id: "#INV-004", date: "2025-04-23", type: "إرجاع", amount: "150 ج.م", status: "completed", statusText: "مكتمل" },
+        ];
+
+        const tableBody = document.getElementById('table-body');
+        
+        dummyData.forEach(item => {
+            const row = document.createElement('tr');
+            const statusClass = item.status === 'completed' ? 'status-completed' : 'status-pending';
+            
+            row.innerHTML = `
+                <td style="font-weight: bold; color: var(--primary);">${item.id}</td>
+                <td>${item.date}</td>
+                <td>${item.type}</td>
+                <td>${item.amount}</td>
+                <td><span class="status-badge ${statusClass}">${item.statusText}</span></td>
+            `;
+            tableBody.appendChild(row);
+        });
+    </script>
 </body>
 </html>
