@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEMO ERP | دخول</title>
+    <title>SEMO ERP | نظام الإدارة المتكامل</title>
     <style>
-        /* نفس الستايل السابق */
+        /* تنسيق الواجهة - الوضع الداكن */
         body { 
             background: #0f172a; 
             color: white; 
@@ -15,62 +15,22 @@
             justify-content: center; 
             height: 100vh; 
             margin: 0; 
-            transition: background 0.3s ease;
         }
-
         .card { 
             background: #1e293b; 
-            padding: 40px 30px; 
+            padding: 40px; 
             border-radius: 20px; 
-            width: 350px; 
+            width: 380px; 
             text-align: center; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
             border: 1px solid #334155; 
-            transition: background-color 0.3s ease, color 0.3s ease; 
-            position: relative;
         }
-
-        body.light-mode {
-            background: #f1f5f9;
-            color: #1e293b;
-        }
-        body.light-mode .card {
-            background: #ffffff;
-            color: #1e293b;
-            border-color: #e2e8f0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        body.light-mode input {
-            background: #f8fafc;
-            color: #334155;
-            border-color: #cbd5e1;
-        }
-        body.light-mode .link, body.light-mode .forgot-password {
-            color: #64748b;
-        }
-
         h1 { 
             color: #3b82f6; 
-            margin-bottom: 10px; 
-            font-size: 28px; 
+            margin-bottom: 25px; 
+            font-size: 28px;
             letter-spacing: 1px;
         }
-
-        .logo {
-            width: 80px;
-            height: 80px;
-            background: #3b82f6;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            color: white;
-            font-weight: bold;
-            font-size: 24px;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-        }
-
         input { 
             width: 100%; 
             padding: 14px; 
@@ -82,29 +42,12 @@
             background: #0f172a; 
             color: white; 
             box-sizing: border-box; 
-            transition: all 0.3s ease;
+            transition: 0.3s;
         }
-
         input:focus { 
             border-color: #3b82f6; 
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.4); 
         }
-
-        .toggle-password {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #94a3b8;
-            font-size: 18px;
-            background: none;
-            border: none;
-            outline: none;
-            padding: 0;
-        }
-        .toggle-password:hover { color: #3b82f6; }
-
         .btn { 
             width: 100%; 
             padding: 14px; 
@@ -114,327 +57,56 @@
             font-weight: bold; 
             border-radius: 10px; 
             cursor: pointer; 
-            margin-top: 20px; 
-            font-size: 16px; 
-            transition: background 0.3s ease;
+            margin-top: 15px; 
+            font-size: 17px; 
+            transition: 0.3s;
         }
-        .btn:hover { background: #2563eb; }
-        .btn-green { background: #10b981 !important; }
-        .btn-green:hover { background: #059669 !important; }
-
-        .link, .forgot-password { 
+        .btn:hover { 
+            background: #2563eb; 
+            transform: translateY(-2px);
+        }
+        .link { 
             color: #94a3b8; 
             cursor: pointer; 
             display: block; 
-            margin-top: 15px; 
+            margin-top: 20px; 
             font-size: 14px; 
-            text-decoration: none;
-            transition: color 0.3s ease;
+            text-decoration: none; 
         }
-        .link:hover, .forgot-password:hover { color: #3b82f6; text-decoration: underline; }
-
-        .mode-toggle { 
-            position: absolute; 
-            top: 20px; 
-            right: 20px; 
-            background: none; 
-            border: none; 
-            color: #94a3b8; 
-            font-size: 24px; 
-            cursor: pointer; 
-            transition: color 0.3s ease;
+        .link:hover { 
+            color: #3b82f6; 
+            text-decoration: underline; 
         }
-        .mode-toggle:hover { color: #3b82f6; }
-
-        .hidden { display: none; }
-
-        /* حقل الكود */
-        .otp-input { 
-            text-align: center; 
-            font-size: 24px; 
-            font-weight: bold; 
-            letter-spacing: 20px; 
-            margin-bottom: 20px; 
-            background: #0f172a; 
-            color: white; 
-            border: 2px dashed #3b82f6; 
-            width: 100%; 
-            padding: 10px 0; 
-            border-radius: 10px; 
-            margin-top: 10px; 
-            transition: all 0.3s ease;
-        }
-        .otp-input:focus { 
-            border-color: #3b82f6; 
-            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
-        }
-
-        /* تنبيهات جديدة */
-        .notification { 
-            position: absolute; 
-            top: 10px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            padding: 10px 20px; 
-            background: #0f172a; 
-            color: white; 
-            border-radius: 10px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
-            z-index: 1000; 
-            transition: all 0.3s ease;
-        }
-        .notification.success { 
-            background: #10b981; 
-            color: white; 
-            border: 2px solid #10b981; 
-            box-shadow: 0 0 8px rgba(16, 185, 127, 0.3);
-        }
-        .notification.error { 
-            background: #ef4444; 
-            color: white; 
-            border: 2px solid #ef4444; 
-            box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+        .hidden { 
+            display: none; 
         }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <button class="mode-toggle" onclick="toggleMode()">🌙</button>
-        
-        <div class="logo">SEMO</div>
         <h1>SEMO ERP</h1>
 
-        <!-- واجهة تسجيل الدخول -->
+        <!-- صندوق تسجيل الدخول -->
         <div id="login-box">
             <input type="text" id="l-id" placeholder="الإيميل أو رقم الهاتف">
-            <div style="position: relative;">
-                <input type="password" id="l-p" placeholder="كلمة المرور">
-                <button class="toggle-password" type="button" onclick="togglePassword('l-p')">👁️</button>
-            </div>
-            <button class="btn" onclick="login()">دخول</button>
-            <span class="link" onclick="toggle()">تأسيس حساب جديد</span>
-            <a href="#" class="forgot-password" onclick="forgotPassword()">نسيت كلمة المرور؟</a>
+            <input type="password" id="l-p" placeholder="كلمة المرور">
+            <button class="btn" onclick="login()">دخول للنظام</button>
+            <span class="link" onclick="toggle()">ليس لديك حساب؟ تأسيس حساب جديد</span>
         </div>
 
-        <!-- واجهة إنشاء حساب جديد -->
+        <!-- صندوق إنشاء حساب جديد -->
         <div id="signup-box" class="hidden">
             <input type="email" id="s-e" placeholder="البريد الإلكتروني">
-            <input type="tel" id="s-ph" placeholder="رقم الهاتف">
-            <div style="position: relative;">
-                <input type="password" id="s-p" placeholder="كلمة المرور">
-                <button class="toggle-password" type="button" onclick="togglePassword('s-p')">👁️</button>
-            </div>
-            <button class="btn btn-green" onclick="signup()">إنشاء حساب</button>
-            <span class="link" onclick="toggle()">العودة لتسجيل الدخول</span>
-        </div>
-
-        <!-- واجهة تأكيد الكود (تظهر بعد إرسال الرسالة) -->
-        <div id="otp-box" class="hidden">
-            <h3>أدخل كود التحقق</h3>
-            <input type="text" id="otp-input" class="otp-input" placeholder="أدخل الكود هنا">
-            <button class="btn" onclick="verifyOtp()">تأكيد الكود</button>
-            <span class="link" onclick="resendOtp()">إعادة إرسال الكود</span>
-            <p style="font-size: 12px; color: #94a3b8; margin-top: 15px;">*تم إرسال كود تحقق إلى: <span id="otp-email"></span></p>
+            <input type="text" id="s-ph" placeholder="رقم الهاتف">
+            <input type="password" id="s-p" placeholder="كلمة المرور">
+            <button class="btn" style="background:#10b981" onclick="signup()">تفعيل الحساب الآن</button>
+            <span class="link" onclick="toggle()">لديك حساب بالفعل؟ تسجيل الدخول</span>
         </div>
     </div>
 
-    <script>
-        // دالة تبديل الوضع الفاتح/الداكن
-        function toggleMode() {
-            const body = document.body;
-            const btn = document.querySelector('.mode-toggle');
-            body.classList.toggle('light-mode');
-            
-            if (body.classList.contains('light-mode')) {
-                btn.textContent = '☀️';
-            } else {
-                btn.textContent = '🌙';
-            }
-        }
+    <!-- ربط ملف الجافا سكريبت من مجلد js -->
+    <script type="module" src="js/main.js"></script>
 
-        // دالة التبديل بين واجهة الدخول والحساب الجديد
-        function toggle() {
-            const loginBox = document.getElementById('login-box');
-            const signupBox = document.getElementById('signup-box');
-            const otpBox = document.getElementById('otp-box');
-            
-            if (loginBox.classList.contains('hidden')) {
-                loginBox.classList.remove('hidden');
-                signupBox.classList.add('hidden');
-                otpBox.classList.add('hidden');
-            } else {
-                loginBox.classList.add('hidden');
-                signupBox.classList.remove('hidden');
-                otpBox.classList.add('hidden');
-            }
-        }
-
-        // دالة عرض/إخفاء كلمة السر
-        function togglePassword(inputId) {
-            const input = document.getElementById(inputId);
-            const btn = document.querySelector(`button[onclick="togglePassword('${inputId}')"]`);
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                btn.textContent = '🙈';
-            } else {
-                input.type = 'password';
-                btn.textContent = '👁️';
-            }
-        }
-
-        // دالة إنشاء حساب جديد (يخزن البيانات في Local Storage)
-        function signup() {
-            const email = document.getElementById('s-e').value.trim();
-            const phone = document.getElementById('s-ph').value.trim();
-            const password = document.getElementById('s-p').value;
-
-            if (!email || !phone || !password) {
-                alert('⚠️ يرجى ملء جميع الحقول');
-                return;
-            }
-
-            // التحقق من البريد الإلكتروني
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                alert('⚠️ تنسيق البريد الإلكتروني غير صحيح');
-                return;
-            }
-
-            // التحقق من كلمة المرور
-            if (password.length < 6) {
-                alert('⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل');
-                return;
-            }
-
-            // جلب المستخدمين الحاليين من Local Storage
-            let users = JSON.parse(localStorage.getItem('semo_users')) || [];
-
-            // التحقق من أن المستخدم غير مسجل مسبقاً
-            const userExists = users.some(u => u.email === email || u.phone === phone);
-            if (userExists) {
-                alert('⚠️ هذا البريد الإلكتروني أو رقم الهاتف مسجل مسبقاً');
-                return;
-            }
-
-            // إضافة المستخدم الجديد
-            users.push({ email, phone, password });
-            localStorage.setItem('semo_users', JSON.stringify(users));
-
-            // إرسال رسالة تأكيد (محاكاة)
-            const otp = Math.floor(100000 + Math.random() * 900000).toString(); // كود 6 أرقام
-            localStorage.setItem('semo_otp', otp);
-            localStorage.setItem('semo_otp_email', email); // للعرض
-
-            // إظهار واجهة الكود
-            const loginBox = document.getElementById('login-box');
-            const signupBox = document.getElementById('signup-box');
-            const otpBox = document.getElementById('otp-box');
-            
-            loginBox.classList.add('hidden');
-            signupBox.classList.add('hidden');
-            otpBox.classList.remove('hidden');
-
-            // إظهار الإيميل في التنبيه
-            document.getElementById('otp-email').textContent = email;
-
-            // إظهار تنبيه
-            showNotification('✅ تم إرسال كود التحقق إلى البريد الإلكتروني: ' + email, 'success');
-
-            // 2. التحقق من الكود
-            function verifyOtp() {
-                const enteredOtp = document.getElementById('otp-input').value;
-                const storedOtp = localStorage.getItem('semo_otp');
-                const storedEmail = localStorage.getItem('semo_otp_email');
-
-                if (enteredOtp === storedOtp) {
-                    alert('✅ تم تأكيد الكود بنجاح! يمكنك الآن تسجيل الدخول.');
-                    localStorage.removeItem('semo_otp');
-                    localStorage.removeItem('semo_otp_email');
-                    // إعادة توجيه إلى صفحة تسجيل الدخول
-                    toggle();
-                } else {
-                    alert('❌ الكود غير صحيح. حاول مرة أخرى.');
-                }
-            }
-
-            // 3. إعادة إرسال الكود
-            function resendOtp() {
-                // إعادة إرسال نفس الكود (محاكاة)
-                const otp = Math.floor(100000 + Math.random() * 900000).toString();
-                localStorage.setItem('semo_otp', otp);
-                localStorage.setItem('semo_otp_email', storedEmail);
-                showNotification('✅ تم إعادة إرسال كود التحقق إلى: ' + storedEmail, 'success');
-            }
-
-            // 4. إخفاء التنبيه بعد 5 ثوان
-            setTimeout(() => {
-                const notification = document.querySelector('.notification');
-                notification.style.opacity = '0';
-                setTimeout(() => {
-                    notification.style.display = 'none';
-                }, 500);
-            }, 5000);
-        }
-
-        // دالة تسجيل الدخول
-        function login() {
-            const id = document.getElementById('l-id').value.trim();
-            const password = document.getElementById('l-p').value;
-
-            if (!id || !password) {
-                alert('⚠️ يرجى ملء جميع الحقول');
-                return;
-            }
-
-            // جلب المستخدمين من Local Storage
-            let users = JSON.parse(localStorage.getItem('semo_users')) || [];
-
-            // البحث عن المستخدم
-            const user = users.find(u => (u.email === id || u.phone === id) && u.password === password);
-
-            if (user) {
-                alert(`✅ مرحباً بك، ${user.email || user.phone}!\nتم تسجيل الدخول بنجاح.`);
-                // هنا يمكنك توجيه المستخدم لصفحة أخرى مثلاً
-                // window.location.href = 'dashboard.html';
-            } else {
-                alert('❌ بيانات الدخول غير صحيحة. تأكد من الإيميل/الهاتف وكلمة المرور.');
-            }
-        }
-
-        // دالة نسيت كلمة المرور
-        function forgotPassword() {
-            const id = document.getElementById('l-id').value.trim();
-            if (!id) {
-                alert('⚠️ يرجى إدخال الإيميل أو الهاتف لاستعادة كلمة المرور');
-                return;
-            }
-
-            let users = JSON.parse(localStorage.getItem('semo_users')) || [];
-            const user = users.find(u => u.email === id || u.phone === id);
-
-            if (user) {
-                alert(`📧 تم إرسال رابط الاستعادة إلى: ${id}\n(ملاحظة: هذا محاكاة فقط، لن يتم إرسال بريد فعلي)`);
-            } else {
-                alert('⚠️ لا يوجد مستخدم مسجل بهذا الإيميل أو الهاتف.');
-            }
-        }
-
-        // دالة لإظهار تنبيهات
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = 'notification ' + type;
-            notification.innerHTML = message;
-            document.body.appendChild(notification);
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                setTimeout(() => {
-                    notification.style.display = 'none';
-                    notification.remove();
-                }, 500);
-            }, 5000);
-        }
-    </script>
 </body>
 </html>
