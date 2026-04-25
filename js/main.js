@@ -1,48 +1,50 @@
-import { initializeApp } from "https://gstatic.com";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://gstatic.com";
-import { getDatabase, ref, set, get, child } from "https://gstatic.com";
+// دالة التبديل بين واجهة الدخول والحساب الجديد
+function toggle() {
+    const loginBox = document.getElementById('login-box');
+    const signupBox = document.getElementById('signup-box');
+    
+    if (loginBox.classList.contains('hidden')) {
+        loginBox.classList.remove('hidden');
+        signupBox.classList.add('hidden');
+    } else {
+        loginBox.classList.add('hidden');
+        signupBox.classList.remove('hidden');
+    }
+}
 
-const firebaseConfig = {
-  apiKey: "AIzaSyC2EVpNEG9XjcPEelUA8lkIUcUceN6Oh0k",
-  authDomain: "://firebaseapp.com",
-  databaseURL: "https://firebaseio.com",
-  projectId: "semo-erp-pro13",
-  storageBucket: "semo-erp-pro13.firebasestorage.app",
-  messagingSenderId: "915256659491",
-  appId: "1:915256659491:web:3726522d17e9ea5c7c6b96"
-};
+// دالة تسجيل الدخول (مجرد مثال توضيحي)
+function login() {
+    const id = document.getElementById('l-id').value;
+    const password = document.getElementById('l-p').value;
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+    if (!id || !password) {
+        alert('يرجى ملء جميع الحقول');
+        return;
+    }
 
-window.toggle = () => {
-    document.getElementById('login-box').classList.toggle('hidden');
-    document.getElementById('signup-box').classList.toggle('hidden');
-};
+    // هنا تضع منطق الاتصال بالسيرفر
+    console.log('جاري تسجيل الدخول ببيانات:', { id, password });
+    alert('تم إرسال بيانات تسجيل الدخول (تحتاج لربطها بقاعدة البيانات)');
+}
 
-window.signup = async () => {
-    const e = document.getElementById('s-e').value, p = document.getElementById('s-p').value, ph = document.getElementById('s-ph').value;
-    if(!e || !p || !ph) return alert("أكمل البيانات");
-    try {
-        await createUserWithEmailAndPassword(auth, e, p);
-        await set(ref(db, 'users_map/' + ph), { email: e });
-        alert("تم إنشاء حسابك بنجاح!");
-        window.location.href = "dashboard.html";
-    } catch (err) { alert(err.message); }
-};
+// دالة إنشاء حساب جديد (مجرد مثال توضيحي)
+function signup() {
+    const email = document.getElementById('s-e').value;
+    const phone = document.getElementById('s-ph').value;
+    const password = document.getElementById('s-p').value;
 
-window.login = async () => {
-    const id = document.getElementById('l-id').value, p = document.getElementById('l-p').value;
-    if(!id || !p) return alert("أدخل البيانات");
-    try {
-        let email = id;
-        if (!id.includes('@')) {
-            const snapshot = await get(child(ref(db), `users_map/${id}`));
-            if (snapshot.exists()) email = snapshot.val().email;
-            else throw new Error("رقم الهاتف غير مسجل");
-        }
-        await signInWithEmailAndPassword(auth, email, p);
-        window.location.href = "dashboard.html";
-    } catch (err) { alert(err.message); }
-};
+    if (!email || !phone || !password) {
+        alert('يرجى ملء جميع الحقول');
+        return;
+    }
+
+    // تحقق بسيط من صحة البريد الإلكتروني
+    if (!email.includes('@') || !email.includes('.')) {
+        alert('البريد الإلكتروني غير صحيح');
+        return;
+    }
+
+    // هنا تضع منطق الاتصال بالسيرفر
+    console.log('جاري إنشاء حساب ببيانات:', { email, phone, password });
+    alert('تم إرسال طلب إنشاء حساب (تحتاج لربطه بقاعدة البيانات)');
+}
