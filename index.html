@@ -4,86 +4,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SEMO ERP | تسجيل الدخول</title>
+    <!-- استدعاء مكتبة أيقونات خفيفة (Phosphor Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        /* التنسيق النهائي للواجهة */
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --success-hover: #059669;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
         body { 
-            background: #0f172a; 
-            color: white; 
-            font-family: sans-serif; 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             height: 100vh; 
             margin: 0; 
+            overflow: hidden;
         }
+
         .card { 
-            background: #1e293b; 
-            padding: 30px; 
-            border-radius: 20px; 
-            width: 350px; 
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px); /* تأثير الزجاج */
+            padding: 40px; 
+            border-radius: 24px; 
+            width: 400px; 
             text-align: center; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            border: 1px solid #334155; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        h1 { color: #3b82f6; margin-bottom: 20px; }
-        input { 
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-area { margin-bottom: 30px; }
+        .logo-icon { font-size: 48px; color: var(--primary); margin-bottom: 10px; }
+        h1 { 
+            color: var(--primary); 
+            margin: 0; 
+            font-size: 28px; 
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* حاوية الإدخال مع الأيقونة */
+        .input-group {
+            position: relative;
+            margin: 15px 0;
+        }
+
+        .input-group i {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 18px;
+            pointer-events: none;
+            transition: color 0.3s;
+        }
+
+        .input-group input { 
             width: 100%; 
-            padding: 12px; 
-            margin: 10px 0; 
-            border-radius: 8px; 
-            border: 1px solid #334155; 
+            padding: 14px 45px 14px 15px; /* مسافة للأيقونة */
+            border-radius: 12px; 
+            border: 1px solid var(--border); 
             background: #0f172a; 
             color: white; 
             box-sizing: border-box; 
+            font-size: 15px;
+            transition: all 0.3s;
         }
+
+        .input-group input:focus { 
+            outline: none; 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+        
+        .input-group input:focus + i { color: var(--primary); }
+
+        /* زر العين لكلمة المرور */
+        .toggle-password {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 18px;
+            z-index: 10;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        .toggle-password:hover { color: white; }
+
         .btn { 
             width: 100%; 
-            padding: 12px; 
-            background: #3b82f6; 
+            padding: 14px; 
+            background: var(--primary); 
             border: none; 
             color: white; 
             font-weight: bold; 
-            border-radius: 8px; 
+            border-radius: 12px; 
             cursor: pointer; 
-            margin-top: 10px; 
-        }
-        .btn:hover { background: #2563eb; }
-        .link { 
-            color: #94a3b8; 
-            cursor: pointer; 
-            display: block; 
             margin-top: 15px; 
-            font-size: 14px; 
-            text-decoration: underline; 
+            font-size: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        .hidden { display: none; }
-    </style>
-</head>
-<body>
 
-    <div class="card">
-        <h1>SEMO ERP</h1>
-
-        <!-- واجهة الدخول -->
-        <div id="login-box">
-            <input type="text" id="l-id" placeholder="الإيميل أو رقم الهاتف">
-            <input type="password" id="l-p" placeholder="كلمة المرور">
-            <button class="btn" onclick="login()">دخول</button>
-            <span class="link" onclick="toggle()">إنشاء حساب جديد</span>
-        </div>
-
-        <!-- واجهة التسجيل -->
-        <div id="signup-box" class="hidden">
-            <input type="email" id="s-e" placeholder="البريد الإلكتروني">
-            <input type="text" id="s-ph" placeholder="رقم الهاتف">
-            <input type="password" id="s-p" placeholder="كلمة المرور">
-            <button class="btn" style="background:#10b981" onclick="signup()">تفعيل الحساب</button>
-            <span class="link" onclick="toggle()">العودة للدخول</span>
-        </div>
-    </div>
-
-    <!-- السطر الأهم: الربط بملف البرمجة في مجلد js -->
-    <script type="module" src="js/main.js"></script>
-
-</body>
-</html>
+        .btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn:active
