@@ -2,46 +2,28 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEMO ERP | نظام الإدارة</title>
+    <title>اختبار SEMO ERP</title>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .card { background: #1e293b; padding: 40px 30px; border-radius: 24px; width: 350px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid #334155; }
-        h1 { color: #3b82f6; margin-bottom: 30px; font-size: 28px; }
-        input { width: 100%; padding: 14px; margin: 12px 0; border-radius: 12px; border: 1px solid #334155; outline: none; font-size: 16px; background: #0f172a; color: white; box-sizing: border-box; }
-        .btn { width: 100%; padding: 14px; background: #3b82f6; border: none; color: white; font-weight: bold; border-radius: 12px; cursor: pointer; margin-top: 20px; font-size: 16px; }
-        .link { color: #94a3b8; cursor: pointer; display: block; margin-top: 30px; font-size: 14px; text-decoration: underline; line-height: 1.5; }
-        .hidden { display: none; }
+        body { background: #0f172a; color: white; text-align: center; padding-top: 100px; font-family: sans-serif; }
+        .test-btn { padding: 20px; background: #3b82f6; border: none; color: white; border-radius: 10px; cursor: pointer; font-size: 20px; }
     </style>
 </head>
 <body>
+    <h1>اختبار اتصال النظام</h1>
+    <p>إذا ظهرت لك رسالة "الكود يعمل" عند الضغط، فالمشكلة في إعدادات Firebase.</p>
+    <button class="test-btn" onclick="check()">اضغط هنا للاختبار</button>
 
-    <div class="card">
-        <h1>SEMO ERP</h1>
-        
-        <!-- واجهة الدخول -->
-        <div id="login-box">
-            <input type="text" id="l-id" placeholder="الإيميل أو رقم الهاتف">
-            <input type="password" id="l-p" placeholder="كلمة المرور">
-            <button class="btn" onclick="login()">دخول</button>
-            <div class="link" onclick="toggleView()">تأسيس حساب جديد</div>
-        </div>
+    <script>
+        // اختبار برمجي بسيط (بدون فايربيز)
+        function check() {
+            alert("✅ الكود يعمل والمتصفح يستجيب!");
+        }
+    </script>
 
-        <!-- واجهة التسجيل -->
-        <div id="signup-box" class="hidden">
-            <input type="email" id="s-e" placeholder="البريد الإلكتروني">
-            <input type="text" id="s-ph" placeholder="رقم الهاتف">
-            <input type="password" id="s-p" placeholder="كلمة المرور">
-            <button class="btn" style="background:#10b981" onclick="signup()">إنشاء حساب</button>
-            <div class="link" onclick="toggleView()">رجوع للدخول</div>
-        </div>
-    </div>
-
-    <!-- كود البرمجة مدمج مباشرة لضمان العمل -->
+    <!-- كود فايربيز الحقيقي أسفل الاختبار -->
     <script type="module">
         import { initializeApp } from "https://gstatic.com";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://gstatic.com";
-        import { getDatabase, ref, set, get, child } from "https://gstatic.com";
+        import { getAuth, signInWithEmailAndPassword } from "https://gstatic.com";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
@@ -49,50 +31,15 @@
             projectId: "my-pos-system-11dee",
             storageBucket: "my-pos-system-11dee.firebasestorage.app",
             messagingSenderId: "565195477080",
-            appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d",
-            databaseURL: "https://firebaseio.com"
+            appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
-
-        // جعل الدوال متاحة للأزرار
-        window.toggleView = () => {
-            document.getElementById('login-box').classList.toggle('hidden');
-            document.getElementById('signup-box').classList.toggle('hidden');
-        };
-
-        window.login = async () => {
-            const id = document.getElementById('l-id').value;
-            const p = document.getElementById('l-p').value;
-            if(!id || !p) return alert("يرجى إدخال البيانات");
-
-            try {
-                let email = id;
-                if (!id.includes('@')) {
-                    const snapshot = await get(child(ref(db), `users_map/${id}`));
-                    if (snapshot.exists()) email = snapshot.val().email;
-                    else throw new Error("رقم الهاتف غير مسجل");
-                }
-                await signInWithEmailAndPassword(auth, email, p);
-                window.location.href = "dashboard.html";
-            } catch (err) { alert("خطأ: " + err.message); }
-        };
-
-        window.signup = async () => {
-            const e = document.getElementById('s-e').value;
-            const ph = document.getElementById('s-ph').value;
-            const p = document.getElementById('s-p').value;
-            if(!e || !ph || !p) return alert("يرجى إكمال البيانات");
-
-            try {
-                await createUserWithEmailAndPassword(auth, e, p);
-                await set(ref(db, 'users_map/' + ph), { email: e });
-                alert("تم التسجيل بنجاح!");
-                window.location.href = "dashboard.html";
-            } catch (err) { alert("فشل: " + err.message); }
-        };
+        try {
+            const app = initializeApp(firebaseConfig);
+            console.log("Firebase Initialized");
+        } catch (e) {
+            alert("❌ خطأ في إعدادات فايربيز: " + e.message);
+        }
     </script>
 </body>
 </html>
