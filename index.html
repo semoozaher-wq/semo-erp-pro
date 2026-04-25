@@ -177,23 +177,22 @@
                     <div class="stat-card">
                         <i class="ph ph-currency-dollar stat-icon"></i>
                         <h3>إجمالي المبيعات</h3>
-                        <div class="stat-value blur-text" id="total-sales">0 ج.م</div>
+                        <div class="stat-value" id="total-sales">0 ج.م</div>
                     </div>
                     <div class="stat-card">
                         <i class="ph ph-receipt stat-icon"></i>
                         <h3>عدد الفواتير</h3>
-                        <div class="stat-value blur-text" id="total-invoices">0</div>
+                        <div class="stat-value" id="total-invoices">0</div>
                     </div>
                     <div class="stat-card">
                         <i class="ph ph-package stat-icon"></i>
                         <h3>المنتجات</h3>
-                        <div class="stat-value blur-text" id
-                                                    <span id="total-products">0</span>
+                        <div class="stat-value" id="total-products">0</div>
                     </div>
                     <div class="stat-card">
                         <i class="ph ph-users stat-icon"></i>
                         <h3>العملاء النشطين</h3>
-                        <div class="stat-value blur-text" id="active-clients">0</div>
+                        <div class="stat-value" id="active-clients">0</div>
                     </div>
                 </div>
 
@@ -216,9 +215,7 @@
                                 <th>التاريخ</th>
                             </tr>
                         </thead>
-                        <tbody id="recent-sales-table">
-                            <!-- سيتم ملؤها بواسطة JS -->
-                        </tbody>
+                        <tbody id="recent-sales-table"></tbody>
                     </table>
                 </div>
             </div>
@@ -245,18 +242,16 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>#</th>
                                 <th>رقم الفاتورة</th>
                                 <th>العميل</th>
                                 <th>المنتجات</th>
                                 <th>المجموع</th>
                                 <th>الحالة</th>
+                                <th>التاريخ</th>
                                 <th>الإجراءات</th>
                             </tr>
                         </thead>
-                        <tbody id="invoices-table">
-                            <!-- بيانات الفواتير -->
-                        </tbody>
+                        <tbody id="invoices-table"></tbody>
                     </table>
                 </div>
             </div>
@@ -275,9 +270,7 @@
                                 <th>IP (محاكاة)</th>
                             </tr>
                         </thead>
-                        <tbody id="audit-table">
-                            <!-- سجل العمليات -->
-                        </tbody>
+                        <tbody id="audit-table"></tbody>
                     </table>
                 </div>
             </div>
@@ -378,7 +371,6 @@
             const pass = document.getElementById('new-pass').value;
             if(!user || !pass) return showToast('يرجى ملء جميع الحقول', 'error');
             
-            // حفظ مستخدم جديد (محاكاة)
             localStorage.setItem(`user_${user}`, pass);
             showToast('تم إنشاء الحساب بنجاح! قم بتسجيل الدخول.', 'success');
             document.getElementById('signup-form').classList.add('hidden');
@@ -389,7 +381,6 @@
             const userIn = document.getElementById('login-user').value;
             const passIn = document.getElementById('login-pass').value;
             
-            // مستخدمين افتراضيين للتجربة
             const validUsers = { 'admin': '1234', 'sales': '1234' };
             const storedUser = localStorage.getItem(`user_${userIn}`);
 
@@ -432,23 +423,18 @@
         };
 
         const navigate = (pageId) => {
-            // تحديث القائمة الجانبية
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
             const activeMenu = document.querySelector(`.menu-item[onclick="navigate('${pageId}')"]`);
             if(activeMenu) activeMenu.classList.add('active');
 
-            // إخفاء جميع الصفحات
             document.querySelectorAll('.page-view').forEach(el => el.classList.add('hidden'));
             
-            // إظهار الصفحة المطلوبة
             const target = document.getElementById(`page-${pageId}`);
             if(target) target.classList.remove('hidden');
 
-            // تحديث العنوان
             const titles = { 'dashboard': 'لوحة التحكم', 'sales': 'إدارة المبيعات', 'audit': 'سجل العمليات' };
             document.getElementById('page-title').innerText = titles[pageId] || 'الصفحة';
 
-            // إعادة تحميل البيانات
             if(pageId === 'dashboard') updateDashboard();
             if(pageId === 'sales') renderInvoices();
             if(pageId === 'audit') renderAuditLog();
@@ -465,11 +451,10 @@
                 client: document.getElementById('inv-client').value,
                 amount: parseFloat(document.getElementById('inv-amount').value),
                 status: document.getElementById('inv-status').value,
-                date: new Date().toISOString().split('T'),
+                date: new Date().toISOString().split('T')[0],
                 items: document.getElementById('inv-notes').value || 'عام'
             };
 
-            // التحقق من تكرار العدد
             if(invoices.some(i => i.id === newInv.id)) {
                 showToast('رقم الفاتورة موجود مسبقاً!', 'error');
                 return;
@@ -482,14 +467,15 @@
             closeModal('invoice-modal');
             document.getElementById('invoice-form').reset();
             showToast('تم حفظ الفاتورة بنجاح');
-            renderInvoices(); // تحديث الجدول إذا كنا في صفحة المبيعات
-            updateDashboard(); // تحديث الداشبورد
+            renderInvoices();
+            updateDashboard();
         };
 
-        const renderInvoices = () => {
+        const renderInvoices = (filteredList = null) => {
+            const dataToRender = filteredList || invoices;
             const tbody = document.getElementById('invoices-table');
             tbody.innerHTML = '';
-            invoices.forEach(inv => {
+            dataToRender.forEach(inv => {
                 let statusClass = inv.status === 'paid' ? 'status-completed' : inv.status === 'pending' ? 'status-pending' : 'status-rejected';
                 let statusText = inv.status === 'paid' ? 'مدفوع' : inv.status === 'pending' ? 'قيد الانتظار' : 'ملغي';
                 
@@ -497,7 +483,7 @@
                     <tr>
                         <td>${inv.id}</td>
                         <td>${inv.client}</td>
-                        <td>${inv.items}</td>
+                        <td>${inv.items || '-'}</td>
                         <td><strong>${inv.amount.toLocaleString()} ج.م</strong></td>
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>${inv.date}</td>
@@ -540,20 +526,19 @@
         let salesChartInstance = null;
 
         const updateDashboard = () => {
-            // حساب الإحصائيات
             const totalSales = invoices.reduce((sum, inv) => inv.status !== 'cancelled' ? sum + inv.amount : sum, 0);
             const totalInvoices = invoices.length;
             const activeClients = [...new Set(invoices.map(i => i.client))].length;
+            const totalProducts = 125;
             
-            // تحديث النصوص (مع تأثير الضبابية إذا كان الوضع الآمن مفعل)
             const blurClass = secureMode ? 'blur-text' : '';
+            
             document.getElementById('total-sales').innerHTML = `<span class="${blurClass}">${totalSales.toLocaleString()} ج.م</span>`;
             document.getElementById('total-invoices').innerHTML = `<span class="${blurClass}">${totalInvoices}</span>`;
+            document.getElementById('total-products').innerHTML = `<span class="${blurClass}">${totalProducts}</span>`;
             document.getElementById('active-clients').innerHTML = `<span class="${blurClass}">${activeClients}</span>`;
-            document.getElementById('total-products').innerHTML = `<span class="${blurClass}">125</span>`; // ثابت للمحاكاة
 
-            // تحديث الجدول الصغير
-            const            const recentTable = document.getElementById('recent-sales-table');
+            const recentTable = document.getElementById('recent-sales-table');
             recentTable.innerHTML = '';
             invoices.slice(0, 5).forEach(inv => {
                 let statusClass = inv.status === 'paid' ? 'status-completed' : inv.status === 'pending' ? 'status-pending' : 'status-rejected';
@@ -563,7 +548,7 @@
                     <tr>
                         <td>${inv.id}</td>
                         <td>${inv.client}</td>
-                        <td class="blur-text">${inv.amount.toLocaleString()} ج.م</td>
+                        <td class="${secureMode ? 'blur-text' : ''}">${inv.amount.toLocaleString()} ج.م</td>
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>${inv.date}</td>
                     </tr>
@@ -571,16 +556,13 @@
                 recentTable.innerHTML += row;
             });
 
-            // تحديث الرسم البياني
             renderChart();
         };
 
         const renderChart = () => {
             const ctx = document.getElementById('salesChart').getContext('2d');
-            
-            // تجميع البيانات حسب الشهر (محاكاة)
             const labels = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'];
-            const data = [12000, 19000, 3000, 5000, 20000, 30000]; // بيانات وهمية للعرض
+            const data = [12000, 19000, 3000, 5000, 20000, 30000];
 
             if (salesChartInstance) {
                 salesChartInstance.destroy();
@@ -674,31 +656,15 @@
                 return;
             }
             
-            // تحويل البيانات إلى تنسيق Excel
             const ws = XLSX.utils.json_to_sheet(invoices);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "المبيعات");
-            
-            // تحميل الملف
             XLSX.writeFile(wb, "SEMO_ERP_Export.xlsx");
             logAction('تصدير بيانات', 'تم تصدير تقرير المبيعات إلى Excel');
             showToast('تم تحميل ملف Excel بنجاح', 'success');
         };
 
         // --- التشغيل الأولي ---
-        window.onload = function() {
-            // فحص حالة الجلسة (اختياري)
-            const savedUser = sessionStorage.getItem('semo_user');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                enterApp();
-            }
-            
-            // ضبط التاريخ
-            document.getElementById('date-display').innerText = new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        };
-
-        // إغلاق النوافذ عند النقر خارجها
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.classList.remove('active');
