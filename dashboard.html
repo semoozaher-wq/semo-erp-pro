@@ -4,15 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>SEMO ERP | النظام المتكامل</title>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- EmailJS للإشعارات -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    
     <style>
         :root {
             --primary: #3b82f6;
@@ -27,290 +22,50 @@
             --text-muted: #94a3b8;
             --border: #334155;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: var(--bg);
-            color: var(--text);
-            transition: all 0.3s ease;
-            overflow-x: hidden;
-        }
-
-        body.light-mode {
-            --bg: #f1f5f9;
-            --card: #ffffff;
-            --text: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-        }
-
-        /* ========== Scrollbar ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg); color: var(--text); transition: all 0.3s ease; overflow-x: hidden; }
+        body.light-mode { --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; --text-muted: #64748b; --border: #e2e8f0; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--border); border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-
-        /* ========== Sidebar ========== */
-        .sidebar {
-            width: 280px;
-            background: var(--card);
-            border-left: 1px solid var(--border);
-            position: fixed;
-            right: 0;
-            top: 0;
-            height: 100vh;
-            padding: 20px;
-            z-index: 100;
-            transition: all 0.3s ease;
-            overflow-y: auto;
-        }
-
-        .sidebar-header {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 20px;
-        }
-
-        .sidebar-header i {
-            font-size: 45px;
-            color: var(--primary);
-        }
-
-        .sidebar-header h3 {
-            margin-top: 10px;
-            font-size: 20px;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            margin: 5px 0;
-            border-radius: 12px;
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: all 0.2s ease;
-        }
-
-        .menu-item:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateX(-5px);
-        }
-
-        .menu-item.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .menu-item i {
-            font-size: 20px;
-        }
-
-        /* ========== Main Content ========== */
-        .main-content {
-            margin-right: 280px;
-            padding: 20px 30px;
-            transition: all 0.3s ease;
-        }
-
-        /* ========== Top Bar ========== */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--card);
-            padding: 15px 25px;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .page-title h1 {
-            font-size: 24px;
-        }
-
-        .page-title small {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .avatar {
-            width: 45px;
-            height: 45px;
-            background: var(--primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        /* ========== Stats Grid ========== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            background: var(--card);
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            position: relative;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--primary);
-        }
-
-        .stat-card h3 {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .stat-icon {
-            position: absolute;
-            left: 20px;
-            top: 20px;
-            font-size: 32px;
-            opacity: 0.2;
-        }
-
-        /* ========== Charts ========== */
-        .charts-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        .chart-card {
-            background: var(--card);
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-        }
-
-        .chart-card h3 {
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-
-        .chart-container {
-            height: 280px;
-        }
-
-        canvas {
-            max-height: 250px;
-            width: 100%;
-        }
-
-        /* ========== Tables ========== */
-        .table-container {
-            background: var(--card);
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            overflow-x: auto;
-            margin-bottom: 25px;
-        }
-
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .search-filter {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .search-filter input, .search-filter select {
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg);
-            color: var(--text);
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 500px;
-        }
-
-        .data-table th, .data-table td {
-            padding: 12px;
-            text-align: right;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .data-table th {
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        .data-table tr:hover td {
-            background: rgba(59, 130, 246, 0.05);
-        }
-
-        /* ========== Badges ========== */
-        .badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-        }
+        .sidebar { width: 280px; background: var(--card); border-left: 1px solid var(--border); position: fixed; right: 0; top: 0; height: 100vh; padding: 20px; z-index: 100; transition: all 0.3s ease; overflow-y: auto; }
+        .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+        .sidebar-header i { font-size: 45px; color: var(--primary); }
+        .sidebar-header h3 { margin-top: 10px; font-size: 20px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; margin: 5px 0; border-radius: 12px; cursor: pointer; color: var(--text-muted); transition: all 0.2s ease; }
+        .menu-item:hover, .menu-item.active { background: var(--primary); color: white; transform: translateX(-5px); }
+        .menu-item i { font-size: 20px; }
+        .main-content { margin-right: 280px; padding: 20px 30px; transition: all 0.3s ease; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 15px 25px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+        .page-title h1 { font-size: 24px; }
+        .user-info { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .avatar { width: 45px; height: 45px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .stat-card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); position: relative; transition: all 0.2s ease; cursor: pointer; }
+        .stat-card:hover { transform: translateY(-3px); border-color: var(--primary); }
+        .stat-card h3 { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+        .stat-value { font-size: 28px; font-weight: bold; }
+        .stat-icon { position: absolute; left: 20px; top: 20px; font-size: 32px; opacity: 0.2; }
+        .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+        .chart-card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); }
+        .chart-card h3 { margin-bottom: 15px; font-size: 16px; }
+        .chart-container { height: 280px; }
+        canvas { max-height: 250px; width: 100%; }
+        .table-container { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); overflow-x: auto; margin-bottom: 25px; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .search-filter { display: flex; gap: 10px; flex-wrap: wrap; }
+        .search-filter input, .search-filter select { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+        .data-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        .data-table th, .data-table td { padding: 12px; text-align: right; border-bottom: 1px solid var(--border); }
+        .data-table th { color: var(--text-muted); font-weight: 600; font-size: 13px; }
+        .data-table tr:hover td { background: rgba(59, 130, 246, 0.05); }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; }
         .badge-paid { background: rgba(16, 185, 129, 0.2); color: #34d399; }
         .badge-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
         .badge-cancelled { background: rgba(239, 68, 68, 0.2); color: #f87171; }
         .badge-low-stock { background: rgba(245, 158, 11, 0.2); color: #fbbf24; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-
-        /* ========== Buttons ========== */
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
+        .btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-hover); }
         .btn-success { background: var(--success); color: white; }
@@ -319,1687 +74,229 @@
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
         .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
         .btn-sm { padding: 4px 10px; font-size: 12px; }
-
-        /* ========== Modal ========== */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: 0.3s;
-        }
-        .modal.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-        .modal-content {
-            background: var(--card);
-            width: 550px;
-            max-width: 95%;
-            padding: 25px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            transform: scale(0.9);
-            transition: 0.3s;
-        }
-        .modal.active .modal-content {
-            transform: scale(1);
-        }
-        .modal-content input, .modal-content select, .modal-content textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg);
-            color: var(--text);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        /* ========== Pages ========== */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .modal.active { opacity: 1; pointer-events: all; }
+        .modal-content { background: var(--card); width: 550px; max-width: 95%; padding: 25px; border-radius: 20px; border: 1px solid var(--border); transform: scale(0.9); transition: 0.3s; }
+        .modal.active .modal-content { transform: scale(1); }
+        .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 10px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 13px; color: var(--text-muted); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .page { display: none; }
         .page.active { display: block; }
-
-        /* ========== Notification ========== */
-        .notification {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            padding: 12px 20px;
-            border-radius: 10px;
-            z-index: 1100;
-            animation: slideInRight 0.3s ease;
-        }
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+        .notification { position: fixed; bottom: 20px; left: 20px; padding: 12px 20px; border-radius: 10px; z-index: 1100; animation: slideInRight 0.3s ease; }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .notification.success { background: var(--success); color: white; }
         .notification.error { background: var(--danger); color: white; }
         .notification.warning { background: var(--warning); color: white; }
-
-        /* ========== Print Styles ========== */
-        @media print {
-            .sidebar, .top-bar, .btn, .mode-toggle, .search-filter, .table-header button:not(.print-btn) {
-                display: none !important;
-            }
-            .main-content {
-                margin: 0;
-                padding: 0;
-            }
-            .data-table {
-                width: 100%;
-            }
-            .modal {
-                display: none;
-            }
-        }
-
-        /* ========== Responsive ========== */
-        @media (max-width: 992px) {
-            .sidebar { width: 80px; padding: 10px; }
-            .sidebar-header h3, .menu-item span { display: none; }
-            .menu-item { justify-content: center; }
-            .main-content { margin-right: 80px; padding: 15px; }
-            .charts-row { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 576px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .form-row { grid-template-columns: 1fr; }
-        }
+        @media print { .sidebar, .top-bar, .btn, .mode-toggle, .search-filter, .table-header button:not(.print-btn) { display: none !important; } .main-content { margin: 0; padding: 0; } .data-table { width: 100%; } .modal { display: none; } }
+        @media (max-width: 992px) { .sidebar { width: 80px; padding: 10px; } .sidebar-header h3, .menu-item span { display: none; } .menu-item { justify-content: center; } .main-content { margin-right: 80px; padding: 15px; } .charts-row { grid-template-columns: 1fr; } }
+        @media (max-width: 576px) { .stats-grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<!-- ========== SIDEBAR ========== -->
 <div class="sidebar">
-    <div class="sidebar-header">
-        <i class="ph ph-cube"></i>
-        <h3>SEMO ERP</h3>
-    </div>
-    <div class="menu-item active" onclick="switchPage('dashboard')">
-        <i class="ph ph-chart"></i> <span>لوحة التحكم</span>
-    </div>
-    <div class="menu-item" onclick="switchPage('sales')">
-        <i class="ph ph-shopping-cart"></i> <span>نقطة البيع</span>
-    </div>
-    <div class="menu-item" onclick="switchPage('products')">
-        <i class="ph ph-package"></i> <span>المنتجات</span>
-    </div>
-    <div class="menu-item" onclick="switchPage('suppliers')">
-        <i class="ph ph-truck"></i> <span>الموردين</span>
-    </div>
-    <div class="menu-item" onclick="switchPage('customers')">
-        <i class="ph ph-users"></i> <span>العملاء</span>
-    </div>
-    <div class="menu-item" onclick="switchPage('invoices')">
-        <i class="ph ph-receipt"></i> <span>الفواتير</span>
-    </div>
-    <div class="menu-item" onclick="switchPage('purchases')">
-        <i class="ph ph-arrow-bend-up-left"></i> <span>المشتريات</span>
-    </div>
-    <div class="menu-item" onclick="switchPage('reports')">
-        <i class="ph ph-file-text"></i> <span>التقارير</span>
-    </div>
-    <div class="menu-item" onclick="switchPage('users')" id="usersMenuItem" style="display: none;">
-        <i class="ph ph-users-four"></i> <span>إدارة المستخدمين</span>
-    </div>
-    <button class="btn btn-danger" style="width: 100%; margin-top: 20px;" onclick="logout()">
-        <i class="ph ph-sign-out"></i> <span>خروج</span>
-    </button>
+    <div class="sidebar-header"><i class="ph ph-cube"></i><h3>SEMO ERP</h3></div>
+    <div class="menu-item active" onclick="switchPage('dashboard')"><i class="ph ph-chart"></i> <span>لوحة التحكم</span></div>
+    <div class="menu-item" onclick="switchPage('sales')"><i class="ph ph-shopping-cart"></i> <span>نقطة البيع</span></div>
+    <div class="menu-item" onclick="switchPage('products')"><i class="ph ph-package"></i> <span>المنتجات</span></div>
+    <div class="menu-item" onclick="switchPage('suppliers')"><i class="ph ph-truck"></i> <span>الموردين</span></div>
+    <div class="menu-item" onclick="switchPage('customers')"><i class="ph ph-users"></i> <span>العملاء</span></div>
+    <div class="menu-item" onclick="switchPage('invoices')"><i class="ph ph-receipt"></i> <span>الفواتير</span></div>
+    <div class="menu-item" onclick="switchPage('purchases')"><i class="ph ph-arrow-bend-up-left"></i> <span>المشتريات</span></div>
+    <div class="menu-item" onclick="switchPage('reports')"><i class="ph ph-file-text"></i> <span>التقارير</span></div>
+    <div class="menu-item" onclick="switchPage('users')" id="usersMenuItem" style="display: none;"><i class="ph ph-users-four"></i> <span>إدارة المستخدمين</span></div>
+    <button class="btn btn-danger" style="width: 100%; margin-top: 20px;" onclick="logout()"><i class="ph ph-sign-out"></i> <span>خروج</span></button>
 </div>
 
-<!-- ========== MAIN CONTENT ========== -->
 <div class="main-content">
-    <!-- Top Bar -->
     <div class="top-bar">
-        <div class="page-title">
-            <h1 id="pageTitle">لوحة التحكم</h1>
-            <small id="companyBadge"></small>
-        </div>
+        <div class="page-title"><h1 id="pageTitle">لوحة التحكم</h1><small id="companyBadge"></small></div>
         <div class="user-info">
-            <button class="btn btn-outline btn-sm" onclick="exportCurrentData()" id="exportBtn">
-                <i class="ph ph-download"></i> Excel
-            </button>
+            <button class="btn btn-outline btn-sm" onclick="exportCurrentData()" id="exportBtn"><i class="ph ph-download"></i> Excel</button>
             <button class="btn btn-outline btn-sm" onclick="toggleMode()" id="modeBtn">🌙</button>
             <div class="avatar" id="userAvatar">A</div>
-            <div>
-                <div id="userName" style="font-weight: bold;">المدير</div>
-                <div id="userRole" style="font-size: 11px; color: var(--text-muted);"></div>
-            </div>
+            <div><div id="userName" style="font-weight: bold;">المدير</div><div id="userRole" style="font-size: 11px; color: var(--text-muted);"></div></div>
         </div>
     </div>
-        <!-- ========== PAGE 1: DASHBOARD ========== -->
+
+    <!-- Dashboard Page -->
     <div id="page-dashboard" class="page active">
         <div class="stats-grid" id="statsGrid"></div>
-        
         <div class="charts-row">
-            <div class="chart-card">
-                <h3>📈 المبيعات الشهرية</h3>
-                <div class="chart-container">
-                    <canvas id="monthlySalesChart"></canvas>
-                </div>
-            </div>
-            <div class="chart-card">
-                <h3>🥧 توزيع المبيعات حسب المنتج</h3>
-                <div class="chart-container">
-                    <canvas id="productPieChart"></canvas>
-                </div>
-            </div>
+            <div class="chart-card"><h3>📈 المبيعات الشهرية</h3><div class="chart-container"><canvas id="monthlySalesChart"></canvas></div></div>
+            <div class="chart-card"><h3>🥧 توزيع المخزون</h3><div class="chart-container"><canvas id="productPieChart"></canvas></div></div>
         </div>
-
         <div class="table-container">
-            <div class="table-header">
-                <h3>📋 الفواتير الأخيرة</h3>
-                <button class="btn btn-primary btn-sm" onclick="switchPage('invoices')">عرض الكل</button>
-            </div>
-            <table class="data-table" id="recentInvoicesTable">
-                <thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th></tr></thead>
-                <tbody></tbody>
-            </table>
+            <div class="table-header"><h3>📋 الفواتير الأخيرة</h3><button class="btn btn-primary btn-sm" onclick="switchPage('invoices')">عرض الكل</button></div>
+            <table class="data-table" id="recentInvoicesTable"><thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th></tr></thead><tbody></tbody></table>
         </div>
-
         <div class="table-container">
-            <div class="table-header">
-                <h3>⚠️ تنبيهات المخزون (أقل من 5)</h3>
-                <button class="btn btn-warning btn-sm" onclick="switchPage('products')">إدارة المنتجات</button>
-            </div>
-            <table class="data-table" id="lowStockTable">
-                <thead><tr><th>المنتج</th><th>السعر</th><th>المخزون</th><th>الحالة</th></tr></thead>
-                <tbody></tbody>
-            </table>
+            <div class="table-header"><h3>⚠️ تنبيهات المخزون (أقل من 5)</h3><button class="btn btn-warning btn-sm" onclick="switchPage('products')">إدارة المنتجات</button></div>
+            <table class="data-table" id="lowStockTable"><thead><tr><th>المنتج</th><th>السعر</th><th>المخزون</th><th>الحالة</th></tr></thead><tbody></tbody></table>
         </div>
     </div>
 
-    <!-- ========== PAGE 2: SALES (نقطة البيع) ========== -->
+    <!-- Sales Page -->
     <div id="page-sales" class="page">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <!-- المنتجات -->
-            <div class="table-container">
-                <h3 style="margin-bottom: 15px;">📦 المنتجات</h3>
-                <input type="text" id="salesSearch" placeholder="🔍 بحث عن منتج..." class="search-filter" style="width: 100%; margin-bottom: 15px;">
-                <div id="productsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; max-height: 500px; overflow-y: auto;"></div>
-            </div>
-            
-            <!-- سلة المشتريات -->
-            <div class="table-container">
-                <h3 style="margin-bottom: 15px;">🧾 سلة الفاتورة</h3>
-                <div id="cartItems" style="max-height: 300px; overflow-y: auto;"></div>
-                <div class="cart-summary" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border);">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <span>المجموع:</span>
-                        <span id="cartSubtotal">0.00</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <span>الخصم:</span>
-                        <input type="number" id="cartDiscount" value="0" step="0.5" style="width: 100px;">
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold;">
-                        <span>الإجمالي:</span>
-                        <span id="cartTotal">0.00</span>
-                    </div>
-                    <select id="saleCustomer" style="width: 100%; margin-bottom: 10px;">
-                        <option value="">عميل نقدي</option>
-                    </select>
-                    <button class="btn btn-success" style="width: 100%;" onclick="completeSale()">✅ إتمام البيع</button>
-                    <button class="btn btn-outline" style="width: 100%; margin-top: 10px;" onclick="clearCart()">🗑️ تفريغ السلة</button>
-                </div>
-            </div>
+            <div class="table-container"><h3>📦 المنتجات</h3><input type="text" id="salesSearch" placeholder="🔍 بحث..." style="width: 100%; margin-bottom: 15px; padding: 8px;"><div id="productsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; max-height: 500px; overflow-y: auto;"></div></div>
+            <div class="table-container"><h3>🧾 سلة الفاتورة</h3><div id="cartItems" style="max-height: 300px; overflow-y: auto;"></div><div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border);"><div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><span>المجموع:</span><span id="cartSubtotal">0.00</span></div><div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><span>الخصم:</span><input type="number" id="cartDiscount" value="0" step="0.5" style="width: 100px;"></div><div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold;"><span>الإجمالي:</span><span id="cartTotal">0.00</span></div><select id="saleCustomer" style="width: 100%; margin-bottom: 10px;"><option value="">عميل نقدي</option></select><button class="btn btn-success" style="width: 100%;" onclick="completeSale()">✅ إتمام البيع</button><button class="btn btn-outline" style="width: 100%; margin-top: 10px;" onclick="clearCart()">🗑️ تفريغ السلة</button></div></div>
         </div>
     </div>
 
-    <!-- ========== PAGE 3: PRODUCTS ========== -->
-    <div id="page-products" class="page">
-        <div class="table-container">
-            <div class="table-header">
-                <h3>📦 المنتجات</h3>
-                <div class="search-filter">
-                    <input type="text" id="productsSearch" placeholder="🔍 بحث..." onkeyup="filterProducts()">
-                    <button class="btn btn-success" onclick="openProductModal()">+ منتج جديد</button>
-                </div>
-            </div>
-            <table class="data-table" id="productsTable">
-                <thead><tr><th>الاسم</th><th>السعر</th><th>المخزون</th><th>الحد الأدنى</th><th>المورد</th><th>الإجراءات</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
+    <!-- Products Page -->
+    <div id="page-products" class="page"><div class="table-container"><div class="table-header"><h3>📦 المنتجات</h3><div class="search-filter"><input type="text" id="productsSearch" placeholder="🔍 بحث..." onkeyup="filterProducts()"><button class="btn btn-success" onclick="openProductModal()">+ منتج جديد</button></div></div><table class="data-table" id="productsTable"><thead><tr><th>الاسم</th><th>السعر</th><th>المخزون</th><th>الحد الأدنى</th><th>المورد</th><th>الإجراءات</th></tr></thead><tbody></tbody></table></div></div>
 
-    <!-- ========== PAGE 4: SUPPLIERS ========== -->
-    <div id="page-suppliers" class="page">
-        <div class="table-container">
-            <div class="table-header">
-                <h3>🚚 الموردين</h3>
-                <div class="search-filter">
-                    <input type="text" id="suppliersSearch" placeholder="🔍 بحث..." onkeyup="filterSuppliers()">
-                    <button class="btn btn-success" onclick="openSupplierModal()">+ مورد جديد</button>
-                </div>
-            </div>
-            <table class="data-table" id="suppliersTable">
-                <thead><tr><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>العنوان</th><th>الإجراءات</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
+    <!-- Suppliers Page -->
+    <div id="page-suppliers" class="page"><div class="table-container"><div class="table-header"><h3>🚚 الموردين</h3><div class="search-filter"><input type="text" id="suppliersSearch" placeholder="🔍 بحث..." onkeyup="filterSuppliers()"><button class="btn btn-success" onclick="openSupplierModal()">+ مورد جديد</button></div></div><table class="data-table" id="suppliersTable"><thead><tr><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>العنوان</th><th>الإجراءات</th></tr></thead><tbody></tbody></table></div></div>
 
-    <!-- ========== PAGE 5: CUSTOMERS ========== -->
-    <div id="page-customers" class="page">
-        <div class="table-container">
-            <div class="table-header">
-                <h3>👥 العملاء</h3>
-                <div class="search-filter">
-                    <input type="text" id="customersSearch" placeholder="🔍 بحث..." onkeyup="filterCustomers()">
-                    <button class="btn btn-success" onclick="openCustomerModal()">+ عميل جديد</button>
-                </div>
-            </div>
-            <table class="data-table" id="customersTable">
-                <thead><tr><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>العنوان</th><th>الرصيد</th><th>الإجراءات</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
+    <!-- Customers Page -->
+    <div id="page-customers" class="page"><div class="table-container"><div class="table-header"><h3>👥 العملاء</h3><div class="search-filter"><input type="text" id="customersSearch" placeholder="🔍 بحث..." onkeyup="filterCustomers()"><button class="btn btn-success" onclick="openCustomerModal()">+ عميل جديد</button></div></div><table class="data-table" id="customersTable"><thead><tr><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>العنوان</th><th>الرصيد</th><th>الإجراءات</th></tr></thead><tbody></tbody></table></div></div>
 
-    <!-- ========== PAGE 6: INVOICES ========== -->
-    <div id="page-invoices" class="page">
-        <div class="table-container">
-            <div class="table-header">
-                <h3>🧾 الفواتير</h3>
-                <div class="search-filter">
-                    <input type="text" id="invoicesSearch" placeholder="🔍 بحث برقم أو عميل..." onkeyup="filterInvoices()">
-                    <select id="invoiceStatusFilter" onchange="filterInvoices()">
-                        <option value="all">جميع الحالات</option>
-                        <option value="paid">مدفوع</option>
-                        <option value="pending">قيد الانتظار</option>
-                        <option value="cancelled">ملغي</option>
-                    </select>
-                    <button class="btn btn-success" onclick="openInvoiceModal()">+ فاتورة جديدة</button>
-                </div>
-            </div>
-            <table class="data-table" id="invoicesTable">
-                <thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th><th>الإجراءات</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
+    <!-- Invoices Page -->
+    <div id="page-invoices" class="page"><div class="table-container"><div class="table-header"><h3>🧾 الفواتير</h3><div class="search-filter"><input type="text" id="invoicesSearch" placeholder="🔍 بحث..." onkeyup="filterInvoices()"><select id="invoiceStatusFilter" onchange="filterInvoices()"><option value="all">جميع الحالات</option><option value="paid">مدفوع</option><option value="pending">قيد الانتظار</option><option value="cancelled">ملغي</option></select><button class="btn btn-success" onclick="openInvoiceModal()">+ فاتورة جديدة</button></div></div><table class="data-table" id="invoicesTable"><thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th><th>الإجراءات</th></tr></thead><tbody></tbody></table></div></div>
 
-    <!-- ========== PAGE 7: PURCHASES ========== -->
-    <div id="page-purchases" class="page">
-        <div class="table-container">
-            <div class="table-header">
-                <h3>📥 أوامر الشراء</h3>
-                <div class="search-filter">
-                    <input type="text" id="purchasesSearch" placeholder="🔍 بحث..." onkeyup="filterPurchases()">
-                    <button class="btn btn-success" onclick="openPurchaseModal()">+ أمر شراء جديد</button>
-                </div>
-            </div>
-            <table class="data-table" id="purchasesTable">
-                <thead><tr><th>رقم الأمر</th><th>المورد</th><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th>التاريخ</th><th>الإجراءات</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
+    <!-- Purchases Page -->
+    <div id="page-purchases" class="page"><div class="table-container"><div class="table-header"><h3>📥 أوامر الشراء</h3><div class="search-filter"><input type="text" id="purchasesSearch" placeholder="🔍 بحث..." onkeyup="filterPurchases()"><button class="btn btn-success" onclick="openPurchaseModal()">+ أمر شراء جديد</button></div></div><table class="data-table" id="purchasesTable"><thead><tr><th>رقم الأمر</th><th>المورد</th><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th>التاريخ</th><th>الإجراءات</th></tr></thead><tbody></tbody></table></div></div>
 
-    <!-- ========== PAGE 8: REPORTS ========== -->
-    <div id="page-reports" class="page">
-        <div class="table-container">
-            <div class="table-header">
-                <h3>📊 التقارير المتقدمة</h3>
-                <div class="search-filter">
-                    <select id="reportType" onchange="loadReport()">
-                        <option value="monthly">📅 تقرير شهري</option>
-                        <option value="yearly">📆 تقرير سنوي</option>
-                        <option value="customer">👤 تقرير حسب العميل</option>
-                        <option value="product">📦 تقرير حسب المنتج</option>
-                    </select>
-                    <input type="month" id="reportMonth" value="2024-01" onchange="loadReport()">
-                    <input type="number" id="reportYear" value="2024" onchange="loadReport()" style="width: 100px;">
-                    <button class="btn btn-primary" onclick="exportReport()">📎 تصدير التقرير</button>
-                </div>
-            </div>
-            <div id="reportContent" style="padding: 20px;">
-                <canvas id="reportChart" style="max-height: 400px;"></canvas>
-                <table class="data-table" id="reportTable" style="margin-top: 20px;">
-                    <thead><tr><th>الشهر</th><th>عدد الفواتير</th><th>إجمالي المبيعات</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    <!-- Reports Page -->
+    <div id="page-reports" class="page"><div class="table-container"><div class="table-header"><h3>📊 التقارير المتقدمة</h3><div class="search-filter"><select id="reportType" onchange="loadReport()"><option value="monthly">📅 تقرير شهري</option><option value="yearly">📆 تقرير سنوي</option></select><input type="month" id="reportMonth" value="2024-01" onchange="loadReport()"><input type="number" id="reportYear" value="2024" onchange="loadReport()" style="width: 100px;"><button class="btn btn-primary" onclick="exportReport()">📎 تصدير التقرير</button></div></div><div id="reportContent"><canvas id="reportChart" style="max-height: 400px;"></canvas><table class="data-table" id="reportTable" style="margin-top: 20px;"><thead><tr><th>الفترة</th><th>عدد الفواتير</th><th>إجمالي المبيعات</th></tr></thead><tbody></tbody></table></div></div></div>
 
-    <!-- ========== PAGE 9: USER MANAGEMENT ========== -->
-    <div id="page-users" class="page">
-        <div class="table-container">
-            <div class="table-header">
-                <h3>👑 إدارة المستخدمين (المدير فقط)</h3>
-                <div class="search-filter">
-                    <input type="text" id="usersSearch" placeholder="🔍 بحث..." onkeyup="filterUsers()">
-                    <button class="btn btn-success" onclick="openUserModal()">+ مستخدم جديد</button>
-                </div>
-            </div>
-            <table class="data-table" id="usersTable">
-                <thead><tr><th>البريد</th><th>الهاتف</th><th>الدور</th><th>الحالة</th><th>تاريخ التسجيل</th><th>الإجراءات</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
-        <!-- ========== MODAL: منتج جديد ========== -->
-    <div id="productModal" class="modal">
-        <div class="modal-content">
-            <h3>➕ منتج جديد</h3>
-            <form id="productForm" onsubmit="saveProduct(event)">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>اسم المنتج *</label>
-                        <input type="text" id="prodName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>السعر *</label>
-                        <input type="number" id="prodPrice" required step="0.01">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>المخزون</label>
-                        <input type="number" id="prodStock" value="0">
-                    </div>
-                    <div class="form-group">
-                        <label>الحد الأدنى للمخزون</label>
-                        <input type="number" id="prodMinStock" value="5">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>المورد</label>
-                    <select id="prodSupplier"></select>
-                </div>
-                <div class="form-group">
-                    <label>الوصف</label>
-                    <textarea id="prodDesc" rows="2"></textarea>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('productModal')">إلغاء</button>
-                    <button type="submit" class="btn btn-success">حفظ المنتج</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- Users Management Page -->
+    <div id="page-users" class="page"><div class="table-container"><div class="table-header"><h3>👑 إدارة المستخدمين</h3><div class="search-filter"><input type="text" id="usersSearch" placeholder="🔍 بحث..." onkeyup="filterUsers()"><button class="btn btn-success" onclick="openUserModal()">+ مستخدم جديد</button></div></div><table class="data-table" id="usersTable"><thead><tr><th>البريد</th><th>الهاتف</th><th>الدور</th><th>الحالة</th><th>تاريخ التسجيل</th><th>الإجراءات</th></tr></thead><tbody></tbody></table></div></div>
+</div>
 
-    <!-- ========== MODAL: تعديل منتج ========== -->
-    <div id="editProductModal" class="modal">
-        <div class="modal-content">
-            <h3>✏️ تعديل منتج</h3>
-            <form id="editProductForm" onsubmit="updateProduct(event)">
-                <input type="hidden" id="editProdId">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>اسم المنتج *</label>
-                        <input type="text" id="editProdName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>السعر *</label>
-                        <input type="number" id="editProdPrice" required step="0.01">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>المخزون</label>
-                        <input type="number" id="editProdStock">
-                    </div>
-                    <div class="form-group">
-                        <label>الحد الأدنى</label>
-                        <input type="number" id="editProdMinStock">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>المورد</label>
-                    <select id="editProdSupplier"></select>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('editProductModal')">إلغاء</button>
-                    <button type="submit" class="btn btn-primary">تحديث</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<!-- Modals -->
+<div id="productModal" class="modal"><div class="modal-content"><h3>➕ منتج جديد</h3><form id="productForm" onsubmit="saveProduct(event)"><div class="form-row"><div class="form-group"><label>اسم المنتج *</label><input type="text" id="prodName" required></div><div class="form-group"><label>السعر *</label><input type="number" id="prodPrice" required step="0.01"></div></div><div class="form-row"><div class="form-group"><label>المخزون</label><input type="number" id="prodStock" value="0"></div><div class="form-group"><label>الحد الأدنى</label><input type="number" id="prodMinStock" value="5"></div></div><div class="form-group"><label>المورد</label><select id="prodSupplier"></select></div><div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn btn-outline" onclick="closeModal('productModal')">إلغاء</button><button type="submit" class="btn btn-success">حفظ</button></div></form></div></div>
 
-    <!-- ========== MODAL: مورد جديد ========== -->
-    <div id="supplierModal" class="modal">
-        <div class="modal-content">
-            <h3>🚚 مورد جديد</h3>
-            <form id="supplierForm" onsubmit="saveSupplier(event)">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>اسم المورد *</label>
-                        <input type="text" id="supName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>رقم الهاتف</label>
-                        <input type="tel" id="supPhone">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>البريد الإلكتروني</label>
-                    <input type="email" id="supEmail">
-                </div>
-                <div class="form-group">
-                    <label>العنوان</label>
-                    <input type="text" id="SupAddress">
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('supplierModal')">إلغاء</button>
-                    <button type="submit" class="btn btn-success">حفظ المورد</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div id="editProductModal" class="modal"><div class="modal-content"><h3>✏️ تعديل منتج</h3><form id="editProductForm" onsubmit="updateProduct(event)"><input type="hidden" id="editProdId"><div class="form-row"><div class="form-group"><label>الاسم</label><input type="text" id="editProdName" required></div><div class="form-group"><label>السعر</label><input type="number" id="editProdPrice" required step="0.01"></div></div><div class="form-row"><div class="form-group"><label>المخزون</label><input type="number" id="editProdStock"></div><div class="form-group"><label>الحد الأدنى</label><input type="number" id="editProdMinStock"></div></div><div class="form-group"><label>المورد</label><select id="editProdSupplier"></select></div><div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn btn-outline" onclick="closeModal('editProductModal')">إلغاء</button><button type="submit" class="btn btn-primary">تحديث</button></div></form></div></div>
 
-    <!-- ========== MODAL: عميل جديد ========== -->
-    <div id="customerModal" class="modal">
-        <div class="modal-content">
-            <h3>👤 عميل جديد</h3>
-            <form id="customerForm" onsubmit="saveCustomer(event)">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>اسم العميل *</label>
-                        <input type="text" id="custName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>رقم الهاتف</label>
-                        <input type="tel" id="custPhone">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>البريد الإلكتروني</label>
-                    <input type="email" id="custEmail">
-                </div>
-                <div class="form-group">
-                    <label>العنوان</label>
-                    <input type="text" id="custAddress">
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('customerModal')">إلغاء</button>
-                    <button type="submit" class="btn btn-success">حفظ العميل</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div id="supplierModal" class="modal"><div class="modal-content"><h3>🚚 مورد جديد</h3><form id="supplierForm" onsubmit="saveSupplier(event)"><div class="form-row"><div class="form-group"><label>الاسم *</label><input type="text" id="supName" required></div><div class="form-group"><label>الهاتف</label><input type="tel" id="supPhone"></div></div><div class="form-group"><label>البريد</label><input type="email" id="supEmail"></div><div class="form-group"><label>العنوان</label><input type="text" id="SupAddress"></div><div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn btn-outline" onclick="closeModal('supplierModal')">إلغاء</button><button type="submit" class="btn btn-success">حفظ</button></div></form></div></div>
 
-    <!-- ========== MODAL: فاتورة جديدة ========== -->
-    <div id="invoiceModal" class="modal">
-        <div class="modal-content">
-            <h3>🧾 فاتورة جديدة</h3>
-            <form id="invoiceForm" onsubmit="saveInvoice(event)">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>رقم الفاتورة *</label>
-                        <input type="text" id="invNumber" required placeholder="مثال: INV-001">
-                    </div>
-                    <div class="form-group">
-                        <label>التاريخ</label>
-                        <input type="date" id="invDate">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>العميل</label>
-                    <select id="invCustomer" required></select>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>المبلغ *</label>
-                        <input type="number" id="invAmount" required step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label>الحالة</label>
-                        <select id="invStatus">
-                            <option value="paid">مدفوع</option>
-                            <option value="pending">قيد الانتظار</option>
-                            <option value="cancelled">ملغي</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>ملاحظات</label>
-                    <textarea id="invNotes" rows="2"></textarea>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('invoiceModal')">إلغاء</button>
-                    <button type="submit" class="btn btn-success">حفظ الفاتورة</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div id="customerModal" class="modal"><div class="modal-content"><h3>👤 عميل جديد</h3><form id="customerForm" onsubmit="saveCustomer(event)"><div class="form-row"><div class="form-group"><label>الاسم *</label><input type="text" id="custName" required></div><div class="form-group"><label>الهاتف</label><input type="tel" id="custPhone"></div></div><div class="form-group"><label>البريد</label><input type="email" id="custEmail"></div><div class="form-group"><label>العنوان</label><input type="text" id="custAddress"></div><div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn btn-outline" onclick="closeModal('customerModal')">إلغاء</button><button type="submit" class="btn btn-success">حفظ</button></div></form></div></div>
 
-    <!-- ========== MODAL: أمر شراء جديد ========== -->
-    <div id="purchaseModal" class="modal">
-        <div class="modal-content">
-            <h3>📥 أمر شراء جديد</h3>
-            <form id="purchaseForm" onsubmit="savePurchase(event)">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>رقم الأمر</label>
-                        <input type="text" id="purchaseNumber" placeholder="مثال: PO-001">
-                    </div>
-                    <div class="form-group">
-                        <label>المورد</label>
-                        <select id="purchaseSupplier" required></select>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>المنتج</label>
-                        <select id="purchaseProduct" required></select>
-                    </div>
-                    <div class="form-group">
-                        <label>الكمية</label>
-                        <input type="number" id="purchaseQty" required>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>سعر الشراء</label>
-                        <input type="number" id="purchasePrice" required step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label>التاريخ</label>
-                        <input type="date" id="purchaseDate">
-                    </div>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('purchaseModal')">إلغاء</button>
-                    <button type="submit" class="btn btn-success">حفظ الأمر</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div id="invoiceModal" class="modal"><div class="modal-content"><h3>🧾 فاتورة جديدة</h3><form id="invoiceForm" onsubmit="saveInvoice(event)"><div class="form-row"><div class="form-group"><label>رقم الفاتورة</label><input type="text" id="invNumber" required placeholder="INV-001"></div><div class="form-group"><label>التاريخ</label><input type="date" id="invDate"></div></div><div class="form-group"><label>العميل</label><select id="invCustomer"></select></div><div class="form-row"><div class="form-group"><label>المبلغ</label><input type="number" id="invAmount" required step="0.01"></div><div class="form-group"><label>الحالة</label><select id="invStatus"><option value="paid">مدفوع</option><option value="pending">قيد الانتظار</option><option value="cancelled">ملغي</option></select></div></div><div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn btn-outline" onclick="closeModal('invoiceModal')">إلغاء</button><button type="submit" class="btn btn-success">حفظ</button></div></form></div></div>
 
-    <!-- ========== MODAL: فاتورة عرض (للطباعة) ========== -->
-    <div id="viewInvoiceModal" class="modal">
-        <div class="modal-content" style="width: 600px;">
-            <h3>🧾 تفاصيل الفاتورة</h3>
-            <div id="invoiceDetails" style="padding: 20px;"></div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                <button class="btn btn-primary" onclick="printInvoice()">🖨️ طباعة</button>
-                <button class="btn btn-outline" onclick="closeModal('viewInvoiceModal')">إغلاق</button>
-            </div>
-        </div>
-    </div>
+<div id="purchaseModal" class="modal"><div class="modal-content"><h3>📥 أمر شراء جديد</h3><form id="purchaseForm" onsubmit="savePurchase(event)"><div class="form-row"><div class="form-group"><label>رقم الأمر</label><input type="text" id="purchaseNumber" placeholder="PO-001"></div><div class="form-group"><label>المورد</label><select id="purchaseSupplier"></select></div></div><div class="form-row"><div class="form-group"><label>المنتج</label><select id="purchaseProduct"></select></div><div class="form-group"><label>الكمية</label><input type="number" id="purchaseQty" required></div></div><div class="form-row"><div class="form-group"><label>سعر الشراء</label><input type="number" id="purchasePrice" required step="0.01"></div><div class="form-group"><label>التاريخ</label><input type="date" id="purchaseDate"></div></div><div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn btn-outline" onclick="closeModal('purchaseModal')">إلغاء</button><button type="submit" class="btn btn-success">حفظ</button></div></form></div></div>
 
-    <!-- ========== MODAL: مستخدم جديد (للمدير) ========== -->
-    <div id="userModal" class="modal">
-        <div class="modal-content">
-            <h3>👑 مستخدم جديد</h3>
-            <form id="userForm" onsubmit="saveUser(event)">
-                <div class="form-group">
-                    <label>البريد الإلكتروني *</label>
-                    <input type="email" id="userEmail" required>
-                </div>
-                <div class="form-group">
-                    <label>رقم الهاتف</label>
-                    <input type="tel" id="userPhone">
-                </div>
-                <div class="form-group">
-                    <label>كلمة المرور *</label>
-                    <input type="password" id="userPassword" required>
-                </div>
-                <div class="form-group">
-                    <label>الدور</label>
-                    <select id="userRole">
-                        <option value="user">👤 مستخدم عادي</option>
-                        <option value="admin">👑 مدير</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('userModal')">إلغاء</button>
-                    <button type="submit" class="btn btn-success">إنشاء المستخدم</button>
-                </div>
-            </form>
-        </div>
-    </div>
-        <!-- ========== FIREBASE & EMAILJS ========== -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<div id="viewInvoiceModal" class="modal"><div class="modal-content" style="width: 600px;"><h3>🧾 تفاصيل الفاتورة</h3><div id="invoiceDetails" style="padding: 20px;"></div><div style="display: flex; gap: 10px; justify-content: flex-end;"><button class="btn btn-primary" onclick="printInvoice()">🖨️ طباعة</button><button class="btn btn-outline" onclick="closeModal('viewInvoiceModal')">إغلاق</button></div></div></div>
 
-    <script>
-        // ==================== FIREBASE CONFIG ====================
-        const firebaseConfig = {
-            apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
-            authDomain: "my-pos-system-11dee.firebaseapp.com",
-            projectId: "my-pos-system-11dee",
-            storageBucket: "my-pos-system-11dee.firebasestorage.app",
-            messagingSenderId: "565195477080",
-            appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d"
-        };
+<div id="userModal" class="modal"><div class="modal-content"><h3>👑 مستخدم جديد</h3><form id="userForm" onsubmit="saveUser(event)"><div class="form-group"><label>البريد *</label><input type="email" id="userEmail" required></div><div class="form-group"><label>الهاتف</label><input type="tel" id="userPhone"></div><div class="form-group"><label>كلمة المرور *</label><input type="password" id="userPassword" required></div><div class="form-group"><label>الدور</label><select id="userRole"><option value="user">👤 مستخدم</option><option value="admin">👑 مدير</option></select></div><div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn btn-outline" onclick="closeModal('userModal')">إلغاء</button><button type="submit" class="btn btn-success">إنشاء</button></div></form></div></div>
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-        // تهيئة EmailJS (لإرسال الإشعارات)
-        emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); // ستحتاج إلى تسجيل حساب في EmailJS
+<script>
+    const firebaseConfig = { apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU", authDomain: "my-pos-system-11dee.firebaseapp.com", projectId: "my-pos-system-11dee", storageBucket: "my-pos-system-11dee.firebasestorage.app", messagingSenderId: "565195477080", appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d" };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-        // ==================== GLOBAL VARIABLES ====================
-        let currentUser = null;
-        let userData = null;
-        let companyId = null;
-        
-        // Arrays للبيانات
-        let products = [];
-        let suppliers = [];
-        let customers = [];
-        let invoices = [];
-        let purchases = [];
-        let systemUsers = [];
-        
-        // سلة المبيعات
-        let cart = [];
-        
-        // الرسوم البيانية
-        let monthlyChart = null;
-        let pieChart = null;
-        let reportChart = null;
-        
-        // ==================== HELPER FUNCTIONS ====================
-        function showNotification(msg, type) {
-            const n = document.createElement('div');
-            n.className = `notification ${type}`;
-            n.textContent = msg;
-            document.body.appendChild(n);
-            setTimeout(() => n.remove(), 3000);
-        }
+    let currentUser = null, userData = null, companyId = null;
+    let products = [], suppliers = [], customers = [], invoices = [], purchases = [], systemUsers = [];
+    let cart = [];
+    let monthlyChart = null, pieChart = null, reportChart = null;
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
+    function showNotification(msg, type) { const n = document.createElement('div'); n.className = `notification ${type}`; n.textContent = msg; document.body.appendChild(n); setTimeout(() => n.remove(), 3000); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function formatCurrency(amount) { return amount.toLocaleString() + ' ج.م'; }
+    function formatDate(date) { return new Date(date).toLocaleDateString('ar-EG'); }
 
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-        }
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) { window.location.href = 'index.html'; return; }
+        if (!user.emailVerified) { showNotification('⚠️ يرجى تفعيل بريدك الإلكتروني أولاً', 'error'); auth.signOut(); window.location.href = 'index.html'; return; }
+        currentUser = user;
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (!userDoc.exists) { showNotification('❌ لم يتم العثور على بيانات المستخدم', 'error'); auth.signOut(); window.location.href = 'index.html'; return; }
+        userData = userDoc.data();
+        companyId = userData.companyId;
+        document.getElementById('userAvatar').innerText = (userData.email || 'A').charAt(0).toUpperCase();
+        document.getElementById('userName').innerText = userData.email ? userData.email.split('@')[0] : 'مستخدم';
+        document.getElementById('userRole').innerHTML = userData.role === 'admin' ? '👑 مدير عام' : '👤 مستخدم';
+        if (companyId) { const companyDoc = await db.collection('companies').doc(companyId).get(); if (companyDoc.exists) document.getElementById('companyBadge').innerHTML = `🏢 ${companyDoc.data().name}`; }
+        if (userData.role === 'admin') document.getElementById('usersMenuItem').style.display = 'flex';
+        await loadAllData();
+    });
 
-        function formatDate(date) {
-            return new Date(date).toLocaleDateString('ar-EG');
-        }
+    async function loadAllData() {
+        try {
+            let qP = db.collection('products'), qS = db.collection('suppliers'), qC = db.collection('customers'), qI = db.collection('invoices'), qPur = db.collection('purchases');
+            if (userData.role === 'user' && companyId) { qP = qP.where('companyId', '==', companyId); qS = qS.where('companyId', '==', companyId); qC = qC.where('companyId', '==', companyId); qI = qI.where('companyId', '==', companyId); qPur = qPur.where('companyId', '==', companyId); }
+            const [pSnap, sSnap, cSnap, iSnap, purSnap] = await Promise.all([qP.get(), qS.get(), qC.get(), qI.get(), qPur.get()]);
+            products = pSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            suppliers = sSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            customers = cSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            invoices = iSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            purchases = purSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            if (userData.role === 'admin') { const uSnap = await db.collection('users').get(); systemUsers = uSnap.docs.map(d => ({ id: d.id, ...d.data() })); renderUsers(); }
+            renderDashboard(); renderProducts(); renderSuppliers(); renderCustomers(); renderInvoices(); renderPurchases(); renderSalesProducts(); renderCustomerSelect(); renderSupplierSelect(); renderProductSelect();
+        } catch (error) { showNotification('❌ خطأ في تحميل البيانات', 'error'); }
+    }
 
-        function formatCurrency(amount) {
-            return amount.toLocaleString() + ' ج.م';
-        }
+    function renderDashboard() {
+        const totalSales = invoices.reduce((s, i) => i.status === 'paid' ? s + (i.amount || 0) : s, 0);
+        document.getElementById('statsGrid').innerHTML = `<div class="stat-card" onclick="switchPage('invoices')"><h3>💰 إجمالي المبيعات</h3><div class="stat-value">${formatCurrency(totalSales)}</div><i class="ph ph-currency-dollar stat-icon"></i></div><div class="stat-card" onclick="switchPage('invoices')"><h3>🧾 عدد الفواتير</h3><div class="stat-value">${invoices.length}</div><i class="ph ph-receipt stat-icon"></i></div><div class="stat-card" onclick="switchPage('products')"><h3>📦 المنتجات</h3><div class="stat-value">${products.length}</div><i class="ph ph-package stat-icon"></i></div><div class="stat-card" onclick="switchPage('customers')"><h3>👥 العملاء</h3><div class="stat-value">${customers.length}</div><i class="ph ph-users stat-icon"></i></div>`;
+        const recent = [...invoices].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+        document.querySelector('#recentInvoicesTable tbody').innerHTML = recent.map(i => `<tr><td>${i.number || i.id?.slice(-8)}</td><td>${i.customerName || 'نقدي'}</td><td>${formatCurrency(i.amount || 0)}</td><td><span class="badge badge-${i.status === 'paid' ? 'paid' : 'pending'}">${i.status === 'paid' ? 'مدفوع' : 'قيد الانتظار'}</span></td><td>${i.date || formatDate(new Date())}</td></tr>`).join('');
+        const low = products.filter(p => (p.stock || 0) <= (p.minStock || 5));
+        document.querySelector('#lowStockTable tbody').innerHTML = low.slice(0,5).map(p => `<tr><td>${p.name}</td><td>${formatCurrency(p.price)}</td><td style="color:var(--warning);font-weight:bold">${p.stock || 0}</td><td><span class="badge badge-low-stock">⚠️ أقل من الحد</span></td></tr>`).join('');
+        if (monthlyChart) monthlyChart.destroy(); const ctx = document.getElementById('monthlySalesChart').getContext('2d'); monthlyChart = new Chart(ctx, { type: 'line', data: { labels: ['يناير','فبراير','مارس','أبريل','مايو','يونيو'], datasets: [{ label: 'المبيعات', data: [12000,19000,15000,25000,22000,30000], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.4, fill: true }] }, options: { responsive: true, maintainAspectRatio: true } });
+        if (pieChart) pieChart.destroy(); const ctx2 = document.getElementById('productPieChart').getContext('2d'); pieChart = new Chart(ctx2, { type: 'pie', data: { labels: products.slice(0,5).map(p=>p.name), datasets: [{ data: products.slice(0,5).map(p=>p.stock || 0), backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'] }] }, options: { responsive: true } });
+    }
 
-        // ==================== AUTHENTICATION CHECK ====================
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
+    function renderProducts() { const search = document.getElementById('productsSearch')?.value.toLowerCase() || ''; const filtered = products.filter(p => p.name.toLowerCase().includes(search)); document.querySelector('#productsTable tbody').innerHTML = filtered.map(p => `<tr><td>${p.name}</td><td>${formatCurrency(p.price)}</td><td style="${(p.stock||0)<=(p.minStock||5)?'color:var(--warning);font-weight:bold':''}">${p.stock||0}</td><td>${p.minStock||5}</td><td>${p.supplierName||'-'}</td><td><button class="btn btn-outline btn-sm" onclick="editProduct('${p.id}')"><i class="ph ph-pencil"></i></button> <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')"><i class="ph ph-trash"></i></button></td></tr>`).join(''); }
+    function filterProducts() { renderProducts(); }
+    async function saveProduct(e) { e.preventDefault(); const name=document.getElementById('prodName').value, price=parseFloat(document.getElementById('prodPrice').value), stock=parseInt(document.getElementById('prodStock').value)||0, minStock=parseInt(document.getElementById('prodMinStock').value)||5, supplierId=document.getElementById('prodSupplier').value, sup=suppliers.find(s=>s.id===supplierId); await db.collection('products').add({name,price,stock,minStock,supplierId:supplierId||null,supplierName:sup?.name||null,companyId,createdAt:firebase.firestore.FieldValue.serverTimestamp()}); showNotification('✅ تمت الإضافة','success'); closeModal('productModal'); document.getElementById('productForm').reset(); await loadAllData(); }
+    async function editProduct(id) { const p=products.find(p=>p.id===id); document.getElementById('editProdId').value=id; document.getElementById('editProdName').value=p.name; document.getElementById('editProdPrice').value=p.price; document.getElementById('editProdStock').value=p.stock||0; document.getElementById('editProdMinStock').value=p.minStock||5; const sel=document.getElementById('editProdSupplier'); sel.innerHTML='<option value="">بدون مورد</options>'+suppliers.map(s=>`<option value="${s.id}" ${s.id===p.supplierId?'selected':''}>${s.name}</option>`).join(''); openModal('editProductModal'); }
+    async function updateProduct(e) { e.preventDefault(); const id=document.getElementById('editProdId').value, name=document.getElementById('editProdName').value, price=parseFloat(document.getElementById('editProdPrice').value), stock=parseInt(document.getElementById('editProdStock').value), minStock=parseInt(document.getElementById('editProdMinStock').value), supplierId=document.getElementById('editProdSupplier').value, sup=suppliers.find(s=>s.id===supplierId); await db.collection('products').doc(id).update({name,price,stock,minStock,supplierId:supplierId||null,supplierName:sup?.name||null,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}); showNotification('✅ تم التحديث','success'); closeModal('editProductModal'); await loadAllData(); }
+    async function deleteProduct(id) { if(confirm('حذف المنتج؟')){ await db.collection('products').doc(id).delete(); showNotification('✅ تم الحذف','success'); await loadAllData(); } }
 
-            if (!user.emailVerified) {
-                showNotification('⚠️ يرجى تفعيل بريدك الإلكتروني أولاً', 'error');
-                auth.signOut();
-                window.location.href = 'index.html';
-                return;
-            }
+    function renderSuppliers() { const search=document.getElementById('suppliersSearch')?.value.toLowerCase()||''; const filtered=suppliers.filter(s=>s.name.toLowerCase().includes(search)); document.querySelector('#suppliersTable tbody').innerHTML=filtered.map(s=>`<tr><td>${s.name}</td><td>${s.phone||'-'}</td><td>${s.email||'-'}</td><td>${s.address||'-'}</td><td><button class="btn btn-danger btn-sm" onclick="deleteSupplier('${s.id}')"><i class="ph ph-trash"></i></button></td></tr>`).join(''); }
+    function filterSuppliers() { renderSuppliers(); }
+    async function saveSupplier(e) { e.preventDefault(); const name=document.getElementById('supName').value, phone=document.getElementById('supPhone').value, email=document.getElementById('supEmail').value, address=document.getElementById('SupAddress').value; await db.collection('suppliers').add({name,phone,email,address,companyId,createdAt:firebase.firestore.FieldValue.serverTimestamp()}); showNotification('✅ تم الإضافة','success'); closeModal('supplierModal'); document.getElementById('supplierForm').reset(); await loadAllData(); }
+    async function deleteSupplier(id) { if(confirm('حذف المورد؟')){ await db.collection('suppliers').doc(id).delete(); showNotification('✅ تم الحذف','success'); await loadAllData(); } }
 
-            currentUser = user;
-            
-            // جلب بيانات المستخدم
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            if (!userDoc.exists) {
-                showNotification('❌ لم يتم العثور على بيانات المستخدم', 'error');
-                auth.signOut();
-                window.location.href = 'index.html';
-                return;
-            }
+    function renderCustomers() { const search=document.getElementById('customersSearch')?.value.toLowerCase()||''; const filtered=customers.filter(c=>c.name.toLowerCase().includes(search)); document.querySelector('#customersTable tbody').innerHTML=filtered.map(c=>`<tr><td>${c.name}</td><td>${c.phone||'-'}</td><td>${c.email||'-'}</td><td>${c.address||'-'}</td><td>${formatCurrency(c.balance||0)}</td><td><button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.id}')"><i class="ph ph-trash"></i></button></td></tr>`).join(''); }
+    function filterCustomers() { renderCustomers(); }
+    async function saveCustomer(e) { e.preventDefault(); const name=document.getElementById('custName').value, phone=document.getElementById('custPhone').value, email=document.getElementById('custEmail').value, address=document.getElementById('custAddress').value; await db.collection('customers').add({name,phone,email,address,balance:0,companyId,createdAt:firebase.firestore.FieldValue.serverTimestamp()}); showNotification('✅ تم الإضافة','success'); closeModal('customerModal'); document.getElementById('customerForm').reset(); await loadAllData(); }
+    async function deleteCustomer(id) { if(confirm('حذف العميل؟')){ await db.collection('customers').doc(id).delete(); showNotification('✅ تم الحذف','success'); await loadAllData(); } }
 
-            userData = userDoc.data();
-            companyId = userData.companyId;
-            
-            // عرض معلومات المستخدم
-            document.getElementById('userAvatar').innerText = (userData.email || 'A').charAt(0).toUpperCase();
-            document.getElementById('userName').innerText = userData.email ? userData.email.split('@')[0] : 'مستخدم';
-            document.getElementById('userRole').innerHTML = userData.role === 'admin' ? '👑 مدير عام' : '👤 مستخدم';
-            
-            if (companyId) {
-                const companyDoc = await db.collection('companies').doc(companyId).get();
-                if (companyDoc.exists) {
-                    document.getElementById('companyBadge').innerHTML = `🏢 ${companyDoc.data().name}`;
-                }
-            }
-            
-            // إظهار قائمة إدارة المستخدمين للمدير فقط
-            if (userData.role === 'admin') {
-                document.getElementById('usersMenuItem').style.display = 'flex';
-            }
-            
-            // تحميل البيانات
-            await loadAllData();
-        });
+    function renderInvoices() { const search=document.getElementById('invoicesSearch')?.value.toLowerCase()||'', status=document.getElementById('invoiceStatusFilter')?.value||'all'; let filtered=invoices; if(search) filtered=filtered.filter(i=>i.number?.toLowerCase().includes(search)||i.customerName?.toLowerCase().includes(search)); if(status!='all') filtered=filtered.filter(i=>i.status===status); document.querySelector('#invoicesTable tbody').innerHTML=filtered.map(i=>`<tr><td>${i.number||i.id?.slice(-8)}</td><td>${i.customerName||'نقدي'}</td><td>${formatCurrency(i.amount||0)}</td><td><span class="badge badge-${i.status==='paid'?'paid':i.status==='pending'?'pending':'cancelled'}">${i.status==='paid'?'مدفوع':i.status==='pending'?'قيد الانتظار':'ملغي'}</span></td><td>${i.date||formatDate(new Date())}</td><td><button class="btn btn-outline btn-sm" onclick="viewInvoice('${i.id}')"><i class="ph ph-eye"></i></button> <button class="btn btn-danger btn-sm" onclick="deleteInvoice('${i.id}')"><i class="ph ph-trash"></i></button></td></tr>`).join(''); }
+    function filterInvoices() { renderInvoices(); }
+    function renderCustomerSelect() { const sel=document.getElementById('invCustomer'); if(sel) sel.innerHTML='<option value="">عميل نقدي</option>'+customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join(''); const sel2=document.getElementById('saleCustomer'); if(sel2) sel2.innerHTML='<option value="">عميل نقدي</option>'+customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join(''); }
+    async function saveInvoice(e) { e.preventDefault(); const number=document.getElementById('invNumber').value, customerId=document.getElementById('invCustomer').value, amount=parseFloat(document.getElementById('invAmount').value), status=document.getElementById('invStatus').value, date=document.getElementById('invDate').value||new Date().toISOString().split('T')[0]; const customer=customers.find(c=>c.id===customerId); await db.collection('invoices').add({number,amount,status,date,customerId:customerId||null,customerName:customer?.name||'نقدي',companyId,createdAt:firebase.firestore.FieldValue.serverTimestamp()}); showNotification('✅ تمت الإضافة','success'); closeModal('invoiceModal'); document.getElementById('invoiceForm').reset(); await loadAllData(); }
+    async function deleteInvoice(id) { if(confirm('حذف الفاتورة؟')){ await db.collection('invoices').doc(id).delete(); showNotification('✅ تم الحذف','success'); await loadAllData(); } }
+    function viewInvoice(id) { const i=invoices.find(i=>i.id===id); document.getElementById('invoiceDetails').innerHTML=`<div style="text-align:center;margin-bottom:20px;"><h2>SEMO ERP</h2><p>فاتورة: ${i.number||i.id.slice(-8)}</p><p>التاريخ: ${i.date||formatDate(new Date())}</p></div><div><p><strong>العميل:</strong> ${i.customerName||'نقدي'}</p><p><strong>الحالة:</strong> ${i.status==='paid'?'مدفوع':'قيد الانتظار'}</p></div><div style="border-top:1px solid var(--border);padding-top:15px;"><p><strong>المبلغ:</strong> ${formatCurrency(i.amount)}</p></div><div style="margin-top:20px;text-align:center;font-size:12px;">شكراً لتعاملكم</div>`; openModal('viewInvoiceModal'); }
+    function printInvoice() { const html=document.getElementById('invoiceDetails').innerHTML; const w=window.open('','_blank'); w.document.write(html); w.document.close(); w.print(); }
 
-        // ==================== LOAD ALL DATA ====================
-        async function loadAllData() {
-            try {
-                // بناء الاستعلامات حسب دور المستخدم
-                let productsQuery = db.collection('products');
-                let suppliersQuery = db.collection('suppliers');
-                let customersQuery = db.collection('customers');
-                let invoicesQuery = db.collection('invoices');
-                let purchasesQuery = db.collection('purchases');
-                
-                if (userData.role === 'user' && companyId) {
-                    productsQuery = productsQuery.where('companyId', '==', companyId);
-                    suppliersQuery = suppliersQuery.where('companyId', '==', companyId);
-                    customersQuery = customersQuery.where('companyId', '==', companyId);
-                    invoicesQuery = invoicesQuery.where('companyId', '==', companyId);
-                    purchasesQuery = purchasesQuery.where('companyId', '==', companyId);
-                }
-                
-                const [productsSnap, suppliersSnap, customersSnap, invoicesSnap, purchasesSnap] = await Promise.all([
-                    productsQuery.get(),
-                    suppliersQuery.get(),
-                    customersQuery.get(),
-                    invoicesQuery.get(),
-                    purchasesQuery.get()
-                ]);
-                
-                products = productsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                suppliers = suppliersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                customers = customersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                invoices = invoicesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                purchases = purchasesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                // تحميل المستخدمين للمدير فقط
-                if (userData.role === 'admin') {
-                    const usersSnap = await db.collection('users').get();
-                    systemUsers = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                }
-                
-                // تحديث جميع الواجهات
-                renderDashboard();
-                renderProducts();
-                renderSuppliers();
-                renderCustomers();
-                renderInvoices();
-                renderPurchases();
-                renderSalesProducts();
-                renderCustomerSelect();
-                renderSupplierSelect();
-                renderProductSelect();
-                
-                if (userData.role === 'admin') {
-                    renderUsers();
-                }
-                
-            } catch (error) {
-                console.error("Error loading data:", error);
-                showNotification('❌ خطأ في تحميل البيانات', 'error');
-            }
-        }
+    function renderPurchases() { const search=document.getElementById('purchasesSearch')?.value.toLowerCase()||''; const filtered=purchases.filter(p=>p.productName?.toLowerCase().includes(search)||p.supplierName?.toLowerCase().includes(search)); document.querySelector('#purchasesTable tbody').innerHTML=filtered.map(p=>`<tr><td>${p.number||p.id?.slice(-8)}</td><td>${p.supplierName||'-'}</td><td>${p.productName||'-'}</td><td>${p.quantity||0}</td><td>${formatCurrency(p.price||0)}</td><td>${formatCurrency((p.quantity||0)*(p.price||0))}</td><td>${p.date||formatDate(new Date())}</td><td><button class="btn btn-danger btn-sm" onclick="deletePurchase('${p.id}')"><i class="ph ph-trash"></i></button></td></tr>`).join(''); }
+    function filterPurchases() { renderPurchases(); }
+    function renderSupplierSelect() { const sel=document.getElementById('purchaseSupplier'); if(sel) sel.innerHTML='<option value="">اختر مورد</option>'+suppliers.map(s=>`<option value="${s.id}">${s.name}</option>`).join(''); const sel2=document.getElementById('prodSupplier'); if(sel2) sel2.innerHTML='<option value="">بدون مورد</option>'+suppliers.map(s=>`<option value="${s.id}">${s.name}</option>`).join(''); }
+    function renderProductSelect() { const sel=document.getElementById('purchaseProduct'); if(sel) sel.innerHTML='<option value="">اختر منتج</option>'+products.map(p=>`<option value="${p.id}">${p.name}</option>`).join(''); }
+    async function savePurchase(e) { e.preventDefault(); const number=document.getElementById('purchaseNumber').value, supplierId=document.getElementById('purchaseSupplier').value, productId=document.getElementById('purchaseProduct').value, quantity=parseInt(document.getElementById('purchaseQty').value), price=parseFloat(document.getElementById('purchasePrice').value), date=document.getElementById('purchaseDate').value||new Date().toISOString().split('T')[0]; const supplier=suppliers.find(s=>s.id===supplierId), product=products.find(p=>p.id===productId); await db.collection('purchases').add({number,quantity,price,date,supplierId,supplierName:supplier?.name,productId,productName:product?.name,companyId,createdAt:firebase.firestore.FieldValue.serverTimestamp()}); if(product){ const newStock=(product.stock||0)+quantity; await db.collection('products').doc(productId).update({stock:newStock}); } showNotification('✅ تمت إضافة أمر الشراء','success'); closeModal('purchaseModal'); document.getElementById('purchaseForm').reset(); await loadAllData(); }
+    async function deletePurchase(id) { if(confirm('حذف أمر الشراء؟')){ await db.collection('purchases').doc(id).delete(); showNotification('✅ تم الحذف','success'); await loadAllData(); } }
 
-        // ==================== RENDER DASHBOARD ====================
-        function renderDashboard() {
-            // الإحصائيات
-            const totalSales = invoices.reduce((sum, inv) => inv.status === 'paid' ? sum + (inv.amount || 0) : sum, 0);
-            const totalInvoices = invoices.length;
-            const totalProducts = products.length;
-            const totalCustomers = customers.length;
-            const lowStockProducts = products.filter(p => (p.stock || 0) <= (p.minStock || 5));
-            
-            document.getElementById('statsGrid').innerHTML = `
-                <div class="stat-card" onclick="switchPage('invoices')"><h3>💰 إجمالي المبيعات</h3><div class="stat-value">${formatCurrency(totalSales)}</div><i class="ph ph-currency-dollar stat-icon"></i></div>
-                <div class="stat-card" onclick="switchPage('invoices')"><h3>🧾 عدد الفواتير</h3><div class="stat-value">${totalInvoices}</div><i class="ph ph-receipt stat-icon"></i></div>
-                <div class="stat-card" onclick="switchPage('products')"><h3>📦 المنتجات</h3><div class="stat-value">${totalProducts}</div><i class="ph ph-package stat-icon"></i></div>
-                <div class="stat-card" onclick="switchPage('customers')"><h3>👥 العملاء</h3><div class="stat-value">${totalCustomers}</div><i class="ph ph-users stat-icon"></i></div>
-            `;
-            
-            // آخر 5 فواتير
-            const recentInvoices = [...invoices].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
-            const recentTable = document.querySelector('#recentInvoicesTable tbody');
-            if (recentTable) {
-                recentTable.innerHTML = recentInvoices.map(inv => `
-                    <tr>
-                        <td>${inv.number || inv.id?.slice(-8)}</td>
-                        <td>${inv.customerName || 'نقدي'}</td>
-                        <td>${formatCurrency(inv.amount || 0)}</td>
-                        <td><span class="badge badge-${inv.status === 'paid' ? 'paid' : inv.status === 'pending' ? 'pending' : 'cancelled'}">${inv.status === 'paid' ? 'مدفوع' : inv.status === 'pending' ? 'قيد الانتظار' : 'ملغي'}</span></td>
-                        <td>${inv.date || formatDate(new Date())}</td>
-                    </tr>
-                `).join('');
-            }
-            
-            // المنتجات منخفضة المخزون
-            const lowStockTable = document.querySelector('#lowStockTable tbody');
-            if (lowStockTable) {
-                lowStockTable.innerHTML = lowStockProducts.slice(0, 5).map(p => `
-                    <tr>
-                        <td>${p.name}</td>
-                        <td>${formatCurrency(p.price)}</td>
-                        <td style="color: var(--warning); font-weight: bold;">${p.stock || 0}</td>
-                        <td><span class="badge badge-low-stock">⚠️ أقل من الحد الأدنى</span></td>
-                    </tr>
-                `).join('');
-                if (lowStockProducts.length === 0) {
-                    lowStockTable.innerHTML = '<tr><td colspan="4" style="text-align: center;">✅ جميع المنتجات بالمخزون الكافي</td></tr>';
-                }
-            }
-            
-            // الرسوم البيانية
-            renderMonthlyChart();
-            renderPieChart();
-        }
-        
-        // ==================== CHARTS ====================
-        function renderMonthlyChart() {
-            const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-            const monthlyData = [12000, 19000, 15000, 25000, 22000, 30000, 28000, 35000, 32000, 40000, 38000, 45000];
-            
-            const ctx = document.getElementById('monthlySalesChart').getContext('2d');
-            if (monthlyChart) monthlyChart.destroy();
-            monthlyChart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: months, datasets: [{ label: 'المبيعات (ج.م)', data: monthlyData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', tension: 0.4, fill: true }] },
-                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top' } } }
-            });
-        }
-        
-        function renderPieChart() {
-            const topProducts = products.slice(0, 5);
-            const labels = topProducts.map(p => p.name);
-            const data = topProducts.map(p => p.stock || 0);
-            
-            const ctx = document.getElementById('productPieChart').getContext('2d');
-            if (pieChart) pieChart.destroy();
-            pieChart = new Chart(ctx, {
-                type: 'pie',
-                data: { labels, datasets: [{ data, backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444, '#8b5cf6'] }] },
-                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-            });
-        }
-                // ==================== PRODUCTS FUNCTIONS ====================
-        function renderProducts() {
-            const searchTerm = document.getElementById('productsSearch')?.value.toLowerCase() || '';
-            const filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm));
-            
-            const tbody = document.querySelector('#productsTable tbody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = filtered.map(prod => `
-                <tr>
-                    <td>${prod.name}</td>
-                    <td>${formatCurrency(prod.price)}</td>
-                    <td style="${(prod.stock || 0) <= (prod.minStock || 5) ? 'color: var(--warning); font-weight: bold;' : ''}">${prod.stock || 0}</td>
-                    <td>${prod.minStock || 5}</td>
-                    <td>${prod.supplierName || '-'}</td>
-                    <td>
-                        <button class="btn btn-outline btn-sm" onclick="editProduct('${prod.id}')"><i class="ph ph-pencil"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${prod.id}')"><i class="ph ph-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-        
-        function filterProducts() { renderProducts(); }
-        
-        async function saveProduct(event) {
-            event.preventDefault();
-            const name = document.getElementById('prodName').value;
-            const price = parseFloat(document.getElementById('prodPrice').value);
-            const stock = parseInt(document.getElementById('prodStock').value) || 0;
-            const minStock = parseInt(document.getElementById('prodMinStock').value) || 5;
-            const supplierId = document.getElementById('prodSupplier').value;
-            const description = document.getElementById('prodDesc').value;
-            
-            const supplier = suppliers.find(s => s.id === supplierId);
-            
-            try {
-                await db.collection('products').add({
-                    name, price, stock, minStock,
-                    supplierId: supplierId || null,
-                    supplierName: supplier?.name || null,
-                    description,
-                    companyId: companyId,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                showNotification('✅ تم إضافة المنتج', 'success');
-                closeModal('productModal');
-                document.getElementById('productForm').reset();
-                await loadAllData();
-            } catch (error) {
-                showNotification('❌ خطأ في حفظ المنتج', 'error');
-            }
-        }
-        
-        async function editProduct(id) {
-            const product = products.find(p => p.id === id);
-            if (!product) return;
-            
-            document.getElementById('editProdId').value = id;
-            document.getElementById('editProdName').value = product.name;
-            document.getElementById('editProdPrice').value = product.price;
-            document.getElementById('editProdStock').value = product.stock || 0;
-            document.getElementById('editProdMinStock').value = product.minStock || 5;
-            
-            // تعبئة قائمة الموردين
-            const select = document.getElementById('editProdSupplier');
-            select.innerHTML = '<option value="">بدون مورد</option>' + suppliers.map(s => `<option value="${s.id}" ${s.id === product.supplierId ? 'selected' : ''}>${s.name}</option>`).join('');
-            
-            openModal('editProductModal');
-        }
-        
-        async function updateProduct(event) {
-            event.preventDefault();
-            const id = document.getElementById('editProdId').value;
-            const name = document.getElementById('editProdName').value;
-            const price = parseFloat(document.getElementById('editProdPrice').value);
-            const stock = parseInt(document.getElementById('editProdStock').value);
-            const minStock = parseInt(document.getElementById('editProdMinStock').value);
-            const supplierId = document.getElementById('editProdSupplier').value;
-            const supplier = suppliers.find(s => s.id === supplierId);
-            
-            try {
-                await db.collection('products').doc(id).update({
-                    name, price, stock, minStock,
-                    supplierId: supplierId || null,
-                    supplierName: supplier?.name || null,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                showNotification('✅ تم تحديث المنتج', 'success');
-                closeModal('editProductModal');
-                await loadAllData();
-            } catch (error) {
-                showNotification('❌ خطأ في التحديث', 'error');
-            }
-        }
-        
-        async function deleteProduct(id) {
-            if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
-                try {
-                    await db.collection('products').doc(id).delete();
-                    showNotification('✅ تم الحذف', 'success');
-                    await loadAllData();
-                } catch (error) {
-                    showNotification('❌ خطأ في الحذف', 'error');
-                }
-            }
-        }
-        
-        // ==================== SUPPLIERS FUNCTIONS ====================
-        function renderSuppliers() {
-            const searchTerm = document.getElementById('suppliersSearch')?.value.toLowerCase() || '';
-            const filtered = suppliers.filter(s => s.name.toLowerCase().includes(searchTerm));
-            
-            const tbody = document.querySelector('#suppliersTable tbody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = filtered.map(sup => `
-                <tr>
-                    <td>${sup.name}</td>
-                    <td>${sup.phone || '-'}</td>
-                    <td>${sup.email || '-'}</td>
-                    <td>${sup.address || '-'}</td>
-                    <td>
-                        <button class="btn btn-outline btn-sm" onclick="editSupplier('${sup.id}')"><i class="ph ph-pencil"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteSupplier('${sup.id}')"><i class="ph ph-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-        
-        function filterSuppliers() { renderSuppliers(); }
-        
-        async function saveSupplier(event) {
-            event.preventDefault();
-            const name = document.getElementById('supName').value;
-            const phone = document.getElementById('supPhone').value;
-            const email = document.getElementById('supEmail').value;
-            const address = document.getElementById('SupAddress').value;
-            
-            try {
-                await db.collection('suppliers').add({
-                    name, phone, email, address,
-                    companyId: companyId,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                showNotification('✅ تم إضافة المورد', 'success');
-                closeModal('supplierModal');
-                document.getElementById('supplierForm').reset();
-                await loadAllData();
-            } catch (error) {
-                showNotification('❌ خطأ في حفظ المورد', 'error');
-            }
-        }
-        
-        async function deleteSupplier(id) {
-            if (confirm('هل أنت متأكد من حذف هذا المورد؟')) {
-                try {
-                    await db.collection('suppliers').doc(id).delete();
-                    showNotification('✅ تم الحذف', 'success');
-                    await loadAllData();
-                } catch (error) {
-                    showNotification('❌ خطأ في الحذف', 'error');
-                }
-            }
-        }
-        
-        // ==================== CUSTOMERS FUNCTIONS ====================
-        function renderCustomers() {
-            const searchTerm = document.getElementById('customersSearch')?.value.toLowerCase() || '';
-            const filtered = customers.filter(c => c.name.toLowerCase().includes(searchTerm));
-            
-            const tbody = document.querySelector('#customersTable tbody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = filtered.map(cust => `
-                <tr>
-                    <td>${cust.name}</td>
-                    <td>${cust.phone || '-'}</td>
-                    <td>${cust.email || '-'}</td>
-                    <td>${cust.address || '-'}</td>
-                    <td>${formatCurrency(cust.balance || 0)}</td>
-                    <td>
-                        <button class="btn btn-outline btn-sm" onclick="editCustomer('${cust.id}')"><i class="ph ph-pencil"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteCustomer('${cust.id}')"><i class="ph ph-trash"></i></button>
-                     </td>
-                </tr>
-            `).join('');
-        }
-        
-        function filterCustomers() { renderCustomers(); }
-        
-        async function saveCustomer(event) {
-            event.preventDefault();
-            const name = document.getElementById('custName').value;
-            const phone = document.getElementById('custPhone').value;
-            const email = document.getElementById('custEmail').value;
-            const address = document.getElementById('custAddress').value;
-            
-            try {
-                await db.collection('customers').add({
-                    name, phone, email, address, balance: 0,
-                    companyId: companyId,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                showNotification('✅ تم إضافة العميل', 'success');
-                closeModal('customerModal');
-                document.getElementById('customerForm').reset();
-                await loadAllData();
-            } catch (error) {
-                showNotification('❌ خطأ في حفظ العميل', 'error');
-            }
-        }
-        
-        async function deleteCustomer(id) {
-            if (confirm('هل أنت متأكد من حذف هذا العميل؟')) {
-                try {
-                    await db.collection('customers').doc(id).delete();
-                    showNotification('✅ تم الحذف', 'success');
-                    await loadAllData();
-                } catch (error) {
-                    showNotification('❌ خطأ في الحذف', 'error');
-                }
-            }
-        }
-        
-        // ==================== INVOICES FUNCTIONS ====================
-        function renderInvoices() {
-            const searchTerm = document.getElementById('invoicesSearch')?.value.toLowerCase() || '';
-            const statusFilter = document.getElementById('invoiceStatusFilter')?.value || 'all';
-            
-            let filtered = invoices;
-            if (searchTerm) {
-                filtered = filtered.filter(i => i.number?.toLowerCase().includes(searchTerm) || i.customerName?.toLowerCase().includes(searchTerm));
-            }
-            if (statusFilter !== 'all') {
-                filtered = filtered.filter(i => i.status === statusFilter);
-            }
-            
-            const tbody = document.querySelector('#invoicesTable tbody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = filtered.map(inv => `
-                <tr>
-                    <td>${inv.number || inv.id?.slice(-8)}</td>
-                    <td>${inv.customerName || 'نقدي'}</td>
-                    <td>${formatCurrency(inv.amount || 0)}</td>
-                    <td><span class="badge badge-${inv.status === 'paid' ? 'paid' : inv.status === 'pending' ? 'pending' : 'cancelled'}">${inv.status === 'paid' ? 'مدفوع' : inv.status === 'pending' ? 'قيد الانتظار' : 'ملغي'}</span></td>
-                    <td>${inv.date || formatDate(new Date())}</td>
-                    <td>
-                        <button class="btn btn-outline btn-sm" onclick="viewInvoice('${inv.id}')"><i class="ph ph-eye"></i></button>
-                        <button class="btn btn-primary btn-sm" onclick="printInvoiceById('${inv.id}')"><i class="ph ph-printer"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteInvoice('${inv.id}')"><i class="ph ph-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-        
-        function filterInvoices() { renderInvoices(); }
-        
-        function renderCustomerSelect() {
-            const select = document.getElementById('invCustomer');
-            if (select) {
-                select.innerHTML = '<option value="">عميل نقدي</option>' + customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            }
-            
-            const saleSelect = document.getElementById('saleCustomer');
-            if (saleSelect) {
-                saleSelect.innerHTML = '<option value="">عميل نقدي</option>' + customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            }
-        }
-        
-        async function saveInvoice(event) {
-            event.preventDefault();
-            const number = document.getElementById('invNumber').value;
-            const customerId = document.getElementById('invCustomer').value;
-            const amount = parseFloat(document.getElementById('invAmount').value);
-            const status = document.getElementById('invStatus').value;
-            const date = document.getElementById('invDate').value || new Date().toISOString().split('T')[0];
-            const notes = document.getElementById('invNotes').value;
-            
-            const customer = customers.find(c => c.id === customerId);
-            
-            try {
-                await db.collection('invoices').add({
-                    number, amount, status, date, notes,
-                    customerId: customerId || null,
-                    customerName: customer?.name || 'نقدي',
-                    companyId: companyId,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                // إرسال إشعار بريد إلكتروني (اختياري)
-                if (customer?.email) {
-                    sendEmailNotification(customer.email, number, amount);
-                }
-                
-                showNotification('✅ تم إضافة الفاتورة', 'success');
-                closeModal('invoiceModal');
-                document.getElementById('invoiceForm').reset();
-                await loadAllData();
-            } catch (error) {
-                showNotification('❌ خطأ في حفظ الفاتورة', 'error');
-            }
-        }
-        
-        async function deleteInvoice(id) {
-            if (confirm('هل أنت متأكد من حذف هذه الفاتورة؟')) {
-                try {
-                    await db.collection('invoices').doc(id).delete();
-                    showNotification('✅ تم الحذف', 'success');
-                    await loadAllData();
-                } catch (error) {
-                    showNotification('❌ خطأ في الحذف', 'error');
-                }
-            }
-        }
-        
-        function viewInvoice(id) {
-            const invoice = invoices.find(i => i.id === id);
-            if (!invoice) return;
-            
-            document.getElementById('invoiceDetails').innerHTML = `
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h2>SEMO ERP</h2>
-                    <p>فاتورة رقم: ${invoice.number || invoice.id.slice(-8)}</p>
-                    <p>التاريخ: ${invoice.date || formatDate(new Date())}</p>
-                </div>
-                <div style="margin-bottom: 20px;">
-                    <p><strong>العميل:</strong> ${invoice.customerName || 'نقدي'}</p>
-                    <p><strong>الحالة:</strong> ${invoice.status === 'paid' ? 'مدفوع' : invoice.status === 'pending' ? 'قيد الانتظار' : 'ملغي'}</p>
-                </div>
-                <div style="border-top: 1px solid var(--border); padding-top: 15px;">
-                    <p><strong>المبلغ الإجمالي:</strong> ${formatCurrency(invoice.amount)}</p>
-                    ${invoice.notes ? `<p><strong>ملاحظات:</strong> ${invoice.notes}</p>` : ''}
-                </div>
-                <div style="border-top: 1px solid var(--border); margin-top: 20px; padding-top: 15px; text-align: center; font-size: 12px; color: var(--text-muted);">
-                    شكراً لتعاملكم مع SEMO ERP
-                </div>
-            `;
-            openModal('viewInvoiceModal');
-        }
-        
-        function printInvoice() {
-            const printContents = document.getElementById('invoiceDetails').innerHTML;
-            const originalContents = document.body.innerHTML;
-            document.body.innerHTML = printContents;
-            window.print();
-            document.body.innerHTML = originalContents;
-            location.reload();
-        }
-        
-        function printInvoiceById(id) {
-            const invoice = invoices.find(i => i.id === id);
-            if (!invoice) return;
-            
-            const printContent = `
-                <div style="text-align: center; margin-bottom: 20px; font-family: Arial;">
-                    <h2>SEMO ERP</h2>
-                    <p>فاتورة رقم: ${invoice.number || invoice.id.slice(-8)}</p>
-                    <p>التاريخ: ${invoice.date || formatDate(new Date())}</p>
-                    <hr/>
-                    <p><strong>العميل:</strong> ${invoice.customerName || 'نقدي'}</p>
-                    <p><strong>الحالة:</strong> ${invoice.status === 'paid' ? 'مدفوع' : 'قيد الانتظار'}</p>
-                    <hr/>
-                    <p><strong>المبلغ:</strong> ${formatCurrency(invoice.amount)}</p>
-                    <hr/>
-                    <p style="font-size: 12px;">شكراً لتعاملكم مع SEMO ERP</p>
-                </div>
-            `;
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(printContent);
-            printWindow.document.close();
-            printWindow.print();
-        }
-        
-        // ==================== PURCHASES FUNCTIONS ====================
-        function renderPurchases() {
-            const searchTerm = document.getElementById('purchasesSearch')?.value.toLowerCase() || '';
-            const filtered = purchases.filter(p => p.productName?.toLowerCase().includes(searchTerm) || p.supplierName?.toLowerCase().includes(searchTerm));
-            
-            const tbody = document.querySelector('#purchasesTable tbody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = filtered.map(pur => `
-                <tr>
-                    <td>${pur.number || pur.id?.slice(-8)}</td>
-                    <td>${pur.supplierName || '-'}</td>
-                    <td>${pur.productName || '-'}</td>
-                    <td>${pur.quantity || 0}</td>
-                    <td>${formatCurrency(pur.price || 0)}</td>
-                    <td>${formatCurrency((pur.quantity || 0) * (pur.price || 0))}</td>
-                    <td>${pur.date || formatDate(new Date())}</td>
-                    <td><button class="btn btn-danger btn-sm" onclick="deletePurchase('${pur.id}')"><i class="ph ph-trash"></i></button></td>
-                </tr>
-            `).join('');
-        }
-        
-        function filterPurchases() { renderPurchases(); }
-        
-        function renderSupplierSelect() {
-            const select = document.getElementById('purchaseSupplier');
-            if (select) {
-                select.innerHTML = '<option value="">اختر مورد</option>' + suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-            }
-            
-            const prodSelect = document.getElementById('prodSupplier');
-            if (prodSelect) {
-                prodSelect.innerHTML = '<option value="">بدون مورد</option>' + suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-            }
-        }
-        
-        function renderProductSelect() {
-            const select = document.getElementById('purchaseProduct');
-            if (select) {
-                select.innerHTML = '<option value="">اختر منتج</option>' + products.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-            }
-        }
-        
-        async function savePurchase(event) {
-            event.preventDefault();
-            const number = document.getElementById('purchaseNumber').value;
-            const supplierId = document.getElementById('purchaseSupplier').value;
-            const productId = document.getElementById('purchaseProduct').value;
-            const quantity = parseInt(document.getElementById('purchaseQty').value);
-            const price = parseFloat(document.getElementById('purchasePrice').value);
-            const date = document.getElementById('purchaseDate').value || new Date().toISOString().split('T')[0];
-            
-            const supplier = suppliers.find(s => s.id === supplierId);
-            const product = products.find(p => p.id === productId);
-            
-            try {
-                await db.collection('purchases').add({
-                    number, quantity, price, date,
-                    supplierId, supplierName: supplier?.name,
-                    productId, productName: product?.name,
-                    companyId: companyId,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                // تحديث المخزون
-                if (product) {
-                    const newStock = (product.stock || 0) + quantity;
-                    await db.collection('products').doc(productId).update({ stock: newStock });
-                }
-                
-                showNotification('✅ تم إضافة أمر الشراء', 'success');
-                closeModal('purchaseModal');
-                document.getElementById('purchaseForm').reset();
-                await loadAllData();
-            } catch (error) {
-                showNotification('❌ خطأ في حفظ أمر الشراء', 'error');
-            }
-        }
-        
-        async function deletePurchase(id) {
-            if (confirm('هل أنت متأكد من حذف أمر الشراء؟')) {
-                try {
-                    await db.collection('purchases').doc(id).delete();
-                    showNotification('✅ تم الحذف', 'success');
-                    await loadAllData();
-                } catch (error) {
-                    showNotification('❌ خطأ في الحذف', 'error');
-                }
-            }
-        }
-        
-        // ==================== SALES (POS) FUNCTIONS ====================
-        function renderSalesProducts() {
-            const searchTerm = document.getElementById('salesSearch')?.value.toLowerCase() || '';
-            const filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm));
-            
-            const grid = document.getElementById('productsGrid');
-            if (!grid) return;
-            
-            grid.innerHTML = filtered.map(p => `
-                <div class="stat-card" onclick="addToCart('${p.id}', '${p.name}', ${p.price})" style="cursor: pointer; text-align: center;">
-                    <h4>${p.name}</h4>
-                    <p>${formatCurrency(p.price)}</p>
-                    <small style="color: ${(p.stock || 0) <= 3 ? 'var(--warning)' : 'var(--text-muted)'}">المخزون: ${p.stock || 0}</small>
-                </div>
-            `).join('');
-        }
-        
-        function addToCart(id, name, price) {
-            const existing = cart.find(item => item.id === id);
-            if (existing) {
-                existing.quantity++;
-            } else {
-                cart.push({ id, name, price, quantity: 1 });
-            }
-            renderCart();
-        }
-        
-        function renderCart() {
-            const container = document.getElementById('cartItems');
-            if (!container) return;
-            
-            if (cart.length === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 40px;">السلة فارغة</div>';
-                updateCartTotals();
-                return;
-            }
-            
-            container.innerHTML = cart.map(item => `
-                <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border);">
-                    <div><strong>${item.name}</strong> × ${item.quantity}</div>
-                    <div>${formatCurrency(item.price * item.quantity)} 
-                        <button class="btn btn-danger btn-sm" onclick="removeFromCart('${item.id}')" style="margin-right: 10px;">✖</button>
-                    </div>
-                </div>
-            `).join('');
-            updateCartTotals();
-        }
-        
-        function removeFromCart(id) {
-            cart = cart.filter(item => item.id !== id);
-            renderCart();
-        }
-        
-        function updateCartTotals() {
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const discount = parseFloat(document.getElementById('cartDiscount')?.value) || 0;
-            const total = Math.max(0, subtotal - discount);
-            
-            document.getElementById('cartSubtotal').innerText = formatCurrency(subtotal);
-            document.getElementById('cartTotal').innerText = formatCurrency(total);
-        }
-        
-        function clearCart() {
-            cart = [];
-            renderCart();
-        }
-        
-        async function completeSale() {
-            if (cart.length === 0) {
-                showNotification('⚠️ السلة فارغة', 'error');
-                return;
-            }
-            
-            const discount = parseFloat(document.getElementById('cartDiscount')?.value) || 0;
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) - discount;
-            const customerId = document.getElementById('saleCustomer')?.value;
-            const customer = customers.find(c => c.id === customerId);
-            
-            const invoiceNumber = 'INV-' + Date.now().toString().slice(-8);
-            const date = new Date().toISOString().split('T')[0];
-            
-            try {
-                // حفظ الفاتورة
-                await db.collection('invoices').add({
-                    number: invoiceNumber,
-                    amount: total,
-                    discount: discount,
-                    status: 'paid',
-                    date: date,
-                    customerId: customerId || null,
-                    customerName: customer?.name || 'نقدي',
-                    items: cart,
-                    companyId: companyId,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                // تحديث المخزون
-                for (const item of cart) {
-                    const product = products.find(p => p.id === item.id);
-                    if (product) {
-                        const newStock = (product.stock || 0) - item.quantity;
-                        await db.collection('products').doc(item.id).update({ stock: Math.max(0, newStock) });
-                    }
-                }
-                
-                showNotification(`✅ تم البيع بنجاح! المبلغ: ${formatCurrency(total)}`, 'success');
-                cart = [];
-                renderCart();
-                document.getElementById('cartDiscount').value = 0;
-                await loadAllData();
-            } catch (error) {
-                showNotification('❌ خطأ في إتمام البيع', 'error');
-            }
-        }
-        
-        // ==================== REPORTS FUNCTIONS ====================
-        function loadReport() {
-            const type = document.getElementById('reportType').value;
-            const month = document.getElementById('reportMonth').value;
-            const year = document.getElementById('reportYear').value;
-            
-            let filtered = invoices.filter(inv => inv.status === 'paid');
-            
-            if (type === 'monthly' && month) {
-                filtered = filtered.filter(inv => inv.date?.startsWith(month));
-            } else if (type === 'yearly' && year) {
-                filtered = filtered.filter(inv => inv.date?.startsWith(year));
-            }
-            
-            const total = filtered.reduce((sum, inv) => sum + (inv.amount || 0), 0);
-            const count = filtered.length;
-            
-            const tbody = document.querySelector('#reportTable tbody');
-            if (tbody) {
-                tbody.innerHTML = `
-                    <tr><td>${type === 'monthly' ? month || 'كل الشهور' : year || 'كل السنوات'}</td><td>${count}</td><td>${formatCurrency(total)}</td></tr>
-                `;
-            }
-            
-            // تحديث الرسم البياني
-            if (reportChart) reportChart.destroy();
-            const ctx = document.getElementById('reportChart').getContext('2d');
-            reportChart = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: [type === 'monthly' ? 'الشهر' : 'السنة'], datasets: [{ label: 'المبيعات', data: [total], backgroundColor: '#3b82f6' }] },
-                options: { responsive: true }
-            });
-        }
-        
-        function exportReport() {
-            exportCurrentData();
-        }
-        
-        // ==================== USER MANAGEMENT (Admin Only) ====================
-        function renderUsers() {
-            const searchTerm = document.getElementById('usersSearch')?.value.toLowerCase() || '';
-            const filtered = systemUsers.filter(u => u.email?.toLowerCase().includes(searchTerm));
-            
-            const tbody = document.querySelector('#usersTable tbody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = filtered.map(u => `
-                <tr>
-                    <td>${u.email}</td>
-                    <td>${u.phone || '-'}</td>
-                    <td>${u.role === 'admin' ? '👑 مدير' : '👤 مستخدم'}</td>
-                    <td><span class="badge ${u.isActive ? 'badge-paid' : 'badge-cancelled'}">${u.isActive ? 'نشط' : 'معطل'}</span></td>
-                    <td>${u.createdAt ? new Date(u.createdAt.toDate()).toLocaleDateString('ar-EG') : '-'}</td>
-                    <td>
-                        <button class="btn btn-outline btn-sm" onclick="toggleUserStatus('${u.id}', ${!u.isActive})"><i class="ph ph-power"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')"><i class="ph ph-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-        
-        function filterUsers() { renderUsers(); }
-        
-        async function saveUser(event) {
-            event.preventDefault();
-            const email = document.getElementById('userEmail').value;
-            const phone = document.getElementById('userPhone').value;
-            const password = document.getElementById('userPassword').value;
-            const role = document.getElementById('userRole').value;
-            
-            if (password.length < 6) {
-                showNotification('⚠️ كلمة المرور 6 أحرف على الأقل', 'error');
-                return;
-            }
-            
-            try {
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                const user = userCredential.user;
-                
-                await db.collection('users').doc(user.uid).set({
-                    email, phone, role,
-                    companyId: companyId,
-                    companyName: userData.companyName,
-                    isActive: true,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                showNotification('✅ تم إضافة المستخدم', 'success');
-                closeModal('userModal');
-                document.getElementById('userForm').reset();
-                await loadAllData();
-            } catch (error) {
-                showNotification('❌ ' + error.message, 'error');
-            }
-        }
-        
-        async function toggleUserStatus(id, newStatus) {
-            try {
-                await db.collection('users').doc(id).update({ isActive: newStatus });
-                showNotification(`✅ تم ${newStatus ? 'تفعيل' : 'تعطيل'} المستخدم`, 'success');
-                await loadAllData();
-            } catch (error) {
-                showNotification('❌ خطأ', 'error');
-            }
-        }
-        
-        async function deleteUser(id) {
-            if (confirm('هل أنت متأكد من حذف هذا المستخدم؟')) {
-                try {
-                    await db.collection('users').doc(id).delete();
-                    showNotification('✅ تم الحذف', 'success');
-                    await loadAllData();
-                } catch (error) {
-                    showNotification('❌ خطأ في الحذف', 'error');
-                }
-            }
-        }
-        
-        // ==================== EMAIL NOTIFICATION ====================
-        async function sendEmailNotification(toEmail, invoiceNumber, amount) {
-            // هذا يتطلب تفعيل EmailJS – يمكنك تفعيله لاحقاً
-            console.log(`📧 إشعار إلى ${toEmail}: فاتورة ${invoiceNumber} بمبلغ ${amount}`);
-        }
-        
-        // ==================== EXPORT FUNCTIONS ====================
-        function exportCurrentData() {
-            const exportData = invoices.map(inv => ({
-                'رقم الفاتورة': inv.number || inv.id,
-                'العميل': inv.customerName,
-                'المبلغ': inv.amount,
-                'الحالة': inv.status === 'paid' ? 'مدفوع' : inv.status === 'pending' ? 'قيد الانتظار' : 'ملغي',
-                'التاريخ': inv.date
-            }));
-            
-            if (exportData.length === 0) {
-                showNotification('⚠️ لا توجد بيانات للتصدير', 'warning');
-                return;
-            }
-            
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'التقارير');
-            XLSX.writeFile(wb, `SEMO_ERP_${new Date().toISOString().slice(0,10)}.xlsx`);
-            showNotification('📊 تم تصدير البيانات', 'success');
-        }
-        
-        // ==================== NAVIGATION & UTILITIES ====================
-        function switchPage(page) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(`page-${page}`).classList.add('active');
-            
-            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-            event?.target?.closest('.menu-item')?.classList.add('active');
-            
-            const titles = {
-                dashboard: 'لوحة التحكم', sales: 'نقطة البيع', products: 'المنتجات',
-                suppliers: 'الموردين', customers: 'العملاء', invoices: 'الفواتير',
-                purchases: 'المشتريات', reports: 'التقارير المتقدمة', users: 'إدارة المستخدمين'
-            };
-            document.getElementById('pageTitle').innerText = titles[page] || 'SEMO ERP';
-            
-            // تحديث البيانات لكل صفحة
-            if (page === 'products') renderProducts();
-            if (page === 'suppliers') renderSuppliers();
-            if (page === 'customers') renderCustomers();
-            if (page === 'invoices') renderInvoices();
-            if (page === 'purchases') renderPurchases();
-            if (page === 'reports') loadReport();
-            if (page === 'users' && userData?.role === 'admin') renderUsers();
-            if (page === 'sales') { renderSalesProducts(); renderCustomerSelect(); }
-        }
-        
-        function toggleMode() {
-            document.body.classList.toggle('light-mode');
-            document.getElementById('modeBtn').textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
-        }
-        
-        function logout() {
-            auth.signOut();
-            localStorage.clear();
-            window.location.href = 'index.html';
-        }
-        
-        // إضافة مستمع لأحداث البحث
-        document.getElementById('salesSearch')?.addEventListener('input', renderSalesProducts);
-        document.getElementById('cartDiscount')?.addEventListener('input', updateCartTotals);
-    </script>
-</body>
-</html>
+    function renderSalesProducts() { const s=document.getElementById('salesSearch')?.value.toLowerCase()||''; const filtered=products.filter(p=>p.name.toLowerCase().includes(s)); document.getElementById('productsGrid').innerHTML=filtered.map(p=>`<div class="stat-card" onclick="addToCart('${p.id}','${p.name}',${p.price})" style="cursor:pointer;text-align:center;"><h4>${p.name}</h4><p>${formatCurrency(p.price)}</p><small style="color:${(p.stock||0)<=3?'var(--warning)':'var(--text-muted)'}">المخزون: ${p.stock||0}</small></div>`).join(''); }
+    function addToCart(id,name,price){ const ex=cart.find(i=>i.id===id); if(ex) ex.quantity++; else cart.push({id,name,price,quantity:1}); renderCart(); }
+    function renderCart(){ const c=document.getElementById('cartItems'); if(cart.length===0){ c.innerHTML='<div style="text-align:center;padding:40px;">السلة فارغة</div>'; updateCartTotals(); return; } c.innerHTML=cart.map(i=>`<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid var(--border);"><div><strong>${i.name}</strong> × ${i.quantity}</div><div>${formatCurrency(i.price*i.quantity)} <button class="btn btn-danger btn-sm" onclick="removeFromCart('${i.id}')" style="margin-right:10px;">✖</button></div></div>`).join(''); updateCartTotals(); }
+    function removeFromCart(id){ cart=cart.filter(i=>i.id!==id); renderCart(); }
+    function updateCartTotals(){ const sub=cart.reduce((s,i)=>s+(i.price*i.quantity),0); const disc=parseFloat(document.getElementById('cartDiscount')?.value)||0; const tot=Math.max(0,sub-disc); document.getElementById('cartSubtotal').innerText=formatCurrency(sub); document.getElementById('cartTotal').innerText=formatCurrency(tot); }
+    function clearCart(){ cart=[]; renderCart(); }
+    async function completeSale(){ if(cart.length===0){ showNotification('⚠️ السلة فارغة','error'); return; } const disc=parseFloat(document.getElementById('cartDiscount')?.value)||0; const total=cart.reduce((s,i)=>s+(i.price*i.quantity),0)-disc; const customerId=document.getElementById('saleCustomer')?.value; const customer=customers.find(c=>c.id===customerId); const invNum='INV-'+Date.now().toString().slice(-8); const date=new Date().toISOString().split('T')[0]; await db.collection('invoices').add({number:invNum,amount:total,discount:disc,status:'paid',date,customerId:customerId||null,customerName:customer?.name||'نقدي',items:cart,companyId,createdAt:firebase.firestore.FieldValue.serverTimestamp()}); for(const item of cart){ const prod=products.find(p=>p.id===item.id); if(prod){ const newStock=Math.max(0,(prod.stock||0)-item.quantity); await db.collection('products').doc(item.id).update({stock:newStock}); } } showNotification(`✅ تم البيع! ${formatCurrency(total)}`,'success'); cart=[]; renderCart(); document.getElementById('cartDiscount').value=0; await loadAllData(); }
+
+    function loadReport(){ const type=document.getElementById('reportType').value, month=document.getElementById('reportMonth').value, year=document.getElementById('reportYear').value; let filtered=invoices.filter(i=>i.status==='paid'); if(type==='monthly'&&month) filtered=filtered.filter(i=>i.date?.startsWith(month)); else if(type==='yearly'&&year) filtered=filtered.filter(i=>i.date?.startsWith(year)); const total=filtered.reduce((s,i)=>s+(i.amount||0),0); document.querySelector('#reportTable tbody').innerHTML=`<tr><td>${type==='monthly'?month||'كل الشهور':year||'كل السنوات'}</td><td>${filtered.length}</td><td>${formatCurrency(total)}</td></tr>`; if(reportChart) reportChart.destroy(); const ctx=document.getElementById('reportChart').getContext('2d'); reportChart=new Chart(ctx,{type:'bar',data:{labels:[type==='monthly'?'الشهر':'السنة'],datasets:[{label:'المبيعات',data:[total],backgroundColor:'#3b82f6'}]},options:{responsive:true}}); }
+    function exportReport(){ exportCurrentData(); }
+
+    function renderUsers(){ const search=document.getElementById('usersSearch')?.value.toLowerCase()||''; const filtered=systemUsers.filter(u=>u.email?.toLowerCase().includes(search)); document.querySelector('#usersTable tbody').innerHTML=filtered.map(u=>`<tr><td>${u.email}</td><td>${u.phone||'-'}</td><td>${u.role==='admin'?'👑 مدير':'👤 مستخدم'}</td><td><span class="badge ${u.isActive?'badge-paid':'badge-cancelled'}">${u.isActive?'نشط':'معطل'}</span></td><td>${u.createdAt?new Date(u.createdAt.toDate()).toLocaleDateString('ar-EG'):'-'}</td><td><button class="btn btn-outline btn-sm" onclick="toggleUserStatus('${u.id}',${!u.isActive})"><i class="ph ph-power"></i></button> <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')"><i class="ph ph-trash"></i></button></td></tr>`).join(''); }
+    function filterUsers(){ renderUsers(); }
+    async function saveUser(e){ e.preventDefault(); const email=document.getElementById('userEmail').value, phone=document.getElementById('userPhone').value, password=document.getElementById('userPassword').value, role=document.getElementById('userRole').value; if(password.length<6){ showNotification('⚠️ 6 أحرف على الأقل','error'); return; } const cred=await auth.createUserWithEmailAndPassword(email,password); await db.collection('users').doc(cred.user.uid).set({email,phone,role,companyId,companyName:userData.companyName,isActive:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()}); showNotification('✅ تمت الإضافة','success'); closeModal('userModal'); document.getElementById('userForm').reset(); await loadAllData(); }
+    async function toggleUserStatus(id,newStatus){ await db.collection('users').doc(id).update({isActive:newStatus}); showNotification(`✅ تم ${newStatus?'تفعيل':'تعطيل'} المستخدم`,'success'); await loadAllData(); }
+    async function deleteUser(id){ if(confirm('حذف المستخدم؟')){ await db.collection('users').doc(id).delete(); showNotification('✅ تم الحذف','success'); await loadAllData(); } }
+
+    function exportCurrentData(){ const data=invoices.map(i=>({'رقم الفاتورة':i.number||i.id,'العميل':i.customerName,'المبلغ':i.amount,'الحالة':i.status==='paid'?'مدفوع':'قيد الانتظار','التاريخ':i.date})); if(data.length===0){ showNotification('⚠️ لا توجد بيانات','warning'); return; } const ws=XLSX.utils.json_to_sheet(data); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'التقارير'); XLSX.writeFile(wb,`SEMO_ERP_${new Date().toISOString().slice(0,10)}.xlsx`); showNotification('📊 تم التصدير','success'); }
+
+    function switchPage(page){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(`page-${page}`).classList.add('active'); document.querySelectorAll('.menu-item').forEach(i=>i.classList.remove
