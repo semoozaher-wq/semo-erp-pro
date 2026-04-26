@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEMO ERP | نظام مؤسسي متكامل</title>
+    <title>SEMO ERP | تسجيل الدخول</title>
     <style>
         :root {
             --primary: #3b82f6;
@@ -20,125 +20,70 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; transition: all 0.3s ease; }
         body.light-mode { --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; --text-muted: #64748b; --border: #e2e8f0; }
-        
         .card { background: var(--card); padding: 40px 30px; border-radius: 20px; width: 450px; max-width: 95%; text-align: center; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; }
         .logo { width: 70px; height: 70px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 28px; font-weight: bold; color: white; }
         h1 { color: var(--primary); margin-bottom: 10px; font-size: 26px; }
         .mode-toggle { position: absolute; top: 15px; left: 15px; background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; }
-        
-        .tab-buttons { display: flex; gap: 10px; margin: 20px 0; background: var(--bg); padding: 5px; border-radius: 50px; }
-        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-radius: 50px; transition: 0.3s; font-weight: bold; }
-        .tab-btn.active { background: var(--primary); color: white; }
-        
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; }
-        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
-        .password-wrapper { position: relative; }
-        .toggle-password { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 18px; }
-        
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
+        .demo-box { background: rgba(245,158,11,0.15); border: 1px solid #f59e0b; border-radius: 12px; padding: 15px; margin: 15px 0; text-align: right; }
+        .demo-box p { font-size: 14px; color: #f59e0b; font-weight: bold; margin-bottom: 8px; }
+        .demo-box span { font-size: 13px; color: var(--text-muted); display: block; line-height: 1.8; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; font-size: 16px; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-success { background: var(--success); color: white; }
-        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-        
-        .link { color: var(--text-muted); cursor: pointer; font-size: 13px; display: block; margin-top: 15px; }
-        .link:hover { color: var(--primary); }
-        
-        .hidden { display: none; }
-        .company-id-box { background: rgba(59,130,246,0.1); padding: 10px; border-radius: 10px; margin: 10px 0; }
-        
-        .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 10px; z-index: 1000; animation: slideDown 0.3s ease; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-demo { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; font-size: 18px; }
+        .btn-demo:hover { opacity: 0.9; transform: translateY(-1px); }
+        .divider { text-align: center; margin: 15px 0; color: var(--text-muted); font-size: 13px; position: relative; }
+        .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: var(--border); }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+        .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 10px; z-index: 1000; animation: slideDown 0.3s ease; font-weight: bold; }
         @keyframes slideDown { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         .notification.success { background: var(--success); color: white; }
         .notification.error { background: var(--danger); color: white; }
-        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; margin-left: 8px; vertical-align: middle; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <button class="mode-toggle" onclick="toggleMode()">🌙</button>
-    <div class="logo">SEMO</div>
+    <div class="logo">S</div>
     <h1>SEMO ERP</h1>
     <p style="color: var(--text-muted); margin-bottom: 20px;">نظام تخطيط موارد المؤسسات</p>
 
-    <div class="tab-buttons">
-        <button class="tab-btn active" id="loginTab" onclick="showLogin()">تسجيل الدخول</button>
-        <button class="tab-btn" id="signupTab" onclick="showSignup()">إنشاء حساب</button>
+    <div class="demo-box">
+        <p>🚀 الحسابات التجريبية الجاهزة</p>
+        <span>📧 <strong>admin@semo.com</strong> | 🔑 <strong>123456</strong> (مدير)</span>
+        <span>📧 <strong>user@semo.com</strong> | 🔑 <strong>123456</strong> (مستخدم)</span>
+        <span style="margin-top: 8px; font-size: 12px;">✨ اضغط الزر الأصفر للدخول الفوري ✨</span>
     </div>
 
-    <!-- Login Form -->
-    <div id="loginForm">
-        <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
-        <div class="password-wrapper">
-            <input type="password" id="loginPassword" placeholder="كلمة المرور">
-            <button class="toggle-password" type="button" onclick="togglePassword('loginPassword')">👁️</button>
-        </div>
-        <button class="btn btn-primary" id="loginBtn" onclick="login()">دخول</button>
-        <a href="#" class="link" onclick="forgotPassword(event)">نسيت كلمة المرور؟</a>
-    </div>
+    <button class="btn btn-demo" id="demoBtn" onclick="directLogin()">
+        🚀 دخول سريع - حساب تجريبي
+    </button>
 
-    <!-- Signup Form -->
-    <div id="signupForm" class="hidden">
-        <input type="email" id="signupEmail" placeholder="البريد الإلكتروني">
-        <input type="tel" id="signupPhone" placeholder="رقم الهاتف">
-        <input type="text" id="signupCompany" placeholder="اسم الشركة / المنشأة">
-        <div class="password-wrapper">
-            <input type="password" id="signupPassword" placeholder="كلمة المرور (6 أحرف)">
-            <button class="toggle-password" type="button" onclick="togglePassword('signupPassword')">👁️</button>
-        </div>
-        <select id="signupRole">
-            <option value="admin">👑 مدير (Admin)</option>
-            <option value="user">👤 مستخدم (User)</option>
-        </select>
-        <div id="companyCodeBox" class="company-id-box hidden">
-            <input type="text" id="companyCode" placeholder="كود الشركة (من المدير)">
-            <small style="color: var(--text-muted);">🔑 أدخل كود الشركة الذي أعطاك إياه المدير</small>
-        </div>
-        <button class="btn btn-success" id="signupBtn" onclick="signup()">إنشاء حساب</button>
-    </div>
+    <div class="divider">أو</div>
 
-    <!-- Email Verification Message -->
-    <div id="verifyBox" class="hidden">
-        <i class="ph ph-envelope" style="font-size: 48px; color: var(--primary);"></i>
-        <h3 style="margin: 15px 0;">📧 تحقق من بريدك</h3>
-        <p style="color: var(--text-muted);">تم إرسال رابط التحقق إلى <strong id="verifyEmail"></strong></p>
-        <p style="font-size: 13px; color: var(--text-muted);">بعد التحقق، عد وسجل الدخول</p>
-        <button class="btn btn-outline" onclick="resendVerification()">📨 إعادة إرسال</button>
-        <span class="link" onclick="showLogin()">← العودة لتسجيل الدخول</span>
+    <div>
+        <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+        <input type="password" id="loginPassword" placeholder="كلمة المرور" style="width:100%; padding:12px; margin-top:10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+        <button class="btn btn-primary" onclick="manualLogin()">🔐 تسجيل الدخول</button>
     </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
 <script>
-    // Firebase Config
-    const firebaseConfig = {
-        apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
-        authDomain: "my-pos-system-11dee.firebaseapp.com",
-        projectId: "my-pos-system-11dee",
-        storageBucket: "my-pos-system-11dee.firebasestorage.app",
-        messagingSenderId: "565195477080",
-        appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d"
+    // الحسابات التجريبية الثابتة
+    const DEMO_ACCOUNTS = {
+        admin: { email: "admin@semo.com", password: "123456", role: "admin", name: "مدير النظام", companyName: "SEMO ERP" },
+        user:  { email: "user@semo.com",  password: "123456", role: "user",  name: "مستخدم عادي", companyName: "SEMO ERP" }
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    let currentNotification = null;
-
     function showNotification(msg, type) {
-        if (currentNotification) currentNotification.remove();
         const n = document.createElement('div');
         n.className = `notification ${type}`;
         n.textContent = msg;
         document.body.appendChild(n);
-        currentNotification = n;
-        setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 300); }, 4000);
+        setTimeout(() => n.remove(), 3000);
     }
 
     function toggleMode() {
@@ -146,202 +91,80 @@
         document.querySelector('.mode-toggle').textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
     }
 
-    function togglePassword(id) {
-        const input = document.getElementById(id);
-        const btn = input.parentElement.querySelector('.toggle-password');
-        input.type = input.type === 'password' ? 'text' : 'password';
-        btn.textContent = input.type === 'password' ? '👁️' : '🙈';
+    // الدخول المباشر من الزر الأصفر
+    function directLogin() {
+        const admin = DEMO_ACCOUNTS.admin;
+        localStorage.setItem('semo_user', JSON.stringify({
+            uid: "demo-admin-001",
+            email: admin.email,
+            name: admin.name,
+            role: admin.role,
+            companyName: admin.companyName,
+            isActive: true,
+            loggedInAt: new Date().toISOString()
+        }));
+        showNotification(`✅ مرحباً ${admin.name} (مدير النظام)`, 'success');
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 800);
     }
 
-    function showLogin() {
-        document.getElementById('loginForm').classList.remove('hidden');
-        document.getElementById('signupForm').classList.add('hidden');
-        document.getElementById('verifyBox').classList.add('hidden');
-        document.getElementById('loginTab').classList.add('active');
-        document.getElementById('signupTab').classList.remove('active');
+    // الدخول اليدوي (اختياري)
+    function manualLogin() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        
+        if (!email || !password) {
+            showNotification('⚠️ أدخل البريد وكلمة المرور', 'error');
+            return;
+        }
+
+        let foundUser = null;
+        for (let key in DEMO_ACCOUNTS) {
+            if (DEMO_ACCOUNTS[key].email === email && DEMO_ACCOUNTS[key].password === password) {
+                foundUser = DEMO_ACCOUNTS[key];
+                break;
+            }
+        }
+
+        if (foundUser) {
+            localStorage.setItem('semo_user', JSON.stringify({
+                uid: `demo-${foundUser.role}-001`,
+                email: foundUser.email,
+                name: foundUser.name,
+                role: foundUser.role,
+                companyName: foundUser.companyName,
+                isActive: true,
+                loggedInAt: new Date().toISOString()
+            }));
+            showNotification(`✅ مرحباً ${foundUser.name}`, 'success');
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 800);
+        } else {
+            showNotification('❌ البريد أو كلمة المرور غير صحيحة', 'error');
+        }
     }
 
-    function showSignup() {
-        document.getElementById('loginForm').classList.add('hidden');
-        document.getElementById('signupForm').classList.remove('hidden');
-        document.getElementById('verifyBox').classList.add('hidden');
-        document.getElementById('loginTab').classList.remove('active');
-        document.getElementById('signupTab').classList.add('active');
-    }
-
-    document.getElementById('signupRole').addEventListener('change', function() {
-        const box = document.getElementById('companyCodeBox');
-        box.classList.toggle('hidden', this.value !== 'user');
+    // التحقق من وجود جلسة سابقة
+    window.addEventListener('load', function() {
+        const savedUser = localStorage.getItem('semo_user');
+        if (savedUser) {
+            try {
+                const user = JSON.parse(savedUser);
+                if (user && user.email) {
+                    window.location.href = 'dashboard.html';
+                }
+            } catch(e) {
+                localStorage.removeItem('semo_user');
+            }
+        }
     });
 
-    async function signup() {
-        const email = document.getElementById('signupEmail').value.trim();
-        const phone = document.getElementById('signupPhone').value.trim();
-        const company = document.getElementById('signupCompany').value.trim();
-        const password = document.getElementById('signupPassword').value;
-        const role = document.getElementById('signupRole').value;
-        const companyCode = document.getElementById('companyCode').value.trim();
-
-        if (!email || !phone || !company || !password) {
-            showNotification('⚠️ يرجى ملء جميع الحقول', 'error');
-            return;
-        }
-        if (password.length < 6) {
-            showNotification('⚠️ كلمة المرور 6 أحرف على الأقل', 'error');
-            return;
-        }
-        if (role === 'user' && !companyCode) {
-            showNotification('⚠️ يرجى إدخال كود الشركة', 'error');
-            return;
-        }
-
-        const btn = document.getElementById('signupBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner"></span> جاري...';
-
-        try {
-            if (role === 'user') {
-                const companyDoc = await db.collection('companies').doc(companyCode).get();
-                if (!companyDoc.exists) {
-                    showNotification('❌ كود الشركة غير صحيح', 'error');
-                    btn.disabled = false;
-                    btn.innerHTML = 'إنشاء حساب';
-                    return;
-                }
-            }
-
-            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-            const user = userCredential.user;
-            let companyId = companyCode;
-
-            if (role === 'admin') {
-                const newCompanyRef = db.collection('companies').doc();
-                companyId = newCompanyRef.id;
-                await newCompanyRef.set({
-                    name: company,
-                    ownerEmail: email,
-                    ownerUid: user.uid,
-                    companyCode: companyId,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            }
-
-            await db.collection('users').doc(user.uid).set({
-                email, phone, companyName: company, companyId, role,
-                isActive: true,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            await user.sendEmailVerification();
-
-            document.getElementById('verifyEmail').textContent = email;
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('signupForm').classList.add('hidden');
-            document.getElementById('verifyBox').classList.remove('hidden');
-
-            if (role === 'admin') {
-                showNotification(`✅ تم إنشاء الحساب! كود شركتك: ${companyId.substring(0,8)}`, 'success');
-                localStorage.setItem('semo_company_code', companyId);
-            } else {
-                showNotification('✅ تم إنشاء الحساب! تحقق من بريدك', 'success');
-            }
-        } catch (error) {
-            let msg = error.message;
-            if (error.code === 'auth/email-already-in-use') msg = '❌ البريد مستخدم بالفعل';
-            showNotification(msg, 'error');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = 'إنشاء حساب';
-        }
-    }
-
-    async function login() {
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value;
-
-        if (!email || !password) {
-            showNotification('⚠️ يرجى إدخال البريد وكلمة المرور', 'error');
-            return;
-        }
-
-        const btn = document.getElementById('loginBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner"></span> جاري...';
-
-        try {
-            const userCredential = await auth.signInWithEmailAndPassword(email, password);
-            const user = userCredential.user;
-
-            if (!user.emailVerified) {
-                showNotification('⚠️ يرجى تفعيل بريدك الإلكتروني أولاً', 'error');
-                document.getElementById('verifyEmail').textContent = email;
-                document.getElementById('loginForm').classList.add('hidden');
-                document.getElementById('verifyBox').classList.remove('hidden');
-                await auth.signOut();
-                btn.disabled = false;
-                btn.innerHTML = 'دخول';
-                return;
-            }
-
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            if (!userDoc.exists || !userDoc.data().isActive) {
-                showNotification('❌ الحساب غير نشط، تواصل مع المدير', 'error');
-                await auth.signOut();
-                btn.disabled = false;
-                btn.innerHTML = 'دخول';
-                return;
-            }
-
-            const userData = userDoc.data();
-            localStorage.setItem('semo_user', JSON.stringify({
-                uid: user.uid,
-                email: user.email,
-                role: userData.role,
-                companyId: userData.companyId,
-                companyName: userData.companyName
-            }));
-
-            showNotification(`✅ مرحباً بك، ${user.email}!`, 'success');
-            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
-        } catch (error) {
-            let msg = '❌ بيانات الدخول غير صحيحة';
-            if (error.code === 'auth/wrong-password') msg = '❌ كلمة المرور غير صحيحة';
-            if (error.code === 'auth/user-not-found') msg = '❌ المستخدم غير موجود';
-            showNotification(msg, 'error');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = 'دخول';
-        }
-    }
-
-    async function forgotPassword(event) {
-        event.preventDefault();
-        const email = document.getElementById('loginEmail').value.trim();
-        if (!email || !email.includes('@')) {
-            showNotification('⚠️ يرجى إدخال بريد إلكتروني صحيح', 'error');
-            return;
-        }
-        try {
-            await auth.sendPasswordResetEmail(email);
-            showNotification(`📧 تم إرسال رابط استعادة كلمة المرور إلى ${email}`, 'success');
-        } catch (error) {
-            showNotification('❌ ' + error.message, 'error');
-        }
-    }
-
-    async function resendVerification() {
-        if (auth.currentUser) {
-            await auth.currentUser.sendEmailVerification();
-            showNotification('📧 تم إعادة إرسال رابط التحقق', 'success');
-        } else {
-            showNotification('⚠️ يرجى تسجيل الدخول أولاً', 'error');
-            showLogin();
-        }
-    }
-
-    auth.onAuthStateChanged((user) => {
-        if (user && user.emailVerified && !window.location.pathname.includes('dashboard.html')) {
-            window.location.href = 'dashboard.html';
+    // دخول بالضغط على Enter
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            manualLogin();
         }
     });
 </script>
