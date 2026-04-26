@@ -79,7 +79,14 @@
     <button class="btn-primary" onclick="manualLogin()">🔐 تسجيل الدخول</button>
     <div class="shortcut">⏎ اضغط Enter للتسجيل السريع</div>
 </div>
+
+<script src="main.js"></script>
 <script>
+    // تسجيل Service Worker للتشغيل بدون إنترنت
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered', reg)).catch(err => console.log('SW failed', err));
+    }
+    // دوال تسجيل الدخول
     const DEMO_ACCOUNTS = {
         admin: { email: "admin@system.com", password: "123456", name: "مدير النظام", role: "admin" },
         user:  { email: "user@system.com",  password: "123456", name: "مستخدم عادي", role: "user" }
