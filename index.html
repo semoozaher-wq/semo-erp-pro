@@ -3,456 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEMO ERP | دخول</title>
+    <title>SEMO ERP | نظام مؤسسي متكامل</title>
     <style>
-        body { 
-            background: #0f172a; 
-            color: white; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            margin: 0; 
-            transition: background 0.3s ease;
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
         }
-        .card { 
-            background: #1e293b; 
-            padding: 40px 30px; 
-            border-radius: 20px; 
-            width: 400px; 
-            max-width: 90%;
-            text-align: center; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
-            border: 1px solid #334155; 
-            transition: background-color 0.3s ease, color 0.3s ease; 
-            position: relative;
-        }
-        body.light-mode { background: #f1f5f9; color: #1e293b; }
-        body.light-mode .card { background: #ffffff; color: #1e293b; border-color: #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        body.light-mode input { background: #f8fafc; color: #334155; border-color: #cbd5e1; }
-        body.light-mode .link, body.light-mode .forgot-password { color: #64748b; }
-        body.light-mode select { background: #f8fafc; color: #334155; border-color: #cbd5e1; }
-        h1 { color: #3b82f6; margin-bottom: 10px; font-size: 28px; letter-spacing: 1px; }
-        .logo { width: 80px; height: 80px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-weight: bold; font-size: 24px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
-        input, select { width: 100%; padding: 14px; margin: 12px 0; border-radius: 10px; border: 1px solid #334155; outline: none; font-size: 16px; background: #0f172a; color: white; box-sizing: border-box; transition: all 0.3s ease; }
-        input:focus, select:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); }
-        select option { background: #1e293b; }
-        .toggle-password { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8; font-size: 18px; background: none; border: none; outline: none; padding: 0; }
-        .toggle-password:hover { color: #3b82f6; }
-        .btn { width: 100%; padding: 14px; background: #3b82f6; border: none; color: white; font-weight: bold; border-radius: 10px; cursor: pointer; margin-top: 20px; font-size: 16px; transition: background 0.3s ease; }
-        .btn:hover { background: #2563eb; }
-        .btn-green { background: #10b981 !important; }
-        .btn-green:hover { background: #059669 !important; }
-        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
-        .link, .forgot-password { color: #94a3b8; cursor: pointer; display: block; margin-top: 15px; font-size: 14px; text-decoration: none; transition: color 0.3s ease; }
-        .link:hover, .forgot-password:hover { color: #3b82f6; text-decoration: underline; }
-        .mode-toggle { position: absolute; top: 20px; right: 20px; background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; transition: color 0.3s ease; }
-        .mode-toggle:hover { color: #3b82f6; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; transition: all 0.3s ease; }
+        body.light-mode { --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; --text-muted: #64748b; --border: #e2e8f0; }
+        
+        .card { background: var(--card); padding: 40px 30px; border-radius: 20px; width: 450px; max-width: 95%; text-align: center; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; }
+        .logo { width: 70px; height: 70px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 28px; font-weight: bold; color: white; }
+        h1 { color: var(--primary); margin-bottom: 10px; font-size: 26px; }
+        .mode-toggle { position: absolute; top: 15px; left: 15px; background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; }
+        
+        .tab-buttons { display: flex; gap: 10px; margin: 20px 0; background: var(--bg); padding: 5px; border-radius: 50px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-radius: 50px; transition: 0.3s; font-weight: bold; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+        .password-wrapper { position: relative; }
+        .toggle-password { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 18px; }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        
+        .link { color: var(--text-muted); cursor: pointer; font-size: 13px; display: block; margin-top: 15px; }
+        .link:hover { color: var(--primary); }
+        
         .hidden { display: none; }
-        .otp-input { text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 20px; background: #0f172a; color: white; border: 2px dashed #3b82f6; width: 100%; padding: 10px 0; border-radius: 10px; margin-top: 10px; transition: all 0.3s ease; box-sizing: border-box; }
-        .otp-input:focus { border-color: #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); }
-        .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 12px; z-index: 1000; font-weight: bold; animation: slideDown 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); max-width: 90%; text-align: center; }
+        .company-id-box { background: rgba(59,130,246,0.1); padding: 10px; border-radius: 10px; margin: 10px 0; }
+        
+        .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 10px; z-index: 1000; animation: slideDown 0.3s ease; }
         @keyframes slideDown { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        .notification.success { background: #10b981; color: white; }
-        .notification.error { background: #ef4444; color: white; }
+        .notification.success { background: var(--success); color: white; }
+        .notification.error { background: var(--danger); color: white; }
         .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; margin-left: 8px; vertical-align: middle; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .role-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-top: 5px; }
-        .role-admin { background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid #3b82f6; }
-        .role-user { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
-        .verify-notice { background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; border-radius: 10px; padding: 10px; margin-top: 15px; font-size: 13px; color: #f59e0b; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <button class="mode-toggle" onclick="toggleMode()">🌙</button>
-        <div class="logo">SEMO</div>
-        <h1>SEMO ERP</h1>
+<div class="card">
+    <button class="mode-toggle" onclick="toggleMode()">🌙</button>
+    <div class="logo">SEMO</div>
+    <h1>SEMO ERP</h1>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">نظام تخطيط موارد المؤسسات</p>
 
-        <!-- واجهة تسجيل الدخول -->
-        <div id="login-box">
-            <input type="email" id="l-id" placeholder="البريد الإلكتروني">
-            <div style="position: relative;">
-                <input type="password" id="l-p" placeholder="كلمة المرور">
-                <button class="toggle-password" type="button" onclick="togglePassword('l-p')">👁️</button>
-            </div>
-            <button class="btn" id="login-btn" onclick="login()">دخول</button>
-            <span class="link" onclick="showSignup()">تأسيس حساب جديد</span>
-            <a href="#" class="forgot-password" onclick="forgotPassword(event)">نسيت كلمة المرور؟</a>
-        </div>
-
-        <!-- واجهة إنشاء حساب جديد -->
-        <div id="signup-box" class="hidden">
-            <input type="email" id="s-e" placeholder="البريد الإلكتروني">
-            <input type="tel" id="s-ph" placeholder="رقم الهاتف">
-            <input type="text" id="s-company" placeholder="اسم الشركة / المنشأة">
-            <div style="position: relative;">
-                <input type="password" id="s-p" placeholder="كلمة المرور (6 أحرف على الأقل)">
-                <button class="toggle-password" type="button" onclick="togglePassword('s-p')">👁️</button>
-            </div>
-
-            <!-- اختيار الدور -->
-            <select id="s-role">
-                <option value="admin">👑 مدير (Admin)</option>
-                <option value="user">👤 مستخدم (User)</option>
-            </select>
-
-            <!-- حقل companyId للمستخدم العادي -->
-            <div id="company-id-box" class="hidden">
-                <input type="text" id="s-cid" placeholder="كود الشركة (من المدير)">
-            </div>
-
-            <button class="btn btn-green" id="signup-btn" onclick="signup()">إنشاء حساب</button>
-            <span class="link" onclick="showLogin()">العودة لتسجيل الدخول</span>
-        </div>
-
-        <!-- واجهة تأكيد البريد الإلكتروني -->
-        <div id="otp-box" class="hidden">
-            <h3>📧 تحقق من بريدك</h3>
-            <div class="verify-notice">
-                تم إرسال رابط التحقق إلى:<br>
-                <strong id="otp-email"></strong>
-            </div>
-            <p style="font-size: 13px; color: #94a3b8; margin-top: 15px;">
-                افتح بريدك الإلكتروني واضغط على رابط التحقق، ثم عد وسجل الدخول.
-            </p>
-            <button class="btn" onclick="resendVerification()">📨 إعادة إرسال رابط التحقق</button>
-            <span class="link" onclick="showLogin()">العودة لتسجيل الدخول</span>
-        </div>
+    <div class="tab-buttons">
+        <button class="tab-btn active" id="loginTab" onclick="showLogin()">تسجيل الدخول</button>
+        <button class="tab-btn" id="signupTab" onclick="showSignup()">إنشاء حساب</button>
     </div>
 
-    <!-- مكتبات Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Login Form -->
+    <div id="loginForm">
+        <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
+        <div class="password-wrapper">
+            <input type="password" id="loginPassword" placeholder="كلمة المرور">
+            <button class="toggle-password" type="button" onclick="togglePassword('loginPassword')">👁️</button>
+        </div>
+        <button class="btn btn-primary" id="loginBtn" onclick="login()">دخول</button>
+        <a href="#" class="link" onclick="forgotPassword(event)">نسيت كلمة المرور؟</a>
+    </div>
 
-    <script>
-        // ✅ إعدادات Firebase (مصححة)
-        const firebaseConfig = {
-            apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
-            authDomain: "my-pos-system-11dee.firebaseapp.com",
-            projectId: "my-pos-system-11dee",
-            storageBucket: "my-pos-system-11dee.firebasestorage.app",
-            messagingSenderId: "565195477080",
-            appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d"
-        };
+    <!-- Signup Form -->
+    <div id="signupForm" class="hidden">
+        <input type="email" id="signupEmail" placeholder="البريد الإلكتروني">
+        <input type="tel" id="signupPhone" placeholder="رقم الهاتف">
+        <input type="text" id="signupCompany" placeholder="اسم الشركة / المنشأة">
+        <div class="password-wrapper">
+            <input type="password" id="signupPassword" placeholder="كلمة المرور (6 أحرف)">
+            <button class="toggle-password" type="button" onclick="togglePassword('signupPassword')">👁️</button>
+        </div>
+        <select id="signupRole">
+            <option value="admin">👑 مدير (Admin)</option>
+            <option value="user">👤 مستخدم (User)</option>
+        </select>
+        <div id="companyCodeBox" class="company-id-box hidden">
+            <input type="text" id="companyCode" placeholder="كود الشركة (من المدير)">
+            <small style="color: var(--text-muted);">🔑 أدخل كود الشركة الذي أعطاك إياه المدير</small>
+        </div>
+        <button class="btn btn-success" id="signupBtn" onclick="signup()">إنشاء حساب</button>
+    </div>
 
-        // تهيئة Firebase
+    <!-- Email Verification Message -->
+    <div id="verifyBox" class="hidden">
+        <i class="ph ph-envelope" style="font-size: 48px; color: var(--primary);"></i>
+        <h3 style="margin: 15px 0;">📧 تحقق من بريدك</h3>
+        <p style="color: var(--text-muted);">تم إرسال رابط التحقق إلى <strong id="verifyEmail"></strong></p>
+        <p style="font-size: 13px; color: var(--text-muted);">بعد التحقق، عد وسجل الدخول</p>
+        <button class="btn btn-outline" onclick="resendVerification()">📨 إعادة إرسال</button>
+        <span class="link" onclick="showLogin()">← العودة لتسجيل الدخول</span>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<script>
+    // Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
+        authDomain: "my-pos-system-11dee.firebaseapp.com",
+        projectId: "my-pos-system-11dee",
+        storageBucket: "my-pos-system-11dee.firebasestorage.app",
+        messagingSenderId: "565195477080",
+        appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentNotification = null;
+
+    function showNotification(msg, type) {
+        if (currentNotification) currentNotification.remove();
+        const n = document.createElement('div');
+        n.className = `notification ${type}`;
+        n.textContent = msg;
+        document.body.appendChild(n);
+        currentNotification = n;
+        setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 300); }, 4000);
+    }
+
+    function toggleMode() {
+        document.body.classList.toggle('light-mode');
+        document.querySelector('.mode-toggle').textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
+    }
+
+    function togglePassword(id) {
+        const input = document.getElementById(id);
+        const btn = input.parentElement.querySelector('.toggle-password');
+        input.type = input.type === 'password' ? 'text' : 'password';
+        btn.textContent = input.type === 'password' ? '👁️' : '🙈';
+    }
+
+    function showLogin() {
+        document.getElementById('loginForm').classList.remove('hidden');
+        document.getElementById('signupForm').classList.add('hidden');
+        document.getElementById('verifyBox').classList.add('hidden');
+        document.getElementById('loginTab').classList.add('active');
+        document.getElementById('signupTab').classList.remove('active');
+    }
+
+    function showSignup() {
+        document.getElementById('loginForm').classList.add('hidden');
+        document.getElementById('signupForm').classList.remove('hidden');
+        document.getElementById('verifyBox').classList.add('hidden');
+        document.getElementById('loginTab').classList.remove('active');
+        document.getElementById('signupTab').classList.add('active');
+    }
+
+    document.getElementById('signupRole').addEventListener('change', function() {
+        const box = document.getElementById('companyCodeBox');
+        box.classList.toggle('hidden', this.value !== 'user');
+    });
+
+    async function signup() {
+        const email = document.getElementById('signupEmail').value.trim();
+        const phone = document.getElementById('signupPhone').value.trim();
+        const company = document.getElementById('signupCompany').value.trim();
+        const password = document.getElementById('signupPassword').value;
+        const role = document.getElementById('signupRole').value;
+        const companyCode = document.getElementById('companyCode').value.trim();
+
+        if (!email || !phone || !company || !password) {
+            showNotification('⚠️ يرجى ملء جميع الحقول', 'error');
+            return;
+        }
+        if (password.length < 6) {
+            showNotification('⚠️ كلمة المرور 6 أحرف على الأقل', 'error');
+            return;
+        }
+        if (role === 'user' && !companyCode) {
+            showNotification('⚠️ يرجى إدخال كود الشركة', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('signupBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> جاري...';
+
         try {
-            firebase.initializeApp(firebaseConfig);
-            console.log("✅ Firebase initialized");
-        } catch (error) {
-            console.error("❌ Firebase init error:", error);
-        }
-        
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        let currentNotification = null;
-
-        // ==================== UI Functions ====================
-
-        function toggleMode() {
-            document.body.classList.toggle('light-mode');
-            const btn = document.querySelector('.mode-toggle');
-            if (btn) btn.textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
-        }
-
-        function showLogin() {
-            document.getElementById('login-box').classList.remove('hidden');
-            document.getElementById('signup-box').classList.add('hidden');
-            document.getElementById('otp-box').classList.add('hidden');
-        }
-
-        function showSignup() {
-            document.getElementById('login-box').classList.add('hidden');
-            document.getElementById('signup-box').classList.remove('hidden');
-            document.getElementById('otp-box').classList.add('hidden');
-            
-            // إعادة تعيين حقل كود الشركة
-            document.getElementById('company-id-box').classList.add('hidden');
-            document.getElementById('s-cid').value = '';
-        }
-
-        function togglePassword(inputId) {
-            const input = document.getElementById(inputId);
-            if (!input) return;
-            const btn = input.parentElement.querySelector('.toggle-password');
-            if (input.type === 'password') {
-                input.type = 'text';
-                btn.textContent = '🙈';
-            } else {
-                input.type = 'password';
-                btn.textContent = '👁️';
-            }
-        }
-
-        // إظهار/إخفاء حقل كود الشركة حسب الدور
-        const roleSelect = document.getElementById('s-role');
-        if (roleSelect) {
-            roleSelect.addEventListener('change', function() {
-                const companyIdBox = document.getElementById('company-id-box');
-                if (this.value === 'user') {
-                    companyIdBox.classList.remove('hidden');
-                } else {
-                    companyIdBox.classList.add('hidden');
+            if (role === 'user') {
+                const companyDoc = await db.collection('companies').doc(companyCode).get();
+                if (!companyDoc.exists) {
+                    showNotification('❌ كود الشركة غير صحيح', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = 'إنشاء حساب';
+                    return;
                 }
-            });
-        }
-
-        function showNotification(message, type) {
-            if (currentNotification) currentNotification.remove();
-            const n = document.createElement('div');
-            n.className = `notification ${type}`;
-            n.textContent = message;
-            document.body.appendChild(n);
-            currentNotification = n;
-            setTimeout(() => {
-                if (n) {
-                    n.style.opacity = '0';
-                    n.style.transition = 'opacity 0.3s';
-                    setTimeout(() => { 
-                        if (n && n.remove) n.remove(); 
-                        if (currentNotification === n) currentNotification = null; 
-                    }, 300);
-                }
-            }, 4000);
-        }
-
-        function setLoading(btnId, isLoading, text = '') {
-            const btn = document.getElementById(btnId);
-            if (!btn) return;
-            btn.disabled = isLoading;
-            if (isLoading) {
-                btn.innerHTML = `<span class="spinner"></span> جاري المعالجة...`;
-            } else {
-                btn.textContent = text || (btnId === 'login-btn' ? 'دخول' : 'إنشاء حساب');
-            }
-        }
-
-        // ==================== Firebase Functions ====================
-
-        // 1. إنشاء حساب جديد مع نظام الشركات والأدوار
-        async function signup() {
-            const email    = document.getElementById('s-e').value.trim();
-            const phone    = document.getElementById('s-ph').value.trim();
-            const company  = document.getElementById('s-company').value.trim();
-            const password = document.getElementById('s-p').value;
-            const role     = document.getElementById('s-role').value;
-            const cid      = document.getElementById('s-cid').value.trim();
-
-            // ✅ التحقق من البيانات (تم إصلاح الخطأ)
-            if (!email || !phone || !company || !password) {
-                showNotification('⚠️ يرجى ملء جميع الحقول', 'error');
-                return;
-            }
-            if (password.length < 6) {
-                showNotification('⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error');
-                return;
-            }
-            if (role === 'user' && !cid) {
-                showNotification('⚠️ يرجى إدخال كود الشركة من المدير', 'error');
-                return;
             }
 
-            setLoading('signup-btn', true);
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            const user = userCredential.user;
+            let companyId = companyCode;
 
-            try {
-                // التحقق من كود الشركة للمستخدم العادي
-                let companyId = '';
-                let companyDoc = null;
-                
-                if (role === 'user') {
-                    companyDoc = await db.collection('companies').doc(cid).get();
-                    if (!companyDoc.exists) {
-                        showNotification('❌ كود الشركة غير صحيح، تواصل مع المدير', 'error');
-                        setLoading('signup-btn', false);
-                        return;
-                    }
-                    companyId = cid;
-                }
-
-                // إنشاء المستخدم في Firebase Auth
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                const user = userCredential.user;
-
-                // لو مدير، ننشئ شركة جديدة
-                if (role === 'admin') {
-                    const newCompanyRef = db.collection('companies').doc();
-                    companyId = newCompanyRef.id;
-
-                    await newCompanyRef.set({
-                        name: company,
-                        ownerEmail: email,
-                        ownerUid: user.uid,
-                        companyCode: companyId,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-
-                // حفظ بيانات المستخدم في Firestore
-                await db.collection('users').doc(user.uid).set({
-                    email: email,
-                    phone: phone,
-                    companyName: company,
-                    companyId: companyId,
-                    role: role,
-                    isActive: true,
+            if (role === 'admin') {
+                const newCompanyRef = db.collection('companies').doc();
+                companyId = newCompanyRef.id;
+                await newCompanyRef.set({
+                    name: company,
+                    ownerEmail: email,
+                    ownerUid: user.uid,
+                    companyCode: companyId,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-
-                // إرسال بريد التحقق
-                await user.sendEmailVerification();
-
-                // إظهار شاشة التحقق
-                document.getElementById('otp-email').textContent = email;
-                document.getElementById('login-box').classList.add('hidden');
-                document.getElementById('signup-box').classList.add('hidden');
-                document.getElementById('otp-box').classList.remove('hidden');
-
-                // لو مدير، نعرض له كود شركته
-                if (role === 'admin') {
-                    showNotification(`✅ تم إنشاء الحساب! كود شركتك: ${companyId.substring(0, 8)} - احتفظ به للمستخدمين`, 'success');
-                    localStorage.setItem('semo_company_code', companyId);
-                } else {
-                    showNotification('✅ تم إنشاء الحساب! تحقق من بريدك', 'success');
-                }
-
-            } catch (error) {
-                console.error("Signup error:", error);
-                let message = error.message;
-                if (error.code === 'auth/email-already-in-use') message = '❌ البريد الإلكتروني مستخدم بالفعل';
-                if (error.code === 'auth/invalid-email') message = '❌ البريد الإلكتروني غير صحيح';
-                if (error.code === 'auth/weak-password') message = '❌ كلمة المرور ضعيفة جداً';
-                showNotification(message, 'error');
-            } finally {
-                setLoading('signup-btn', false);
             }
+
+            await db.collection('users').doc(user.uid).set({
+                email, phone, companyName: company, companyId, role,
+                isActive: true,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            await user.sendEmailVerification();
+
+            document.getElementById('verifyEmail').textContent = email;
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupForm').classList.add('hidden');
+            document.getElementById('verifyBox').classList.remove('hidden');
+
+            if (role === 'admin') {
+                showNotification(`✅ تم إنشاء الحساب! كود شركتك: ${companyId.substring(0,8)}`, 'success');
+                localStorage.setItem('semo_company_code', companyId);
+            } else {
+                showNotification('✅ تم إنشاء الحساب! تحقق من بريدك', 'success');
+            }
+        } catch (error) {
+            let msg = error.message;
+            if (error.code === 'auth/email-already-in-use') msg = '❌ البريد مستخدم بالفعل';
+            showNotification(msg, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'إنشاء حساب';
+        }
+    }
+
+    async function login() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        if (!email || !password) {
+            showNotification('⚠️ يرجى إدخال البريد وكلمة المرور', 'error');
+            return;
         }
 
-        // 2. تسجيل الدخول
-        async function login() {
-            const email    = document.getElementById('l-id').value.trim();
-            const password = document.getElementById('l-p').value;
+        const btn = document.getElementById('loginBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> جاري...';
 
-            if (!email || !password) {
-                showNotification('⚠️ يرجى ملء جميع الحقول', 'error');
+        try {
+            const userCredential = await auth.signInWithEmailAndPassword(email, password);
+            const user = userCredential.user;
+
+            if (!user.emailVerified) {
+                showNotification('⚠️ يرجى تفعيل بريدك الإلكتروني أولاً', 'error');
+                document.getElementById('verifyEmail').textContent = email;
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('verifyBox').classList.remove('hidden');
+                await auth.signOut();
+                btn.disabled = false;
+                btn.innerHTML = 'دخول';
                 return;
             }
 
-            setLoading('login-btn', true);
-
-            try {
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                const user = userCredential.user;
-
-                // التحقق من تفعيل البريد الإلكتروني
-                if (!user.emailVerified) {
-                    showNotification('⚠️ يرجى تفعيل بريدك الإلكتروني أولاً', 'error');
-                    document.getElementById('otp-email').textContent = email;
-                    document.getElementById('login-box').classList.add('hidden');
-                    document.getElementById('otp-box').classList.remove('hidden');
-                    await auth.signOut();
-                    setLoading('login-btn', false);
-                    return;
-                }
-
-                // جلب بيانات المستخدم من Firestore
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (!userDoc.exists) {
-                    showNotification('❌ لم يتم العثور على بيانات المستخدم', 'error');
-                    await auth.signOut();
-                    setLoading('login-btn', false);
-                    return;
-                }
-
-                const userData = userDoc.data();
-
-                // التحقق من أن الحساب نشط
-                if (!userData.isActive) {
-                    showNotification('❌ تم تعطيل حسابك، تواصل مع المدير', 'error');
-                    await auth.signOut();
-                    setLoading('login-btn', false);
-                    return;
-                }
-
-                // حفظ بيانات الجلسة
-                localStorage.setItem('semo_logged_in', 'true');
-                localStorage.setItem('semo_user_email', user.email);
-                localStorage.setItem('semo_user_role', userData.role);
-                localStorage.setItem('semo_company_id', userData.companyId);
-                localStorage.setItem('semo_company_name', userData.companyName);
-
-                const roleIcon = userData.role === 'admin' ? '👑 ' : '👤 ';
-                showNotification(`✅ مرحباً بك، ${roleIcon}${user.email}!`, 'success');
-
-                // الانتقال للوحة التحكم
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1500);
-
-            } catch (error) {
-                console.error("Login error:", error);
-                let message = '❌ بيانات الدخول غير صحيحة';
-                if (error.code === 'auth/wrong-password') message = '❌ كلمة المرور غير صحيحة';
-                if (error.code === 'auth/user-not-found') message = '❌ المستخدم غير موجود';
-                if (error.code === 'auth/too-many-requests') message = '⚠️ محاولات كثيرة، حاول لاحقاً';
-                if (error.code === 'auth/invalid-email') message = '❌ البريد الإلكتروني غير صحيح';
-                if (error.code === 'auth/invalid-credential') message = '❌ بيانات الدخول غير صحيحة';
-                showNotification(message, 'error');
-            } finally {
-                setLoading('login-btn', false);
-            }
-        }
-
-        // 3. إعادة إرسال رابط التحقق
-        async function resendVerification() {
-            try {
-                if (auth.currentUser) {
-                    await auth.currentUser.sendEmailVerification();
-                    showNotification('📧 تم إعادة إرسال رابط التحقق', 'success');
-                } else {
-                    showNotification('⚠️ يرجى تسجيل الدخول أولاً', 'error');
-                    showLogin();
-                }
-            } catch (error) {
-                console.error("Resend error:", error);
-                showNotification('❌ ' + error.message, 'error');
-            }
-        }
-
-        // 4. نسيت كلمة المرور
-        async function forgotPassword(event) {
-            if (event) event.preventDefault();
-            const email = document.getElementById('l-id').value.trim();
-
-            if (!email || !email.includes('@')) {
-                showNotification('⚠️ يرجى إدخال بريد إلكتروني صحيح أولاً', 'error');
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (!userDoc.exists || !userDoc.data().isActive) {
+                showNotification('❌ الحساب غير نشط، تواصل مع المدير', 'error');
+                await auth.signOut();
+                btn.disabled = false;
+                btn.innerHTML = 'دخول';
                 return;
             }
 
-            try {
-                await auth.sendPasswordResetEmail(email);
-                showNotification(`📧 تم إرسال رابط استعادة كلمة المرور إلى: ${email}`, 'success');
-            } catch (error) {
-                console.error("Reset error:", error);
-                let message = error.message;
-                if (error.code === 'auth/user-not-found') message = '❌ لا يوجد مستخدم بهذا البريد';
-                showNotification(message, 'error');
-            }
-        }
+            const userData = userDoc.data();
+            localStorage.setItem('semo_user', JSON.stringify({
+                uid: user.uid,
+                email: user.email,
+                role: userData.role,
+                companyId: userData.companyId,
+                companyName: userData.companyName
+            }));
 
-        // 5. مراقبة حالة المستخدم
-        auth.onAuthStateChanged((user) => {
-            if (user && user.emailVerified) {
-                const path = window.location.pathname;
-                if (path.includes('index.html') || path === '/' || path === '') {
-                    window.location.href = 'dashboard.html';
-                }
-            }
-        });
-    </script>
+            showNotification(`✅ مرحباً بك، ${user.email}!`, 'success');
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+        } catch (error) {
+            let msg = '❌ بيانات الدخول غير صحيحة';
+            if (error.code === 'auth/wrong-password') msg = '❌ كلمة المرور غير صحيحة';
+            if (error.code === 'auth/user-not-found') msg = '❌ المستخدم غير موجود';
+            showNotification(msg, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'دخول';
+        }
+    }
+
+    async function forgotPassword(event) {
+        event.preventDefault();
+        const email = document.getElementById('loginEmail').value.trim();
+        if (!email || !email.includes('@')) {
+            showNotification('⚠️ يرجى إدخال بريد إلكتروني صحيح', 'error');
+            return;
+        }
+        try {
+            await auth.sendPasswordResetEmail(email);
+            showNotification(`📧 تم إرسال رابط استعادة كلمة المرور إلى ${email}`, 'success');
+        } catch (error) {
+            showNotification('❌ ' + error.message, 'error');
+        }
+    }
+
+    async function resendVerification() {
+        if (auth.currentUser) {
+            await auth.currentUser.sendEmailVerification();
+            showNotification('📧 تم إعادة إرسال رابط التحقق', 'success');
+        } else {
+            showNotification('⚠️ يرجى تسجيل الدخول أولاً', 'error');
+            showLogin();
+        }
+    }
+
+    auth.onAuthStateChanged((user) => {
+        if (user && user.emailVerified && !window.location.pathname.includes('dashboard.html')) {
+            window.location.href = 'dashboard.html';
+        }
+    });
+</script>
 </body>
 </html>
