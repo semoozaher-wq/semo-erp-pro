@@ -1,38 +1,21 @@
-const cacheName = 'semo-erp-v2'; // قمنا بتغيير الإصدار لتحديث الذاكرة
-const assets = [
-  './',
-  './index.html',
-  './dashboard.html',
-  './manifest.json'
+// Service Worker للتشغيل بدون إنترنت
+const CACHE_NAME = 'semo-erp-v2';
+const urlsToCache = [
+    '/',
+    '/index.html',
+    '/dashboard.html'
 ];
 
-// تثبيت ملف الـ Service Worker وحفظ الملفات الأساسية في الذاكرة
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(cacheName).then(cache => {
-      console.log('جاري حفظ ملفات النظام في الذاكرة...');
-      return cache.addAll(assets);
-    })
-  );
+self.addEventListener('install', event => {
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => cache.addAll(urlsToCache))
+    );
 });
 
-// تفعيل الملف وحذف الكاش القديم إن وجد
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(keys
-        .filter(key => key !== cacheName)
-        .map(key => caches.delete(key))
-      );
-    })
-  );
-});
-
-// جلب الملفات من الذاكرة عند انقطاع الإنترنت لضمان عمل التطبيق
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(res => {
-      return res || fetch(e.request);
-    })
-  );
+self.addEventListener('fetch', event => {
+    event.respondWith(
+        caches.match(event.request)
+            .then(response => response || fetch(event.request))
+    );
 });
