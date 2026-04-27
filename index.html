@@ -2,12 +2,12 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>SEMO ERP | تسجيل الدخول</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الأعمال | دخول</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', Tahoma, sans-serif; }
         body {
-            background: linear-gradient(135deg, #0f172a, #1e293b);
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -15,159 +15,99 @@
             padding: 20px;
         }
         .login-card {
-            background: #1e293b;
+            background: white;
             border-radius: 30px;
             padding: 40px 35px;
             width: 100%;
             max-width: 450px;
             text-align: center;
-            border: 1px solid #334155;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
-        .logo { width: 70px; height: 70px; background: #6366f1; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 28px; font-weight: bold; color: white; }
-        h1 { color: #6366f1; margin-bottom: 10px; }
-        .demo-box { background: rgba(99,102,241,0.15); border: 1px solid #6366f1; border-radius: 15px; padding: 15px; margin: 20px 0; text-align: right; }
-        .demo-box p { color: #6366f1; font-weight: bold; margin-bottom: 8px; }
-        .demo-box span { color: #94a3b8; display: block; font-size: 13px; margin: 5px 0; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 40px; border: 1px solid #334155; background: #0f172a; color: white; outline: none; }
-        input:focus { border-color: #6366f1; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 40px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        .btn-primary { background: #6366f1; color: white; }
-        .btn-primary:hover { background: #4f46e5; }
-        .btn-demo { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; margin-bottom: 15px; }
-        .link { color: #94a3b8; cursor: pointer; font-size: 13px; display: block; margin-top: 15px; }
-        .link:hover { color: #6366f1; }
-        .divider { margin: 15px 0; color: #64748b; font-size: 13px; }
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 40px; z-index: 1000; animation: slideDown 0.3s ease; font-size: 14px; font-weight: bold; }
-        @keyframes slideDown { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        .toast.success { background: #10b981; color: white; }
-        .toast.error { background: #ef4444; color: white; }
-        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; margin-left: 8px; vertical-align: middle; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .login-card h1 { color: #1e3c72; margin-bottom: 10px; }
+        .login-card p { color: #6c757d; margin-bottom: 30px; }
+        .demo-box {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 25px;
+            text-align: right;
+        }
+        .demo-box p { font-weight: bold; color: #ffc107; margin-bottom: 8px; }
+        .demo-box span { display: block; font-size: 13px; color: #495057; margin: 5px 0; }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ced4da;
+            border-radius: 40px;
+            font-size: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 16px;
+        }
+        .btn-primary { background: #ffc107; color: #1e3c72; margin-top: 10px; }
+        .btn-primary:hover { background: #ffca2c; transform: translateY(-2px); }
+        .btn-demo { background: #28a745; color: white; margin-bottom: 15px; }
+        .btn-demo:hover { background: #218838; transform: translateY(-2px); }
+        .divider { margin: 20px 0; color: #adb5bd; position: relative; }
+        .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 45%; height: 1px; background: #dee2e6; }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+        .shortcut { font-size: 12px; color: #6c757d; margin-top: 15px; }
     </style>
 </head>
 <body>
 <div class="login-card">
-    <div class="logo">S</div>
-    <h1>SEMO ERP PRO</h1>
-    <p style="color: #94a3b8;">النظام المتكامل لإدارة المؤسسات</p>
-    <div class="demo-box"><p>🚀 حسابات تجريبية جاهزة</p><span>📧 admin@system.com | 🔑 123456 (مدير)</span><span>📧 user@system.com | 🔑 123456 (مستخدم)</span></div>
-    <button class="btn btn-demo" id="demoLoginBtn" onclick="demoLogin()">🚀 دخول سريع – حساب تجريبي</button>
+    <h1>📊 نظام إدارة الأعمال</h1>
+    <p>متكامل – مخزون، مبيعات، مشتريات، عملاء، موردين، حسابات</p>
+    <div class="demo-box">
+        <p>🚀 حسابات تجريبية جاهزة</p>
+        <span>📧 admin@system.com | 🔑 123456 (مدير)</span>
+        <span>📧 user@system.com | 🔑 123456 (مستخدم)</span>
+    </div>
+    <button class="btn-demo" onclick="directLogin()">🚀 دخول سريع – حساب تجريبي</button>
     <div class="divider">أو</div>
-    <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" autocomplete="off">
-    <input type="password" id="loginPassword" placeholder="كلمة المرور" autocomplete="off">
-    <button class="btn btn-primary" id="loginBtn" onclick="login()">🔐 تسجيل الدخول</button>
-    <span class="link" id="signupBtn" onclick="showSignup()">➡️ إنشاء حساب جديد</span>
-    <a href="#" class="link" id="forgotBtn" onclick="forgotPassword(event)">🔑 نسيت كلمة المرور؟</a>
+    <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
+    <input type="password" id="loginPassword" placeholder="كلمة المرور">
+    <button class="btn-primary" onclick="manualLogin()">🔐 تسجيل الدخول</button>
+    <div class="shortcut">⏎ اضغط Enter للتسجيل السريع</div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="main.js"></script>
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
-        authDomain: "my-pos-system-11dee.firebaseapp.com",
-        databaseURL: "https://my-pos-system-11dee-default-rtdb.firebaseio.com",
-        projectId: "my-pos-system-11dee",
-        storageBucket: "my-pos-system-11dee.firebasestorage.app",
-        messagingSenderId: "565195477080",
-        appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d"
+    // تسجيل Service Worker للتشغيل بدون إنترنت
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered', reg)).catch(err => console.log('SW failed', err));
+    }
+    // دوال تسجيل الدخول
+    const DEMO_ACCOUNTS = {
+        admin: { email: "admin@system.com", password: "123456", name: "مدير النظام", role: "admin" },
+        user:  { email: "user@system.com",  password: "123456", name: "مستخدم عادي", role: "user" }
     };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    let activeToast = null, redirecting = false;
-
-    function showToast(msg, type = 'success') {
-        if (activeToast) activeToast.remove();
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.textContent = msg;
-        document.body.appendChild(toast);
-        activeToast = toast;
-        setTimeout(() => { if (toast) toast.remove(); if (activeToast === toast) activeToast = null; }, 4000);
-    }
-
-    function setLoading(loading) {
-        const btn = document.getElementById('loginBtn');
-        btn.disabled = loading;
-        btn.innerHTML = loading ? '<span class="spinner"></span> جاري...' : '🔐 تسجيل الدخول';
-    }
-
-    function showSignup() {
-        const email = prompt('📧 أدخل البريد الإلكتروني للحساب الجديد:');
-        if (!email) return;
-        const password = prompt('🔑 أدخل كلمة المرور (6 أحرف على الأقل):');
-        if (!password || password.length < 6) { showToast('⚠️ كلمة المرور 6 أحرف على الأقل', 'error'); return; }
-        const name = prompt('👤 اسم المستخدم:');
-        if (!name) return;
-        const role = confirm('👑 هل هذا المستخدم مدير؟ OK لمدير, Cancel لمستخدم عادي') ? 'admin' : 'user';
-        setLoading(true);
-        auth.createUserWithEmailAndPassword(email, password)
-            .then(async (cred) => {
-                await db.collection('users').doc(cred.user.uid).set({
-                    uid: cred.user.uid, email, name, role, isActive: true, companyId: null,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                await cred.user.sendEmailVerification();
-                showToast('✅ تم إنشاء الحساب! تحقق من بريدك ثم سجل الدخول', 'success');
-            })
-            .catch(err => { showToast('❌ ' + err.message, 'error'); })
-            .finally(() => setLoading(false));
-    }
-
-    function login() {
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value.trim();
-        if (!email || !password) { showToast('⚠️ أدخل البريد وكلمة المرور', 'error'); return; }
-        setLoading(true);
-        auth.signInWithEmailAndPassword(email, password)
-            .then(async (cred) => {
-                const user = cred.user;
-                if (!user.emailVerified) { showToast('⚠️ يرجى تفعيل بريدك الإلكتروني أولاً', 'error'); auth.signOut(); return; }
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (!userDoc.exists) { showToast('❌ لم يتم العثور على بيانات المستخدم', 'error'); auth.signOut(); return; }
-                const userData = userDoc.data();
-                if (!userData.isActive) { showToast('❌ تم تعطيل حسابك، تواصل مع المدير', 'error'); auth.signOut(); return; }
-                localStorage.setItem('semo_user', JSON.stringify({ uid: user.uid, email, name: userData.name, role: userData.role, companyId: userData.companyId }));
-                showToast('✅ مرحباً بك! جاري التحويل...', 'success');
-                redirecting = true;
-                setTimeout(() => window.location.href = 'dashboard.html', 1500);
-            })
-            .catch(err => {
-                let msg = '❌ بيانات الدخول غير صحيحة';
-                if (err.code === 'auth/user-not-found') msg = '❌ المستخدم غير موجود';
-                if (err.code === 'auth/wrong-password') msg = '❌ كلمة المرور خاطئة';
-                showToast(msg, 'error');
-            })
-            .finally(() => setLoading(false));
-    }
-
-    function demoLogin() {
-        localStorage.setItem('semo_user', JSON.stringify({ uid: 'demo_' + Date.now(), email: 'demo@system.com', name: 'مدير تجريبي', role: 'admin', companyId: null }));
-        redirecting = true;
+    function directLogin() {
+        localStorage.setItem('semo_user', JSON.stringify(DEMO_ACCOUNTS.admin));
         window.location.href = 'dashboard.html';
     }
-
-    function forgotPassword(e) {
-        e.preventDefault();
+    function manualLogin() {
         const email = document.getElementById('loginEmail').value.trim();
-        if (!email) { showToast('⚠️ أدخل بريدك الإلكتروني أولاً', 'error'); return; }
-        auth.sendPasswordResetEmail(email).then(() => showToast('📧 تم إرسال رابط إعادة التعيين', 'success')).catch(err => showToast('❌ ' + err.message, 'error'));
-    }
-
-    let checked = false;
-    auth.onAuthStateChanged((user) => {
-        if (checked) return;
-        checked = true;
-        const localUser = localStorage.getItem('semo_user');
-        if (user && user.emailVerified && localUser && !redirecting && window.location.pathname.includes('index.html')) {
-            redirecting = true;
-            setTimeout(() => window.location.href = 'dashboard.html', 500);
+        const password = document.getElementById('loginPassword').value.trim();
+        const found = Object.values(DEMO_ACCOUNTS).find(acc => acc.email === email && acc.password === password);
+        if (found) {
+            localStorage.setItem('semo_user', JSON.stringify(found));
+            window.location.href = 'dashboard.html';
+        } else {
+            alert('❌ البريد أو كلمة المرور غير صحيحة');
         }
-    });
+    }
+    document.addEventListener('keydown', (e) => { if (e.key === 'Enter') manualLogin(); });
+    if (localStorage.getItem('semo_user')) window.location.href = 'dashboard.html';
 </script>
 </body>
 </html>
