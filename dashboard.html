@@ -43,7 +43,7 @@
         .badge-success { background: rgba(16,185,129,0.15); color: var(--success); }
         .badge-danger { background: rgba(239,68,68,0.15); color: var(--danger); }
         .badge-warning { background: rgba(245,158,11,0.15); color: var(--warning); }
-        .search-bar input { width: 220px; padding: 8px 12px; border-radius: 40px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+        .search-bar { width: 220px; padding: 8px 12px; border-radius: 40px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
         .toast { position: fixed; bottom: 20px; left: 20px; padding: 12px 24px; border-radius: 50px; z-index: 9999; animation: slideIn 0.3s ease; font-weight: bold; }
         @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 10000; justify-content: center; align-items: center; }
@@ -66,8 +66,6 @@
         .menu-btn { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         @media (min-width: 768px) { .menu-btn { display: none; } }
         .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
-        .progress-bar { width: 60px; height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 4px; }
-        .progress-fill { height: 100%; background: var(--primary); border-radius: 4px; }
         .chart-wrapper { height: 280px; margin-top: 20px; }
     </style>
 </head>
@@ -121,10 +119,14 @@
     let chartInstance = null;
 
     const menuItems = [
-        { id: 'dashboard', name: 'الرئيسية', icon: '🏠' }, { id: 'inventory', name: 'المخزون', icon: '📦' },
-        { id: 'sales', name: 'المبيعات', icon: '💰' }, { id: 'purchases', name: 'المشتريات', icon: '📥' },
-        { id: 'suppliers', name: 'الموردين', icon: '🏭' }, { id: 'clients', name: 'العملاء', icon: '👥' },
-        { id: 'expenses', name: 'المصروفات', icon: '💸' }, { id: 'revenues', name: 'الإيرادات', icon: '💰' },
+        { id: 'dashboard', name: 'الرئيسية', icon: '🏠' },
+        { id: 'inventory', name: 'المخزون', icon: '📦' },
+        { id: 'sales', name: 'المبيعات', icon: '💰' },
+        { id: 'purchases', name: 'المشتريات', icon: '📥' },
+        { id: 'suppliers', name: 'الموردين', icon: '🏭' },
+        { id: 'clients', name: 'العملاء', icon: '👥' },
+        { id: 'expenses', name: 'المصروفات', icon: '💸' },
+        { id: 'revenues', name: 'الإيرادات', icon: '💰' },
         { id: 'reports', name: 'التقارير', icon: '📊' }
     ];
 
@@ -170,11 +172,6 @@
     }
 
     window.switchTab = (tab) => { currentTab = tab; renderPage(); closeSidebar(); };
-    window.toggleSidebar = toggleSidebar;
-    window.closeSidebar = closeSidebar;
-    window.togglePrivacy = togglePrivacy;
-    window.toggleTheme = toggleTheme;
-    window.logout = logout;
 
     function renderPage() {
         renderSidebar();
@@ -202,7 +199,7 @@
                 <div class="form-grid"><div class="form-group"><label>نوع الحركة</label><select id="postType"><option value="SALE">مبيعات</option><option value="PURCHASE">مشتريات</option><option value="EXPENSE">مصروفات</option></select></div><div class="form-group"><label>البيان</label><input type="text" id="postDesc" placeholder="وصف الحركة"></div><div class="form-group"><label>القيمة</label><input type="number" id="postAmount" placeholder="0.00"></div></div>
                 <button class="btn btn-primary" onclick="addLedgerEntry()">ترحيل ✓</button>
             </div>
-            <div class="card"><div class="card-header"><h3 class="card-title">📒 سجل القيود الأخيرة</h3></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>البيان</th><th>القيمة</th><th>التاريخ</th></tr></thead><tbody>${ledger.slice(0,5).map((e,i)=>`<tr><td>${i+1}</td><td>${e.desc}</td><td class="${privacyMode ? 'blurred' : ''}" style="color:${e.amount<0?'var(--danger)':'var(--success)'}">${e.amount.toLocaleString()} $</td><td>${e.date}</td></tr>`).join('') || '<tr><td colspan="4"><div class="empty-state">لا توجد قيود</div></td></tr>'}</tbody></table></div></div>
+            <div class="card"><div class="card-header"><h3 class="card-title">📒 سجل القيود الأخيرة</h3></div><div class="table-wrapper"></td><thead><tr><th>#</th><th>البيان</th><th>القيمة</th><th>التاريخ</th></tr></thead><tbody>${ledger.slice(0,5).map((e,i)=>`<tr><td>${i+1}</td><td>${e.desc}</td><td class="${privacyMode ? 'blurred' : ''}" style="color:${e.amount<0?'var(--danger)':'var(--success)'}">${e.amount.toLocaleString()} $</td><td>${e.date}</td>`).join('') || '<tr><td colspan="4"><div class="empty-state">لا توجد قيود</div></td>'} </tbody></table></div></div>
         `;
         document.getElementById('pageContent').innerHTML = html;
     }
@@ -220,20 +217,19 @@
     };
 
     function renderInventory() {
-        const html = `<div style="margin-bottom:15px; display:flex; gap:10px; flex-wrap:wrap;"><input type="text" id="searchInv" class="search-bar" placeholder="بحث..." onkeyup="renderInventory()"><button class="btn btn-success" onclick="openInventoryModal()">➕ منتج جديد</button></div>
-        <div class="card"><div class="table-wrapper"><table><thead><tr><th>#</th><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="invTableBody"></tbody></table></div></div>
+        const html = `<div style="margin-bottom:15px; display:flex; gap:10px; flex-wrap:wrap;"><input type="text" id="searchInv" class="search-bar" placeholder="بحث..." onkeyup="renderInventoryTable()"><button class="btn btn-success" onclick="openInventoryModal()">➕ منتج جديد</button></div>
+        <div class="card"><div class="table-wrapper"><table><thead><tr><th>#</th><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="invTableBody"></tbody></td></div></div>
         <div id="invModal" class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>➕ منتج جديد</h3><button class="modal-close" onclick="closeModal('invModal')">✕</button></div><div class="form-grid"><input type="text" id="invName" placeholder="الاسم"><input type="number" id="invStock" placeholder="الكمية"><input type="number" id="invPrice" placeholder="السعر"></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('invModal')">إلغاء</button><button class="btn btn-success" onclick="addInventoryItem()">حفظ</button></div></div></div>`;
         document.getElementById('pageContent').innerHTML = html;
         renderInventoryTable();
     }
 
-    window.renderInventory = () => { renderInventoryTable(); };
-    async function renderInventoryTable() {
+    window.renderInventoryTable = () => {
         const search = document.getElementById('searchInv')?.value.toLowerCase() || '';
         const filtered = inventory.filter(i => i.name.toLowerCase().includes(search));
         const tbody = document.getElementById('invTableBody');
-        if (tbody) tbody.innerHTML = filtered.map((i, idx) => `<tr><td>${idx+1}</td><td>${i.name}</td><td style="color:${i.stock<5?'var(--danger)':'var(--success)'}">${i.stock}</td><td>${i.price} $</td><td><span class="badge ${i.stock<5?'badge-danger':'badge-success'}">${i.stock<5?'منخفض':'متوفر'}</span></td><td><button class="btn btn-warning btn-sm" onclick="editInventoryItem('${i.id}')">✏️</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('inventory','${i.id}')">🗑️</button></td></tr>`).join('') || '<tr><td colspan="6"><div class="empty-state">لا توجد منتجات</div></td></tr>');
-    }
+        if (tbody) tbody.innerHTML = filtered.map((i, idx) => `<tr><70>${idx+1}</td><td><strong>${i.name}</strong> </td><td style="color:${i.stock<5?'var(--danger)':'var(--success)'}">${i.stock} </td><td>${i.price} $</td><td><span class="badge ${i.stock<5?'badge-danger':'badge-success'}">${i.stock<5?'منخفض':'متوفر'}</span></td><td><button class="btn btn-warning btn-sm" onclick="editInventoryItem('${i.id}','${i.name}','${i.stock}','${i.price}')">✏️</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('inventory','${i.id}')">🗑️</button></td></tr>`).join('') || '<tr><td colspan="6"><div class="empty-state">لا توجد منتجات</div></td></tr>';
+    };
 
     window.openInventoryModal = () => { document.getElementById('invModal').classList.add('show'); };
     window.closeModal = (id) => { document.getElementById(id).classList.remove('show'); };
@@ -252,8 +248,27 @@
         renderInventoryTable();
         showToast('تمت الإضافة ✅');
     };
-    window.deleteItem = async (col, id) => { if (confirm('حذف?')) { await deleteDoc(doc(db, col, id)); window[col] = window[col].filter(i => i.id !== id); renderPage(); showToast('تم الحذف'); } };
-    window.editInventoryItem = (id) => { alert('وظيفة التعديل قيد التطوير'); };
+    window.editInventoryItem = (id, name, stock, price) => {
+        document.getElementById('invName').value = name;
+        document.getElementById('invStock').value = stock;
+        document.getElementById('invPrice').value = price;
+        const saveBtn = document.querySelector('#invModal .btn-success');
+        const oldClick = saveBtn.onclick;
+        saveBtn.onclick = async () => {
+            const newName = document.getElementById('invName').value;
+            const newStock = parseInt(document.getElementById('invStock').value);
+            const newPrice = parseFloat(document.getElementById('invPrice').value);
+            await updateDoc(doc(db, 'inventory', id), { name: newName, stock: newStock, price: newPrice });
+            const idx = inventory.findIndex(i => i.id === id);
+            if (idx !== -1) { inventory[idx] = { ...inventory[idx], name: newName, stock: newStock, price: newPrice }; }
+            closeModal('invModal');
+            renderInventoryTable();
+            showToast('تم التعديل ✅');
+            saveBtn.onclick = oldClick;
+        };
+        openInventoryModal();
+    };
+    window.deleteItem = async (col, id) => { if (confirm('حذف؟')) { await deleteDoc(doc(db, col, id)); window[col] = window[col].filter(i => i.id !== id); renderPage(); showToast('تم الحذف'); } };
 
     function renderSales() {
         const html = `<div style="margin-bottom:15px; display:flex; gap:10px; flex-wrap:wrap;"><input type="text" id="searchSales" class="search-bar" placeholder="بحث..." onkeyup="renderSalesTable()"><button class="btn btn-success" onclick="openSaleModal()">➕ فاتورة بيع</button></div>
@@ -265,9 +280,9 @@
 
     window.renderSalesTable = () => {
         const search = document.getElementById('searchSales')?.value.toLowerCase() || '';
-        const filtered = sales.filter(s => s.client.toLowerCase().includes(search));
+        const filtered = sales.filter(s => s.client.toLowerCase().includes(search) || (s.product || '').toLowerCase().includes(search));
         const tbody = document.getElementById('salesTableBody');
-        if (tbody) tbody.innerHTML = filtered.map((s, idx) => `<tr><td>${idx+1}</td><td>${s.date}</td><td>${s.client}</td><td>${s.product}</td><td class="${privacyMode ? 'blurred' : ''}">${s.total} $</td><td><span class="badge badge-success">${s.status || 'مدفوع'}</span></td><td><button class="btn btn-info btn-sm" onclick="printSale('${s.id}')">🖨️</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('sales','${s.id}')">🗑️</button></td></tr>`).join('') || '<tr><td colspan="7"><div class="empty-state">لا توجد مبيعات</div></td></tr>');
+        if (tbody) tbody.innerHTML = filtered.map((s, idx) => `<tr><td>${idx+1}</td><td>${s.date}</td><td>${s.client}</td><td>${s.product}</td><td class="${privacyMode ? 'blurred' : ''}">${s.total} $</td><td><span class="badge badge-success">${s.status || 'مدفوع'}</span></td><td><button class="btn btn-info btn-sm" onclick="printSale('${s.id}')">🖨️</button> <button class="btn btn-danger btn-sm" onclick="deleteItem('sales','${s.id}')">🗑️</button></td></tr>`).join('') || '<tr><td colspan="7"><div class="empty-state">لا توجد مبيعات</div></td></tr>';
     };
     window.openSaleModal = () => { document.getElementById('saleModal').classList.add('show'); };
     window.addSaleItem = async () => {
@@ -302,7 +317,7 @@
 
     window.renderPurchasesTable = () => {
         const tbody = document.getElementById('purchasesTableBody');
-        if (tbody) tbody.innerHTML = purchases.map((p, idx) => `<tr><td>${idx+1}</td><td>${p.date}</td><td>${p.supplier}</td><td>${p.product}</td><td>${p.qty}</td><td>${p.price} $</td><td>${p.total} $</td><td><button class="btn btn-danger btn-sm" onclick="deleteItem('purchases','${p.id}')">🗑️</button></td></tr>`).join('') || '<tr><td colspan="8"><div class="empty-state">لا توجد مشتريات</div></td></tr>');
+        if (tbody) tbody.innerHTML = purchases.map((p, idx) => `<tr><td>${idx+1}</td><td>${p.date}</td><td>${p.supplier}</td><td>${p.product}</td><td>${p.qty}</td><td>${p.price} $</td><td>${p.total} $</td><td><button class="btn btn-danger btn-sm" onclick="deleteItem('purchases','${p.id}')">🗑️</button></td></tr>`).join('') || '<tr><td colspan="8"><div class="empty-state">لا توجد مشتريات</div></td></tr>';
     };
     window.openPurchaseModal = () => { document.getElementById('purchaseModal').classList.add('show'); };
     window.addPurchaseItem = async () => {
@@ -329,7 +344,7 @@
 
     function renderSuppliers() {
         const html = `<div style="margin-bottom:15px;"><button class="btn btn-success" onclick="openSupplierModal()">➕ مورد جديد</button></div>
-        <div class="card"><div class="table-wrapper"><table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>المنتج</th><th>إجراءات</th></tr></thead><tbody id="suppliersTableBody"></tbody></table></div></div>
+        <div class="card"><div class="table-wrapper"></table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>المنتج</th><th>إجراءات</th></tr></thead><tbody id="suppliersTableBody"></tbody><tr></div></div>
         <div id="supplierModal" class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>🏭 مورد جديد</h3><button class="modal-close" onclick="closeModal('supplierModal')">✕</button></div><div class="form-grid"><input type="text" id="supplierName" placeholder="الاسم"><input type="text" id="supplierPhone" placeholder="الهاتف"><input type="text" id="supplierProduct" placeholder="المنتج"></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('supplierModal')">إلغاء</button><button class="btn btn-success" onclick="addSupplierItem()">حفظ</button></div></div></div>`;
         document.getElementById('pageContent').innerHTML = html;
         renderSuppliersTable();
@@ -337,7 +352,7 @@
 
     window.renderSuppliersTable = () => {
         const tbody = document.getElementById('suppliersTableBody');
-        if (tbody) tbody.innerHTML = suppliers.map((s, idx) => `<tr><td>${idx+1}</td><td>${s.name}</td><td>${s.phone || '-'}</td><td>${s.product || '-'}</td><td><button class="btn btn-danger btn-sm" onclick="deleteItem('suppliers','${s.id}')">🗑️</button></td></tr>`).join('') || '<tr><td colspan="5"><div class="empty-state">لا توجد موردين</div></td></tr>');
+        if (tbody) tbody.innerHTML = suppliers.map((s, idx) => `<tr><td>${idx+1}</td><td>${s.name}</td><td>${s.phone || '-'}</td><td>${s.product || '-'}</td><td><button class="btn btn-danger btn-sm" onclick="deleteItem('suppliers','${s.id}')">🗑️</button></td></tr>`).join('') || '<tr><td colspan="5"><div class="empty-state">لا توجد موردين</div></td></tr>';
     };
     window.openSupplierModal = () => { document.getElementById('supplierModal').classList.add('show'); };
     window.addSupplierItem = async () => {
@@ -367,7 +382,7 @@
     window.renderClientsTable = () => {
         const getTotal = (name) => sales.filter(s => s.client === name).reduce((a,b)=>a+(b.total||0),0);
         const tbody = document.getElementById('clientsTableBody');
-        if (tbody) tbody.innerHTML = clients.map((c, idx) => `<tr><td>${idx+1}</td><td>${c.name}</td><td>${c.phone || '-'}</td><td class="${privacyMode ? 'blurred' : ''}">${getTotal(c.name).toLocaleString()} $</td><td><button class="btn btn-danger btn-sm" onclick="deleteItem('clients','${c.id}')">🗑️</button></td></tr>`).join('') || '<tr><td colspan="5"><div class="empty-state">لا يوجد عملاء</div></td></tr>');
+        if (tbody) tbody.innerHTML = clients.map((c, idx) => `<tr><td>${idx+1}</td><td><strong>${c.name}</strong></td><td>${c.phone || '-'}</td><td class="${privacyMode ? 'blurred' : ''}">${getTotal(c.name).toLocaleString()} $</td><td><button class="btn btn-danger btn-sm" onclick="deleteItem('clients','${c.id}')">🗑️</button></td></tr>`).join('') || '<tr><td colspan="5"><div class="empty-state">لا يوجد عملاء</div></td></tr>';
     };
     window.openClientModal = () => { document.getElementById('clientModal').classList.add('show'); };
     window.addClientItem = async () => {
@@ -386,7 +401,7 @@
 
     function renderExpenses() {
         const html = `<div style="margin-bottom:15px;"><button class="btn btn-success" onclick="openExpenseModal()">➕ مصروف جديد</button></div>
-        <div class="card"><div class="table-wrapper"><table><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>إجراءات</th></tr></thead><tbody id="expensesTableBody"></tbody></table></div></div>
+        <div class="card"><div class="table-wrapper"><tr><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>إجراءات</th></tr></thead><tbody id="expensesTableBody"></tbody></table></div></div>
         <div id="expenseModal" class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>💸 مصروف جديد</h3><button class="modal-close" onclick="closeModal('expenseModal')">✕</button></div><div class="form-grid"><input type="text" id="expenseType" placeholder="النوع"><input type="number" id="expenseAmount" placeholder="المبلغ"><input type="date" id="expenseDate"></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('expenseModal')">إلغاء</button><button class="btn btn-success" onclick="addExpenseItem()">حفظ</button></div></div></div>`;
         document.getElementById('pageContent').innerHTML = html;
         renderExpensesTable();
@@ -394,7 +409,7 @@
 
     window.renderExpensesTable = () => {
         const tbody = document.getElementById('expensesTableBody');
-        if (tbody) tbody.innerHTML = expenses.map((e, idx) => `<tr><td>${idx+1}</td><td>${e.date}</td><td>${e.type}</td><td class="${privacyMode ? 'blurred' : ''}">${e.amount} $</td><td><button class="btn btn-danger btn-sm" onclick="deleteItem('expenses','${e.id}')">🗑️</button></td></tr>`).join('') || '<tr><td colspan="5"><div class="empty-state">لا توجد مصروفات</div></td></tr>');
+        if (tbody) tbody.innerHTML = expenses.map((e, idx) => `<tr><td>${idx+1}</td><td>${e.date}</td><td>${e.type}</td><td class="${privacyMode ? 'blurred' : ''}">${e.amount} $</td><td><button class="btn btn-danger btn-sm" onclick="deleteItem('expenses','${e.id}')">🗑️</button></td></tr>`).join('') || '<tr><td colspan="5"><div class="empty-state">لا توجد مصروفات</div></td></tr>';
     };
     window.openExpenseModal = () => { document.getElementById('expenseModal').classList.add('show'); };
     window.addExpenseItem = async () => {
@@ -414,7 +429,7 @@
 
     function renderRevenues() {
         const html = `<div style="margin-bottom:15px;"><button class="btn btn-success" onclick="openRevenueModal()">➕ إيراد جديد</button></div>
-        <div class="card"><div class="table-wrapper"><td><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>إجراءات</th></tr></thead><tbody id="revenuesTableBody"></tbody></table></div></div>
+        <div class="card"><div class="table-wrapper"><table><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>إجراءات</th></tr></thead><tbody id="revenuesTableBody"></tbody></table></div></div>
         <div id="revenueModal" class="modal-overlay"><div class="modal-box"><div class="modal-header"><h3>💰 إيراد جديد</h3><button class="modal-close" onclick="closeModal('revenueModal')">✕</button></div><div class="form-grid"><input type="text" id="revenueType" placeholder="النوع"><input type="number" id="revenueAmount" placeholder="المبلغ"><input type="date" id="revenueDate"></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('revenueModal')">إلغاء</button><button class="btn btn-success" onclick="addRevenueItem()">حفظ</button></div></div></div>`;
         document.getElementById('pageContent').innerHTML = html;
         renderRevenuesTable();
@@ -422,7 +437,7 @@
 
     window.renderRevenuesTable = () => {
         const tbody = document.getElementById('revenuesTableBody');
-        if (tbody) tbody.innerHTML = revenues.map((r, idx) => `<tr><td>${idx+1}</td><td>${r.date}</td><td>${r.type}</td><td class="${privacyMode ? 'blurred' : ''}">${r.amount} $</td><tr><button class="btn btn-danger btn-sm" onclick="deleteItem('revenues','${r.id}')">🗑️</button></td></td>`).join('') || '<tr><td colspan="5"><div class="empty-state">لا توجد إيرادات</div></td></tr>');
+        if (tbody) tbody.innerHTML = revenues.map((r, idx) => `<tr><td>${idx+1}</td><td>${r.date}</td><td>${r.type}</td><td class="${privacyMode ? 'blurred' : ''}">${r.amount} $</td><td><button class="btn btn-danger btn-sm" onclick="deleteItem('revenues','${r.id}')">🗑️</button></td></tr>`).join('') || '<tr><td colspan="5"><div class="empty-state">لا توجد إيرادات</div></td></tr>';
     };
     window.openRevenueModal = () => { document.getElementById('revenueModal').classList.add('show'); };
     window.addRevenueItem = async () => {
