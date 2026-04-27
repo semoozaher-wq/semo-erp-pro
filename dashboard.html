@@ -2,17 +2,225 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEMO ERP | لوحة التحكم</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SEMO ERP PRO | نظام إدارة المؤسسات المتكامل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', 'Segoe UI', sans-serif; }
-        body { background: #0f172a; color: #f8fafc; direction: rtl; padding: 20px; }
-        .container { max-width: 1400px; margin: 0 auto; }
-        
-        /* Header */
-        .header {
-            background: #1e293b;
-            border: 1px solid #334155;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: rgba(30, 41, 59, 0.95);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #8b5cf6;
+            --glass: rgba(30, 41, 59, 0.8);
+            --shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.light-mode {
+            --bg-primary: #f1f5f9;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --glass: rgba(255, 255, 255, 0.9);
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: var(--transition);
+            overflow-x: hidden;
+        }
+
+        /* ========== أنيميشن ========== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        /* ========== سكرول بار ========== */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--border); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary-hover); }
+
+        /* ========== الهيكل الرئيسي ========== */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ========== السايد بار ========== */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid var(--border);
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100vh;
+            padding: 25px 20px;
+            transition: var(--transition);
+            z-index: 100;
+            overflow-y: auto;
+            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar.collapsed .sidebar-logo h3,
+        .sidebar.collapsed .menu-item span,
+        .sidebar.collapsed .user-card .user-info {
+            display: none;
+        }
+
+        .sidebar.collapsed .menu-item {
+            justify-content: center;
+        }
+
+        .sidebar-logo {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 25px;
+        }
+
+        .sidebar-logo .logo-icon {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 28px;
+            animation: pulse 2s infinite;
+        }
+
+        .sidebar-logo h3 {
+            font-size: 18px;
+            color: var(--text-primary);
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: var(--bg-primary);
+            border-radius: 20px;
+            margin-bottom: 25px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .user-info h4 {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .user-info p {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            margin: 5px 0;
+            border-radius: 14px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .menu-item:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateX(-5px);
+        }
+
+        .menu-item.active {
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            color: white;
+            box-shadow: 0 5px 15px rgba(59,130,246,0.3);
+        }
+
+        .menu-item i {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* ========== المحتوى الرئيسي ========== */
+        .main-content {
+            flex: 1;
+            margin-right: 280px;
+            padding: 20px 30px;
+            transition: var(--transition);
+        }
+
+        .sidebar.collapsed ~ .main-content {
+            margin-right: 80px;
+        }
+
+        /* ========== الهيدر ========== */
+        .top-bar {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 15px 25px;
             margin-bottom: 25px;
@@ -21,477 +229,1034 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
+            border: 1px solid var(--border);
         }
-        .header h1 { font-size: 1.4rem; color: #38bdf8; }
+
+        .page-title h2 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .top-bar-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ========== الأزرار ========== */
         .btn {
-            padding: 8px 18px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 40px;
+            border-radius: 50px;
             cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
+            font-weight: 600;
+            transition: var(--transition);
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             font-size: 13px;
         }
-        .btn-primary { background: #3b82f6; color: white; }
-        .btn-primary:hover { background: #2563eb; transform: translateY(-2px); }
-        .btn-success { background: #10b981; color: white; }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-warning { background: #f59e0b; color: #1e293b; }
-        .btn-secondary { background: #334155; color: white; }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { transform: translateY(-2px); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: #1e293b; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-primary); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
         .btn-sm { padding: 5px 12px; font-size: 12px; }
-        
-        /* Tabs */
-        .tabs {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 25px;
-            background: #1e293b;
-            padding: 10px;
-            border-radius: 60px;
-            border: 1px solid #334155;
-        }
-        .tab {
-            padding: 8px 20px;
-            border-radius: 40px;
-            cursor: pointer;
-            background: #334155;
-            color: #cbd5e1;
-            transition: 0.2s;
-            font-weight: bold;
-        }
-        .tab.active { background: #3b82f6; color: white; }
-        
-        /* Content */
-        .content { background: #1e293b; border-radius: 20px; padding: 20px; border: 1px solid #334155; }
-        .section { display: none; }
-        .section.active { display: block; }
-        
-        /* Stats */
+
+        /* ========== الكروت الإحصائية ========== */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
+
         .stat-card {
-            background: #0f172a;
-            border-radius: 15px;
-            padding: 15px;
-            text-align: center;
-            border: 1px solid #334155;
-        }
-        .stat-card .value { font-size: 28px; font-weight: bold; color: #38bdf8; }
-        .stat-card .label { font-size: 13px; color: #94a3b8; }
-        
-        /* Tables */
-        .table-wrapper { overflow-x: auto; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #0f172a; padding: 12px; text-align: center; color: #94a3b8; border-bottom: 1px solid #334155; }
-        td { padding: 10px 12px; text-align: center; border-bottom: 1px solid #334155; }
-        tr:hover td { background: #334155; }
-        
-        .card-box {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 16px;
-            margin-bottom: 25px;
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            position: relative;
             overflow: hidden;
         }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-card .stat-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* ========== الجداول ========== */
+        .card-box {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            margin-bottom: 25px;
+        }
+
         .card-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid #334155;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
             flex-wrap: wrap;
             gap: 10px;
         }
-        
-        /* Modal */
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: right;
+            padding: 15px 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table tr:hover td {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        /* ========== الشارات ========== */
+        .badge {
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .badge-info { background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
+
+        /* ========== النماذج ========== */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        input, select, textarea {
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        /* ========== المودال ========== */
         .modal {
             display: none;
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 10000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
             justify-content: center;
             align-items: center;
+            backdrop-filter: blur(5px);
         }
-        .modal.show { display: flex; }
+
+        .modal.show {
+            display: flex;
+        }
+
         .modal-content {
-            background: #1e293b;
-            max-width: 500px;
+            background: var(--bg-card);
+            border-radius: 28px;
+            max-width: 600px;
             width: 90%;
-            border-radius: 20px;
-            padding: 25px;
-            border: 1px solid #334155;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 30px;
+            border: 1px solid var(--border);
+            animation: fadeInUp 0.3s ease;
         }
-        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 10px;
-            border: 1px solid #334155;
-            background: #0f172a;
-            color: white;
-        }
-        .toast {
+
+        /* ========== التنبيهات ========== */
+        .toast-notification {
             position: fixed;
             bottom: 20px;
             left: 20px;
-            padding: 12px 24px;
-            border-radius: 50px;
-            z-index: 9999;
+            padding: 14px 24px;
+            border-radius: 60px;
+            z-index: 1100;
             animation: slideIn 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
         }
-        @keyframes slideIn {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+
+        /* ========== وضع الجوال ========== */
+        body.mobile-view .sidebar {
+            transform: translateX(100%);
+            position: fixed;
+            z-index: 200;
         }
+
+        body.mobile-view .sidebar.open {
+            transform: translateX(0);
+        }
+
+        body.mobile-view .main-content {
+            margin-right: 0;
+        }
+
+        body.mobile-view .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 150;
+            background: var(--primary);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        body.mobile-view .mobile-menu-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ========== إعدادات النظام ========== */
+        .settings-section {
+            margin-bottom: 25px;
+        }
+
+        .color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .color-preview:hover {
+            transform: scale(1.1);
+        }
+
+        /* ========== استجابة ========== */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 240px;
+            }
+            .main-content {
+                margin-right: 240px;
+            }
+        }
+
         @media (max-width: 768px) {
-            body { padding: 10px; }
-            .tabs { border-radius: 15px; }
-            .tab { padding: 5px 12px; font-size: 12px; }
+            .main-content {
+                margin-right: 0;
+                padding: 15px;
+            }
+            .sidebar {
+                transform: translateX(100%);
+                width: 260px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1>📊 SEMO ERP | النظام المحاسبي المتكامل</h1>
-        <div>
-            <button class="btn btn-secondary" onclick="exportBackup()">💾 نسخة احتياطية</button>
-            <button class="btn btn-secondary" onclick="showSettings()">⚙️ إعدادات</button>
-            <button class="btn btn-danger" onclick="logout()">🚪 خروج</button>
+
+<button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+
+<div class="app-container">
+    <!-- السايد بار -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon" id="companyLogoDisplay">📊</div>
+            <h3 id="companyNameDisplay">SEMO ERP PRO</h3>
+        </div>
+
+        <div class="user-card">
+            <div class="user-avatar" id="userAvatar">👑</div>
+            <div class="user-info">
+                <h4 id="userName">مدير النظام</h4>
+                <p id="userRole">مدير عام</p>
+            </div>
+        </div>
+
+        <div class="menu-item active" onclick="switchSection('dashboard')">
+            <i>🏠</i> <span>الرئيسية</span>
+        </div>
+        <div class="menu-item" onclick="switchSection('inventory')">
+            <i>📦</i> <span>المخزون</span>
+        </div>
+        <div class="menu-item" onclick="switchSection('sales')">
+            <i>🛒</i> <span>المبيعات</span>
+        </div>
+        <div class="menu-item" onclick="switchSection('purchases')">
+            <i>📥</i> <span>المشتريات</span>
+        </div>
+        <div class="menu-item" onclick="switchSection('clients')">
+            <i>👥</i> <span>العملاء</span>
+        </div>
+        <div class="menu-item" onclick="switchSection('suppliers')">
+            <i>🏭</i> <span>الموردين</span>
+        </div>
+        <div class="menu-item" onclick="switchSection('expenses')">
+            <i>💸</i> <span>المصروفات</span>
+        </div>
+        <div class="menu-item" onclick="switchSection('revenues')">
+            <i>💰</i> <span>الإيرادات</span>
+        </div>
+        <div class="menu-item" onclick="switchSection('reports')">
+            <i>📊</i> <span>التقارير</span>
+        </div>
+        <div class="menu-item" onclick="showSettingsPanel()">
+            <i>⚙️</i> <span>إعدادات متقدمة</span>
+        </div>
+        <div class="menu-item" onclick="logout()">
+            <i>🚪</i> <span>خروج</span>
         </div>
     </div>
-    
-    <div class="tabs" id="tabsContainer"></div>
-    <div class="content" id="contentContainer"></div>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="page-title">
+                <h2 id="pageTitle">🏠 لوحة التحكم</h2>
+                <small id="dateDisplay"></small>
+            </div>
+            <div class="top-bar-actions">
+                <button class="btn btn-outline" onclick="toggleTheme()" id="themeBtn">🌙</button>
+                <button class="btn btn-outline" onclick="toggleMobileView()">📱 وضع الجوال</button>
+                <button class="btn btn-primary" onclick="exportData()">📥 تصدير تقرير</button>
+            </div>
+        </div>
+
+        <!-- محتوى الصفحات ديناميكي -->
+        <div id="pageContent"></div>
+    </div>
 </div>
 
-<!-- Settings Modal -->
+<!-- مودال الإعدادات المتقدمة -->
 <div id="settingsModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header"><h3>⚙️ إعدادات</h3><button onclick="closeModal('settingsModal')" style="background:none;border:none;color:white;font-size:20px">✕</button></div>
-        <input type="text" id="companyName" placeholder="اسم الشركة">
-        <input type="text" id="companyPhone" placeholder="الهاتف">
-        <input type="email" id="companyEmail" placeholder="البريد">
-        <div class="modal-footer"><button class="btn btn-primary" onclick="saveSettings()">حفظ</button><button class="btn btn-secondary" onclick="closeModal('settingsModal')">إلغاء</button></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h3>⚙️ الإعدادات المتقدمة</h3>
+            <button class="btn btn-outline btn-sm" onclick="closeModal('settingsModal')">✕</button>
+        </div>
+
+        <div class="settings-section">
+            <h4 style="margin-bottom: 15px;">🏢 معلومات الشركة</h4>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>اسم الشركة</label>
+                    <input type="text" id="companyName" placeholder="اسم الشركة">
+                </div>
+                <div class="form-group">
+                    <label>شعار الشركة (رمز)</label>
+                    <input type="text" id="companyLogo" placeholder="📊 أو 🏢">
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف</label>
+                    <input type="text" id="companyPhone" placeholder="رقم الهاتف">
+                </div>
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="companyEmail" placeholder="البريد الإلكتروني">
+                </div>
+                <div class="form-group">
+                    <label>العنوان</label>
+                    <input type="text" id="companyAddress" placeholder="العنوان">
+                </div>
+                <div class="form-group">
+                    <label>رمز العملة</label>
+                    <input type="text" id="currencySymbol" placeholder="ج.م" value="ج.م">
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h4 style="margin-bottom: 15px;">🎨 ألوان النظام</h4>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div class="color-preview" style="background: #3b82f6;" onclick="setPrimaryColor('#3b82f6')"></div>
+                <div class="color-preview" style="background: #8b5cf6;" onclick="setPrimaryColor('#8b5cf6')"></div>
+                <div class="color-preview" style="background: #ec4899;" onclick="setPrimaryColor('#ec4899')"></div>
+                <div class="color-preview" style="background: #06b6d4;" onclick="setPrimaryColor('#06b6d4')"></div>
+                <div class="color-preview" style="background: #10b981;" onclick="setPrimaryColor('#10b981')"></div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h4 style="margin-bottom: 15px;">🔐 إدارة المستخدمين</h4>
+            <div id="usersList"></div>
+            <button class="btn btn-success btn-sm" onclick="addNewUser()" style="margin-top: 10px;">➕ إضافة مستخدم جديد</button>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+            <button class="btn btn-secondary" onclick="closeModal('settingsModal')">إلغاء</button>
+            <button class="btn btn-primary" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+        </div>
     </div>
 </div>
 
 <script>
-// ==================== DATA ====================
-let db = {
-    inventory: JSON.parse(localStorage.getItem('semo_inventory')) || [],
-    sales: JSON.parse(localStorage.getItem('semo_sales')) || [],
-    purchases: JSON.parse(localStorage.getItem('semo_purchases')) || [],
-    clients: JSON.parse(localStorage.getItem('semo_clients')) || [],
-    suppliers: JSON.parse(localStorage.getItem('semo_suppliers')) || [],
-    expenses: JSON.parse(localStorage.getItem('semo_expenses')) || [],
-    revenues: JSON.parse(localStorage.getItem('semo_revenues')) || [],
-    settings: JSON.parse(localStorage.getItem('semo_settings')) || {}
-};
+    // ==================== قاعدة البيانات الأساسية ====================
+    let db = {
+        inventory: JSON.parse(localStorage.getItem('semo_inventory')) || [],
+        sales: JSON.parse(localStorage.getItem('semo_sales')) || [],
+        purchases: JSON.parse(localStorage.getItem('semo_purchases')) || [],
+        clients: JSON.parse(localStorage.getItem('semo_clients')) || [],
+        suppliers: JSON.parse(localStorage.getItem('semo_suppliers')) || [],
+        expenses: JSON.parse(localStorage.getItem('semo_expenses')) || [],
+        revenues: JSON.parse(localStorage.getItem('semo_revenues')) || [],
+        users: JSON.parse(localStorage.getItem('semo_users')) || [],
+        settings: JSON.parse(localStorage.getItem('semo_settings')) || {
+            companyName: 'SEMO ERP PRO',
+            companyLogo: '📊',
+            companyPhone: '0930509018',
+            companyEmail: 'semoo.zaher@gmail.com',
+            companyAddress: '',
+            currencySymbol: 'ج.م',
+            primaryColor: '#3b82f6'
+        }
+    };
 
-// بيانات تجريبية أول مرة
-if(db.inventory.length === 0){
-    db.inventory = [
-        {id:1, name:'منتج 1', qty:50, price:100, category:'الكترونيات'},
-        {id:2, name:'منتج 2', qty:30, price:200, category:'ملابس'}
-    ];
-    db.clients = [
-        {id:1, name:'شركة الأمل', phone:'0111111111', totalPurchases:0, debt:0},
-        {id:2, name:'مؤسسة النور', phone:'0222222222', totalPurchases:0, debt:0}
-    ];
-    db.suppliers = [{id:1, name:'مورد 1', phone:'0333333333', product:'منتج 1', totalPurchases:0}];
-    saveAll();
-}
+    // المستخدم الحالي
+    let currentUser = JSON.parse(localStorage.getItem('semo_user')) || { name: 'مدير النظام', role: 'admin', avatar: '👑' };
+    let currentSection = 'dashboard';
 
-function saveAll(){
-    localStorage.setItem('semo_inventory', JSON.stringify(db.inventory));
-    localStorage.setItem('semo_sales', JSON.stringify(db.sales));
-    localStorage.setItem('semo_purchases', JSON.stringify(db.purchases));
-    localStorage.setItem('semo_clients', JSON.stringify(db.clients));
-    localStorage.setItem('semo_suppliers', JSON.stringify(db.suppliers));
-    localStorage.setItem('semo_expenses', JSON.stringify(db.expenses));
-    localStorage.setItem('semo_revenues', JSON.stringify(db.revenues));
-    localStorage.setItem('semo_settings', JSON.stringify(db.settings));
-}
+    // دوال مساعدة
+    function saveAll() {
+        localStorage.setItem('semo_inventory', JSON.stringify(db.inventory));
+        localStorage.setItem('semo_sales', JSON.stringify(db.sales));
+        localStorage.setItem('semo_purchases', JSON.stringify(db.purchases));
+        localStorage.setItem('semo_clients', JSON.stringify(db.clients));
+        localStorage.setItem('semo_suppliers', JSON.stringify(db.suppliers));
+        localStorage.setItem('semo_expenses', JSON.stringify(db.expenses));
+        localStorage.setItem('semo_revenues', JSON.stringify(db.revenues));
+        localStorage.setItem('semo_users', JSON.stringify(db.users));
+        localStorage.setItem('semo_settings', JSON.stringify(db.settings));
+    }
 
-function today(){ return new Date().toLocaleDateString('ar-EG'); }
+    function today() { return new Date().toLocaleDateString('ar-EG'); }
+    function formatCurrency(amount) { return amount.toLocaleString() + ' ' + (db.settings.currencySymbol || 'ج.م'); }
+    function showNotification(msg, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.style.background = type === 'success' ? '#10b981' : type === 'danger' ? '#ef4444' : '#f59e0b';
+        toast.style.color = type === 'warning' ? '#1e293b' : 'white';
+        toast.innerHTML = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
 
-function notify(msg, type='success'){
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.style.background = type === 'success' ? '#10b981' : type === 'danger' ? '#ef4444' : '#f59e0b';
-    toast.innerHTML = msg;
-    document.body.appendChild(toast);
-    setTimeout(()=>toast.remove(), 3000);
-}
+    // ==================== الإعدادات ====================
+    function applySettings() {
+        document.getElementById('companyLogoDisplay').innerHTML = db.settings.companyLogo || '📊';
+        document.getElementById('companyNameDisplay').innerHTML = db.settings.companyName || 'SEMO ERP PRO';
+        document.getElementById('companyName').value = db.settings.companyName || '';
+        document.getElementById('companyLogo').value = db.settings.companyLogo || '📊';
+        document.getElementById('companyPhone').value = db.settings.companyPhone || '';
+        document.getElementById('companyEmail').value = db.settings.companyEmail || '';
+        document.getElementById('companyAddress').value = db.settings.companyAddress || '';
+        document.getElementById('currencySymbol').value = db.settings.currencySymbol || 'ج.م';
+        document.documentElement.style.setProperty('--primary', db.settings.primaryColor || '#3b82f6');
+        document.documentElement.style.setProperty('--primary-hover', db.settings.primaryColor ? db.settings.primaryColor + 'cc' : '#2563eb');
+    }
 
-// ==================== TABS ====================
-const sections = ['dashboard','inventory','sales','purchases','clients','suppliers','expenses','revenues','reports'];
-const titles = {
-    dashboard: '🏠 الرئيسية', inventory: '📦 المخزون', sales: '🛒 المبيعات',
-    purchases: '📥 المشتريات', clients: '👥 العملاء', suppliers: '🏭 الموردين',
-    expenses: '💸 المصروفات', revenues: '💰 الإيرادات', reports: '📊 التقارير'
-};
+    function saveSettings() {
+        db.settings.companyName = document.getElementById('companyName').value;
+        db.settings.companyLogo = document.getElementById('companyLogo').value;
+        db.settings.companyPhone = document.getElementById('companyPhone').value;
+        db.settings.companyEmail = document.getElementById('companyEmail').value;
+        db.settings.companyAddress = document.getElementById('companyAddress').value;
+        db.settings.currencySymbol = document.getElementById('currencySymbol').value;
+        saveAll();
+        applySettings();
+        closeModal('settingsModal');
+        showNotification('✅ تم حفظ الإعدادات بنجاح');
+        if (currentSection === 'dashboard') renderDashboard();
+    }
 
-function renderTabs(){
-    const tabsDiv = document.getElementById('tabsContainer');
-    tabsDiv.innerHTML = sections.map(s => `<div class="tab" data-tab="${s}">${titles[s]}</div>`).join('');
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.onclick = () => {
-            document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-            tab.classList.add('active');
-            switchSection(tab.dataset.tab);
+    function setPrimaryColor(color) {
+        db.settings.primaryColor = color;
+        document.documentElement.style.setProperty('--primary', color);
+        document.documentElement.style.setProperty('--primary-hover', color + 'cc');
+        saveAll();
+        showNotification('🎨 تم تغيير اللون الأساسي');
+    }
+
+    function showSettingsPanel() {
+        applySettings();
+        renderUsersList();
+        openModal('settingsModal');
+    }
+
+    function renderUsersList() {
+        const container = document.getElementById('usersList');
+        if (!container) return;
+        if (db.users.length === 0) {
+            container.innerHTML = '<p style="color: var(--text-secondary);">لا يوجد مستخدمون إضافيون</p>';
+            return;
+        }
+        container.innerHTML = db.users.map(u => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border);">
+                <div>
+                    <strong>${u.name}</strong><br>
+                    <small style="color: var(--text-secondary);">${u.email} | دور: ${u.role}</small>
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">🗑️</button>
+            </div>
+        `).join('');
+    }
+
+    function addNewUser() {
+        const name = prompt('اسم المستخدم:');
+        if (!name) return;
+        const email = prompt('البريد الإلكتروني:');
+        if (!email) return;
+        const password = prompt('كلمة المرور:');
+        if (!password) return;
+        const role = prompt('الدور (admin/manager/user):', 'user');
+        
+        db.users.push({
+            id: Date.now(),
+            name, email, password,
+            role: role || 'user',
+            createdAt: today()
+        });
+        saveAll();
+        renderUsersList();
+        showNotification('✅ تمت إضافة المستخدم');
+    }
+
+    function deleteUser(id) {
+        if (confirm('حذف المستخدم؟')) {
+            db.users = db.users.filter(u => u.id !== id);
+            saveAll();
+            renderUsersList();
+            showNotification('تم الحذف', 'danger');
+        }
+    }
+
+    // ==================== الوضع الليلي والجوال ====================
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        const btn = document.getElementById('themeBtn');
+        btn.textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
+        localStorage.setItem('semo_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+    }
+
+    function loadTheme() {
+        if (localStorage.getItem('semo_theme') === 'light') {
+            document.body.classList.add('light-mode');
+            document.getElementById('themeBtn').textContent = '☀️';
+        }
+    }
+
+    function toggleMobileView() {
+        document.body.classList.toggle('mobile-view');
+        localStorage.setItem('semo_mobile_view', document.body.classList.contains('mobile-view') ? 'true' : 'false');
+        showNotification(document.body.classList.contains('mobile-view') ? '📱 وضع الجوال مفعل' : '🖥️ وضع سطح المكتب مفعل');
+    }
+
+    function toggleMobileMenu() {
+        document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    function loadMobileView() {
+        if (localStorage.getItem('semo_mobile_view') === 'true') {
+            document.body.classList.add('mobile-view');
+        }
+    }
+
+    // ==================== دوال الصفحات ====================
+    function switchSection(section) {
+        currentSection = section;
+        document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+        event?.target?.closest('.menu-item')?.classList.add('active');
+        
+        if (section === 'dashboard') renderDashboard();
+        else if (section === 'inventory') renderInventory();
+        else if (section === 'sales') renderSales();
+        else if (section === 'purchases') renderPurchases();
+        else if (section === 'clients') renderClients();
+        else if (section === 'suppliers') renderSuppliers();
+        else if (section === 'expenses') renderExpenses();
+        else if (section === 'revenues') renderRevenues();
+        else if (section === 'reports') renderReports();
+        
+        const titles = {
+            dashboard: '🏠 لوحة التحكم',
+            inventory: '📦 إدارة المخزون',
+            sales: '🛒 المبيعات والفواتير',
+            purchases: '📥 المشتريات وأوامر الشراء',
+            clients: '👥 العملاء',
+            suppliers: '🏭 الموردين',
+            expenses: '💸 المصروفات',
+            revenues: '💰 الإيرادات',
+            reports: '📊 التقارير والتحليلات'
         };
-    });
-    document.querySelector('.tab')?.classList.add('active');
-    switchSection('dashboard');
-}
+        document.getElementById('pageTitle').innerHTML = titles[section] || 'لوحة التحكم';
+    }
 
-function switchSection(section){
-    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-    let secDiv = document.getElementById(`section-${section}`);
-    if(!secDiv) generateSection(section);
-    secDiv = document.getElementById(`section-${section}`);
-    if(secDiv) secDiv.classList.add('active');
-    if(section === 'dashboard') renderDashboard();
-    if(section === 'inventory') renderInventory();
-    if(section === 'sales') renderSales();
-    if(section === 'purchases') renderPurchases();
-    if(section === 'clients') renderClients();
-    if(section === 'suppliers') renderSuppliers();
-    if(section === 'expenses') renderExpenses();
-    if(section === 'revenues') renderRevenues();
-    if(section === 'reports') renderReports();
-}
+    // عرض التاريخ
+    document.getElementById('dateDisplay').innerHTML = today();
 
-function generateSection(section){
-    const container = document.getElementById('contentContainer');
-    let html = '';
-    if(section === 'dashboard') html = `<div class="stats-grid" id="statsGrid"></div><div id="chartsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:25px"></div><div class="card-box"><div class="card-header">📋 آخر الفواتير</div><div class="table-wrapper"><table id="recentSalesTable"><thead><tr><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th></tr></thead><tbody></tbody></table></div></div>`;
-    else if(section === 'inventory') html = `<div class="card-box"><div class="card-header"><span>📦 المنتجات</span><button class="btn btn-success btn-sm" onclick="showAddInventory()">➕ منتج جديد</button></div><div class="table-wrapper"><table id="inventoryTable"><thead><tr><th>#</th><th>المنتج</th><th>الفئة</th><th>الكمية</th><th>السعر</th><th>الإجراءات</th></tr></thead><tbody></tbody></table></div></div>`;
-    else if(section === 'sales') html = `<div class="card-box"><div class="card-header"><span>🛒 المبيعات</span><button class="btn btn-success btn-sm" onclick="showAddSale()">➕ فاتورة جديدة</button></div><div class="table-wrapper"><table id="salesTable"><thead><tr><th>#</th><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody></tbody></table></div></div>`;
-    else if(section === 'purchases') html = `<div class="card-box"><div class="card-header"><span>📥 المشتريات</span><button class="btn btn-success btn-sm" onclick="showAddPurchase()">➕ أمر شراء</button></div><div class="table-wrapper"><table id="purchasesTable"><thead><tr><th>#</th><th>التاريخ</th><th>المورد</th><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th>الإجراءات</th></tr></thead><tbody></tbody></table></div></div>`;
-    else if(section === 'clients') html = `<div class="card-box"><div class="card-header"><span>👥 العملاء</span><button class="btn btn-success btn-sm" onclick="showAddClient()">➕ عميل جديد</button></div><div class="table-wrapper"><table id="clientsTable"><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>إجمالي المشتريات</th><th>الدين</th><th>الإجراءات</th></tr></thead><tbody></tbody></table></div></div>`;
-    else if(section === 'suppliers') html = `<div class="card-box"><div class="card-header"><span>🏭 الموردين</span><button class="btn btn-success btn-sm" onclick="showAddSupplier()">➕ مورد جديد</button></div><div class="table-wrapper"><table id="suppliersTable"><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>المنتج</th><th>إجمالي المشتريات</th><th>الإجراءات</th></tr></thead><tbody></tbody></table></div></div>`;
-    else if(section === 'expenses') html = `<div class="card-box"><div class="card-header"><span>💸 المصروفات</span><button class="btn btn-success btn-sm" onclick="showAddExpense()">➕ مصروف جديد</button></div><div class="table-wrapper"><table id="expensesTable"><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>الإجراءات</th></tr></thead><tbody></tbody></table></div></div>`;
-    else if(section === 'revenues') html = `<div class="card-box"><div class="card-header"><span>💰 الإيرادات</span><button class="btn btn-success btn-sm" onclick="showAddRevenue()">➕ إيراد جديد</button></div><div class="table-wrapper"><table id="revenuesTable"><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>الإجراءات</th></tr></thead><tbody></tbody></table></div></div>`;
-    else if(section === 'reports') html = `<div class="stats-grid" id="reportStats"></div><div class="card-box"><div class="card-header">📊 تقرير المبيعات</div><div class="table-wrapper"><table id="reportTable"><thead><tr><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th></tr></thead><tbody></tbody></table></div></div>`;
-    container.innerHTML += `<div id="section-${section}" class="section">${html}</div>`;
-}
+    // ==================== لوحة التحكم ====================
+    function renderDashboard() {
+        const totalSales = db.sales.reduce((s, i) => s + (i.total || 0), 0);
+        const totalPurchases = db.purchases.reduce((s, i) => s + (i.total || 0), 0);
+        const totalExpenses = db.expenses.reduce((s, i) => s + (i.amount || 0), 0);
+        const totalRevenues = db.revenues.reduce((s, i) => s + (i.amount || 0), 0);
+        const profit = totalSales - totalPurchases - totalExpenses + totalRevenues;
+        const lowStock = db.inventory.filter(i => (i.qty || 0) <= 5).length;
+        
+        const html = `
+            <div class="stats-grid animate-in">
+                <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value">${formatCurrency(totalSales)}</div><div class="stat-label">إجمالي المبيعات</div></div>
+                <div class="stat-card"><div class="stat-icon">📥</div><div class="stat-value">${formatCurrency(totalPurchases)}</div><div class="stat-label">إجمالي المشتريات</div></div>
+                <div class="stat-card"><div class="stat-icon">💸</div><div class="stat-value">${formatCurrency(totalExpenses)}</div><div class="stat-label">المصروفات</div></div>
+                <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value">${formatCurrency(totalRevenues)}</div><div class="stat-label">الإيرادات</div></div>
+                <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-value" style="color:${profit >= 0 ? '#34d399' : '#f87171'}">${formatCurrency(profit)}</div><div class="stat-label">صافي الربح</div></div>
+                <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-value">${db.inventory.length}</div><div class="stat-label">المنتجات</div></div>
+                <div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-value" style="color:${lowStock > 0 ? '#fbbf24' : '#34d399'}">${lowStock}</div><div class="stat-label">منتجات منخفضة</div></div>
+                <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">${db.clients.length}</div><div class="stat-label">العملاء</div></div>
+            </div>
+            <div class="stats-grid" id="chartsGrid" style="grid-template-columns: 1fr 1fr;"></div>
+            <div class="card-box"><div class="card-header"><h3>📋 آخر المبيعات</h3></div><div class="table-wrapper"><table class="data-table"><thead><tr><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th></tr></thead><tbody id="recentSalesTable"></tbody></table></div></div>
+        `;
+        document.getElementById('pageContent').innerHTML = html;
+        
+        // رسم الرسوم البيانية
+        const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+        let monthlyData = Array(12).fill(0);
+        db.sales.forEach(s => { let d = new Date(s.date); if (!isNaN(d)) monthlyData[d.getMonth()] += s.total || 0; });
+        
+        document.getElementById('chartsGrid').innerHTML = `
+            <div class="card-box"><canvas id="monthlyChart" height="200"></canvas></div>
+            <div class="card-box"><canvas id="categoryChart" height="200"></canvas></div>
+        `;
+        
+        new Chart(document.getElementById('monthlyChart'), { type: 'bar', data: { labels: months, datasets: [{ label: 'المبيعات', data: monthlyData, backgroundColor: '#3b82f6', borderRadius: 8 }] }, options: { responsive: true } });
+        
+        let categories = {};
+        db.inventory.forEach(i => { let c = i.category || 'عام'; categories[c] = (categories[c] || 0) + (i.qty || 0) * (i.price || 0); });
+        new Chart(document.getElementById('categoryChart'), { type: 'doughnut', data: { labels: Object.keys(categories), datasets: [{ data: Object.values(categories), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'] }] }, options: { responsive: true } });
+        
+        // جدول آخر المبيعات
+        const recentSales = [...db.sales].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+        document.getElementById('recentSalesTable').innerHTML = recentSales.map(s => `
+            <tr><td>${s.date}</td><td>${s.clientName}</td><td>${formatCurrency(s.total)}</td><td><span class="badge ${s.status === 'مدفوع' ? 'badge-success' : 'badge-warning'}">${s.status}</span></td></tr>
+        `).join('');
+    }
 
-// ==================== RENDER FUNCTIONS ====================
-function renderDashboard(){
-    const totalSales = db.sales.reduce((s,i)=>s+(i.total||0),0);
-    const totalPurchases = db.purchases.reduce((s,i)=>s+(i.total||0),0);
-    const totalExpenses = db.expenses.reduce((s,i)=>s+(i.amount||0),0);
-    const totalRevenues = db.revenues.reduce((s,i)=>s+(i.amount||0),0);
-    const profit = totalSales - totalPurchases - totalExpenses + totalRevenues;
-    const lowStock = db.inventory.filter(i=>i.qty<=5).length;
-    
-    document.getElementById('statsGrid').innerHTML = `
-        <div class="stat-card"><div class="value">${totalSales.toLocaleString()} ج</div><div class="label">إجمالي المبيعات</div></div>
-        <div class="stat-card"><div class="value">${totalPurchases.toLocaleString()} ج</div><div class="label">إجمالي المشتريات</div></div>
-        <div class="stat-card"><div class="value">${totalExpenses.toLocaleString()} ج</div><div class="label">المصروفات</div></div>
-        <div class="stat-card"><div class="value">${totalRevenues.toLocaleString()} ج</div><div class="label">الإيرادات</div></div>
-        <div class="stat-card"><div class="value" style="color:${profit>=0?'#10b981':'#ef4444'}">${profit.toLocaleString()} ج</div><div class="label">صافي الربح</div></div>
-        <div class="stat-card"><div class="value">${db.inventory.length}</div><div class="label">المنتجات</div></div>
-        <div class="stat-card"><div class="value">${lowStock}</div><div class="label">منتجات منخفضة</div></div>
-        <div class="stat-card"><div class="value">${db.clients.length}</div><div class="label">العملاء</div></div>
-    `;
-    
-    document.getElementById('chartsGrid').innerHTML = `<div style="background:#0f172a;border-radius:15px;padding:15px"><canvas id="monthlyChart" height="200"></canvas></div><div style="background:#0f172a;border-radius:15px;padding:15px"><canvas id="categoryChart" height="200"></canvas></div>`;
-    const months = ['يناير','فبراير','مارس','ابريل','مايو','يونيو'];
-    let monthly = Array(6).fill(0);
-    db.sales.forEach(s=>{ let d = new Date(s.date); if(!isNaN(d) && d.getMonth()<6) monthly[d.getMonth()] += s.total||0; });
-    new Chart(document.getElementById('monthlyChart'), { type:'bar', data:{ labels:months, datasets:[{ label:'المبيعات', data:monthly, backgroundColor:'#3b82f6' }] }, options:{ responsive:true } });
-    
-    let categories = {};
-    db.inventory.forEach(i=>{ let c = i.category||'عام'; categories[c] = (categories[c]||0) + (i.qty||0)*(i.price||0); });
-    new Chart(document.getElementById('categoryChart'), { type:'doughnut', data:{ labels:Object.keys(categories), datasets:[{ data:Object.values(categories), backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444'] }] }, options:{ responsive:true } });
-    
-    const tbody = document.querySelector('#recentSalesTable tbody');
-    if(tbody) tbody.innerHTML = db.sales.slice(0,5).map(s=>`<tr><td>${s.date}</td><td>${s.clientName}</td><td>${s.total} ج</td><td><span style="background:${s.status==='مدفوع'?'#10b981':'#f59e0b'};padding:2px 12px;border-radius:20px">${s.status}</span></td></tr>`).join('');
-}
+    // ==================== المخزون ====================
+    function renderInventory() {
+        const html = `
+            <div class="card-box">
+                <div class="card-header">
+                    <h3>📦 إدارة المخزون</h3>
+                    <button class="btn btn-success" onclick="showAddProductModal()">+ منتج جديد</button>
+                </div>
+                <input type="text" id="searchInventory" placeholder="🔍 بحث..." style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 12px;">
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><tr><th>#</th><th>المنتج</th><th>الفئة</th><th>الكمية</th><th>السعر</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
+                        <tbody id="inventoryTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        document.getElementById('pageContent').innerHTML = html;
+        refreshInventoryTable();
+        document.getElementById('searchInventory')?.addEventListener('input', refreshInventoryTable);
+    }
 
-function renderInventory(){
-    const tbody = document.querySelector('#inventoryTable tbody');
-    if(tbody) tbody.innerHTML = db.inventory.map((i,idx)=>`<tr><td>${idx+1}</td><td>${i.name}</td><td>${i.category||'-'}</td><td>${i.qty}</td><td>${i.price} ج</td><td><button class="btn btn-warning btn-sm" onclick="editInventory(${i.id})">✏️</button> <button class="btn btn-danger btn-sm" onclick="deleteInventory(${i.id})">🗑️</button></td></tr>`).join('');
-}
+    function refreshInventoryTable() {
+        const search = document.getElementById('searchInventory')?.value.toLowerCase() || '';
+        const filtered = db.inventory.filter(i => i.name.toLowerCase().includes(search));
+        document.getElementById('inventoryTableBody').innerHTML = filtered.map((i, idx) => `
+            <tr>
+                <td>${idx + 1}</td>
+                <td><strong>${i.name}</strong></td>
+                <td>${i.category || 'عام'}</td>
+                <td style="color: ${i.qty <= 5 ? '#fbbf24' : '#34d399'}; font-weight: bold;">${i.qty}</td>
+                <td>${formatCurrency(i.price)}</td>
+                <td><span class="badge ${i.qty <= 5 ? 'badge-warning' : 'badge-success'}">${i.qty <= 5 ? '⚠️ منخفض' : 'متوفر'}</span></td>
+                <td><button class="btn btn-warning btn-sm" onclick="editProduct(${i.id})">✏️</button> <button class="btn btn-danger btn-sm" onclick="deleteProduct(${i.id})">🗑️</button></td>
+            </tr>
+        `).join('');
+    }
 
-function renderSales(){
-    const tbody = document.querySelector('#salesTable tbody');
-    if(tbody) tbody.innerHTML = db.sales.map((s,idx)=>`<tr><td>${idx+1}</td><td>${s.date}</td><td>${s.clientName}</td><td>${s.total} ج</td><td><span style="background:${s.status==='مدفوع'?'#10b981':'#f59e0b'};padding:2px 12px;border-radius:20px">${s.status}</span></td><td><button class="btn btn-danger btn-sm" onclick="deleteSale(${s.id})">🗑️</button></td></tr>`).join('');
-}
+    function showAddProductModal() {
+        const name = prompt('اسم المنتج:');
+        if (!name) return;
+        const category = prompt('الفئة:', 'عام');
+        const qty = parseInt(prompt('الكمية:', '0'));
+        const price = parseFloat(prompt('السعر:', '0'));
+        if (isNaN(qty) || isNaN(price)) return;
+        db.inventory.push({ id: Date.now(), name, category: category || 'عام', qty, price });
+        saveAll();
+        refreshInventoryTable();
+        showNotification('✅ تمت إضافة المنتج');
+    }
 
-function renderPurchases(){
-    const tbody = document.querySelector('#purchasesTable tbody');
-    if(tbody) tbody.innerHTML = db.purchases.map((p,idx)=>`<tr><td>${idx+1}</td><td>${p.date}</td><td>${p.supplier}</td><td>${p.product}</td><td>${p.qty}</td><td>${p.price} ج</td><td>${p.total} ج</td><td><button class="btn btn-danger btn-sm" onclick="deletePurchase(${p.id})">🗑️</button></td></tr>`).join('');
-}
+    function editProduct(id) {
+        const item = db.inventory.find(i => i.id === id);
+        if (!item) return;
+        const newName = prompt('اسم المنتج الجديد:', item.name);
+        if (newName) item.name = newName;
+        const newQty = parseInt(prompt('الكمية الجديدة:', item.qty));
+        if (!isNaN(newQty)) item.qty = newQty;
+        const newPrice = parseFloat(prompt('السعر الجديد:', item.price));
+        if (!isNaN(newPrice)) item.price = newPrice;
+        saveAll();
+        refreshInventoryTable();
+        showNotification('✅ تم التعديل');
+    }
 
-function renderClients(){
-    const tbody = document.querySelector('#clientsTable tbody');
-    if(tbody) tbody.innerHTML = db.clients.map((c,idx)=>`<tr><td>${idx+1}</td><td>${c.name}</td><td>${c.phone||'-'}</td><td>${(c.totalPurchases||0).toLocaleString()} ج</td><td style="color:${(c.debt||0)>0?'#ef4444':'#10b981'}">${(c.debt||0).toLocaleString()} ج</td><td><button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">🗑️</button></td></tr>`).join('');
-}
+    function deleteProduct(id) {
+        if (confirm('حذف المنتج؟')) {
+            db.inventory = db.inventory.filter(i => i.id !== id);
+            saveAll();
+            refreshInventoryTable();
+            showNotification('تم الحذف', 'danger');
+        }
+    }
 
-function renderSuppliers(){
-    const tbody = document.querySelector('#suppliersTable tbody');
-    if(tbody) tbody.innerHTML = db.suppliers.map((s,idx)=>`<tr><td>${idx+1}</td><td>${s.name}</td><td>${s.phone||'-'}</td><td>${s.product||'-'}</td><td>${(s.totalPurchases||0).toLocaleString()} ج</td><td><button class="btn btn-danger btn-sm" onclick="deleteSupplier(${s.id})">🗑️</button></td></tr>`).join('');
-}
+    // ==================== المبيعات ====================
+    function renderSales() {
+        const html = `
+            <div class="card-box">
+                <div class="card-header">
+                    <h3>🛒 المبيعات والفواتير</h3>
+                    <button class="btn btn-success" onclick="showAddSaleModal()">+ فاتورة جديدة</button>
+                </div>
+                <input type="text" id="searchSales" placeholder="🔍 بحث..." style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 12px;">
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><tr><th>#</th><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
+                        <tbody id="salesTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        document.getElementById('pageContent').innerHTML = html;
+        refreshSalesTable();
+        document.getElementById('searchSales')?.addEventListener('input', refreshSalesTable);
+    }
 
-function renderExpenses(){
-    const tbody = document.querySelector('#expensesTable tbody');
-    if(tbody) tbody.innerHTML = db.expenses.map((e,idx)=>`<tr><td>${idx+1}</td><td>${e.date}</td><td>${e.type}</td><td>${e.amount} ج</td><td><button class="btn btn-danger btn-sm" onclick="deleteExpense(${e.id})">🗑️</button></td></tr>`).join('');
-}
+    function refreshSalesTable() {
+        const search = document.getElementById('searchSales')?.value.toLowerCase() || '';
+        const filtered = db.sales.filter(s => s.clientName.toLowerCase().includes(search));
+        document.getElementById('salesTableBody').innerHTML = filtered.map((s, idx) => `
+            <tr>
+                <td>${idx + 1}</td>
+                <td>${s.date}</td>
+                <td>${s.clientName}</td>
+                <td>${formatCurrency(s.total)}</td>
+                <td><span class="badge ${s.status === 'مدفوع' ? 'badge-success' : 'badge-warning'}">${s.status}</span></td>
+                <td><button class="btn btn-danger btn-sm" onclick="deleteSale(${s.id})">🗑️</button></td>
+            </tr>
+        `).join('');
+    }
 
-function renderRevenues(){
-    const tbody = document.querySelector('#revenuesTable tbody');
-    if(tbody) tbody.innerHTML = db.revenues.map((r,idx)=>`<tr><td>${idx+1}</td><td>${r.date}</td><td>${r.type}</td><td>${r.amount} ج</td><td><button class="btn btn-danger btn-sm" onclick="deleteRevenue(${r.id})">🗑️</button></td></tr>`).join('');
-}
+    function showAddSaleModal() {
+        const client = prompt('اسم العميل:');
+        if (!client) return;
+        const total = parseFloat(prompt('المبلغ الإجمالي:', '0'));
+        if (isNaN(total)) return;
+        const status = confirm('مدفوع؟ OK = مدفوع, Cancel = آجل') ? 'مدفوع' : 'آجل';
+        db.sales.push({ id: Date.now(), clientName: client, total, paid: status === 'مدفوع' ? total : 0, status, date: today() });
+        saveAll();
+        refreshSalesTable();
+        showNotification('✅ تمت إضافة الفاتورة');
+    }
 
-function renderReports(){
-    const totalSales = db.sales.reduce((s,i)=>s+(i.total||0),0);
-    const totalPurchases = db.purchases.reduce((s,i)=>s+(i.total||0),0);
-    const totalExpenses = db.expenses.reduce((s,i)=>s+(i.amount||0),0);
-    const totalRevenues = db.revenues.reduce((s,i)=>s+(i.amount||0),0);
-    const profit = totalSales - totalPurchases - totalExpenses + totalRevenues;
-    document.getElementById('reportStats').innerHTML = `
-        <div class="stat-card"><div class="value">${totalSales.toLocaleString()} ج</div><div class="label">المبيعات</div></div>
-        <div class="stat-card"><div class="value">${totalPurchases.toLocaleString()} ج</div><div class="label">المشتريات</div></div>
-        <div class="stat-card"><div class="value">${totalExpenses.toLocaleString()} ج</div><div class="label">المصروفات</div></div>
-        <div class="stat-card"><div class="value">${totalRevenues.toLocaleString()} ج</div><div class="label">الإيرادات</div></div>
-        <div class="stat-card"><div class="value" style="color:${profit>=0?'#10b981':'#ef4444'}">${profit.toLocaleString()} ج</div><div class="label">صافي الربح</div></div>
-    `;
-    const tbody = document.querySelector('#reportTable tbody');
-    if(tbody) tbody.innerHTML = db.sales.map(s=>`<tr><td>${s.clientName}</td><td>${s.total} ج</td><td><span style="background:${s.status==='مدفوع'?'#10b981':'#f59e0b'};padding:2px 12px;border-radius:20px">${s.status}</span></td><td>${s.date}</td></tr>`).join('');
-}
+    function deleteSale(id) {
+        if (confirm('حذف الفاتورة؟')) {
+            db.sales = db.sales.filter(s => s.id !== id);
+            saveAll();
+            refreshSalesTable();
+            showNotification('تم الحذف', 'danger');
+        }
+    }
 
-// ==================== CRUD ====================
-function showAddInventory(){
-    let name = prompt('اسم المنتج:'); if(!name) return;
-    let qty = parseInt(prompt('الكمية:',0)); let price = parseFloat(prompt('السعر:',0));
-    if(isNaN(qty)||isNaN(price)) return;
-    db.inventory.push({id:Date.now(), name, qty, price, category:'عام'});
-    saveAll(); renderInventory(); notify('✅ تمت الإضافة');
-}
-function editInventory(id){
-    let item = db.inventory.find(i=>i.id===id);
-    if(!item) return;
-    let newName = prompt('الاسم الجديد:',item.name); if(newName) item.name = newName;
-    let newQty = parseInt(prompt('الكمية الجديدة:',item.qty)); if(!isNaN(newQty)) item.qty = newQty;
-    let newPrice = parseFloat(prompt('السعر الجديد:',item.price)); if(!isNaN(newPrice)) item.price = newPrice;
-    saveAll(); renderInventory(); notify('✅ تم التعديل');
-}
-function deleteInventory(id){
-    if(confirm('حذف المنتج؟')){ db.inventory = db.inventory.filter(i=>i.id!==id); saveAll(); renderInventory(); notify('تم الحذف','danger'); }
-}
+    // ==================== المشتريات ====================
+    function renderPurchases() {
+        const html = `
+            <div class="card-box">
+                <div class="card-header">
+                    <h3>📥 المشتريات وأوامر الشراء</h3>
+                    <button class="btn btn-success" onclick="showAddPurchaseModal()">+ أمر شراء</button>
+                </div>
+                <input type="text" id="searchPurchases" placeholder="🔍 بحث..." style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 12px;">
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><tr><th>#</th><th>التاريخ</th><th>المورد</th><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th>الإجراءات</th></tr></thead>
+                        <tbody id="purchasesTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        document.getElementById('pageContent').innerHTML = html;
+        refreshPurchasesTable();
+        document.getElementById('searchPurchases')?.addEventListener('input', refreshPurchasesTable);
+    }
 
-function showAddSale(){
-    let client = prompt('اسم العميل:'); if(!client) return;
-    let total = parseFloat(prompt('المبلغ:',0)); if(isNaN(total)) return;
-    let status = confirm('مدفوع؟ OK نعم') ? 'مدفوع' : 'آجل';
-    db.sales.push({id:Date.now(), clientName:client, total, status, date:today()});
-    let existing = db.clients.find(c=>c.name===client);
-    if(existing){ existing.totalPurchases = (existing.totalPurchases||0)+total; if(status==='آجل') existing.debt = (existing.debt||0)+total; }
-    else { db.clients.push({id:Date.now(), name:client, phone:'', totalPurchases:total, debt:status==='آجل'?total:0}); }
-    saveAll(); renderSales(); notify('✅ تمت الإضافة');
-}
-function deleteSale(id){
-    if(confirm('حذف البيع؟')){ db.sales = db.sales.filter(s=>s.id!==id); saveAll(); renderSales(); notify('تم الحذف','danger'); }
-}
+    function refreshPurchasesTable() {
+        const search = document.getElementById('searchPurchases')?.value.toLowerCase() || '';
+        const filtered = db.purchases.filter(p => p.supplier.toLowerCase().includes(search) || p.product.toLowerCase().includes(search));
+        document.getElementById('purchasesTableBody').innerHTML = filtered.map((p, idx) => `
+            <tr>
+                <td>${idx + 1}</td>
+                <td>${p.date}</td>
+                <td>${p.supplier}</td>
+                <td>${p.product}</td>
+                <td>${p.qty}</td>
+                <td>${formatCurrency(p.price)}</td>
+                <td>${formatCurrency(p.total)}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="deletePurchase(${p.id})">🗑️</button></td>
+            </tr>
+        `).join('');
+    }
 
-function showAddPurchase(){
-    let supplier = prompt('اسم المورد:'); if(!supplier) return;
-    let product = prompt('اسم المنتج:'); if(!product) return;
-    let qty = parseInt(prompt('الكمية:',1)); let price = parseFloat(prompt('السعر:',0));
-    if(isNaN(qty)||isNaN(price)) return;
-    let total = qty*price;
-    db.purchases.push({id:Date.now(), supplier, product, qty, price, total, date:today()});
-    let existingProduct = db.inventory.find(i=>i.name===product);
-    if(existingProduct) existingProduct.qty += qty;
-    else db.inventory.push({id:Date.now(), name:product, qty, price, category:'مشتريات'});
-    let existingSupplier = db.suppliers.find(s=>s.name===supplier);
-    if(existingSupplier) existingSupplier.totalPurchases = (existingSupplier.totalPurchases||0)+total;
-    else db.suppliers.push({id:Date.now(), name:supplier, phone:'', product:product, totalPurchases:total});
-    saveAll(); renderPurchases(); renderInventory(); notify('✅ تمت الإضافة وتحديث المخزون');
-}
-function deletePurchase(id){
-    if(confirm('حذف الشراء؟')){ db.purchases = db.purchases.filter(p=>p.id!==id); saveAll(); renderPurchases(); notify('تم الحذف','danger'); }
-}
+    function showAddPurchaseModal() {
+        const supplier = prompt('اسم المورد:');
+        if (!supplier) return;
+        const product = prompt('اسم المنتج:');
+        if (!product) return;
+        const qty = parseInt(prompt('الكمية:', '1'));
+        const price = parseFloat(prompt('السعر:', '0'));
+        if (isNaN(qty) || isNaN(price)) return;
+        const total = qty * price;
+        db.purchases.push({ id: Date.now(), supplier, product, qty, price, total, date: today() });
+        // تحديث المخزون
+        const existing = db.inventory.find(i => i.name === product);
+        if (existing) existing.qty += qty;
+        else db.inventory.push({ id: Date.now(), name: product, category: 'مشتريات', qty, price });
+        saveAll();
+        refreshPurchasesTable();
+        if (currentSection === 'dashboard') renderDashboard();
+        showNotification('✅ تمت إضافة أمر الشراء وتحديث المخزون');
+    }
 
-function showAddClient(){
-    let name = prompt('اسم العميل:'); if(!name) return;
-    let phone = prompt('رقم الهاتف:','');
-    db.clients.push({id:Date.now(), name, phone, totalPurchases:0, debt:0});
-    saveAll(); renderClients(); notify('✅ تمت الإضافة');
-}
-function deleteClient(id){
-    if(confirm('حذف العميل؟')){ db.clients = db.clients.filter(c=>c.id!==id); saveAll(); renderClients(); notify('تم الحذف','danger'); }
-}
+    function deletePurchase(id) {
+        if (confirm('حذف الأمر؟')) {
+            db.purchases = db.purchases.filter(p => p.id !== id);
+            saveAll();
+            refreshPurchasesTable();
+            showNotification('تم الحذف', 'danger');
+        }
+    }
 
-function showAddSupplier(){
-    let name = prompt('اسم المورد:'); if(!name) return;
-    let phone = prompt('رقم الهاتف:',''); let product = prompt('المنتج:','');
-    db.suppliers.push({id:Date.now(), name, phone, product, totalPurchases:0});
-    saveAll(); renderSuppliers(); notify('✅ تمت الإضافة');
-}
-function deleteSupplier(id){
-    if(confirm('حذف المورد؟')){ db.suppliers = db.suppliers.filter(s=>s.id!==id); saveAll(); renderSuppliers(); notify('تم الحذف','danger'); }
-}
+    // ==================== العملاء ====================
+    function renderClients() {
+        const html = `
+            <div class="card-box">
+                <div class="card-header">
+                    <h3>👥 العملاء</h3>
+                    <button class="btn btn-success" onclick="showAddClientModal()">+ عميل جديد</button>
+                </div>
+                <input type="text" id="searchClients" placeholder="🔍 بحث..." style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 12px;">
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>إجمالي المشتريات</th><th>الديون</th><th>الإجراءات</th></tr></thead>
+                        <tbody id="clientsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        document.getElementById('pageContent').innerHTML = html;
+        refreshClientsTable();
+        document.getElementById('searchClients')?.addEventListener('input', refreshClientsTable);
+    }
 
-function showAddExpense(){
-    let type = prompt('نوع المصروف:'); if(!type) return;
-    let amount = parseFloat(prompt('المبلغ:',0)); if(isNaN(amount)) return;
-    db.expenses.push({id:Date.now(), type, amount, date:today()});
-    saveAll(); renderExpenses(); notify('✅ تمت الإضافة');
-}
-function deleteExpense(id){
-    if(confirm('حذف المصروف؟')){ db.expenses = db.expenses.filter(e=>e.id!==id); saveAll(); renderExpenses(); notify('تم الحذف','danger'); }
-}
+    function refreshClientsTable() {
+        const search = document.getElementById('searchClients')?.value.toLowerCase() || '';
+        const filtered = db.clients.filter(c => c.name.toLowerCase().includes(search));
+        document.getElementById('clientsTableBody').innerHTML = filtered.map((c, idx) => {
+            const totalPurchases = db.sales.filter(s => s.clientName === c.name).reduce((s, i) => s + i.total, 0);
+            return `
+            <tr>
+                <td>${idx + 1}</td>
+                <td><strong>${c.name}</strong></td>
+                <td>${c.phone || '-'}</td>
+                <td>${formatCurrency(totalPurchases)}</td>
+                <td style="color: ${(c.debt || 0) > 0 ? '#f87171' : '#34d399'}">${formatCurrency(c.debt || 0)}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">🗑️</button></td>
+            </tr>
+        `}).join('');
+    }
 
-function showAddRevenue(){
-    let type = prompt('نوع الإيراد:'); if(!type) return;
-    let amount = parseFloat(prompt('المبلغ:',0)); if(isNaN(amount)) return;
-    db.revenues.push({id:Date.now(), type, amount, date:today()});
-    saveAll(); renderRevenues(); notify('✅ تمت الإضافة');
-}
-function deleteRevenue(id){
-    if(confirm('حذف الإيراد؟')){ db.revenues = db.revenues.filter(r=>r.id!==id); saveAll(); renderRevenues(); notify('تم الحذف','danger'); }
-}
+    function showAddClientModal() {
+        const name = prompt('اسم العميل:');
+        if (!name) return;
+        const phone = prompt('رقم الهاتف (اختياري):', '');
+        db.clients.push({ id: Date.now(), name, phone, debt: 0 });
+        saveAll();
+        refreshClientsTable();
+        showNotification('✅ تمت إضافة العميل');
+    }
 
-function exportBackup(){
-    const data = JSON.stringify(db);
-    const blob = new Blob([data], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `backup_${today()}.json`; a.click();
-    notify('✅ تم التصدير');
-}
+    function deleteClient(id) {
+        if (confirm('حذف العميل؟')) {
+            db.clients = db.clients.filter(c => c.id !== id);
+            saveAll();
+            refreshClientsTable();
+            showNotification('تم الحذف', 'danger');
+        }
+    }
 
-function showSettings(){ document.getElementById('settingsModal').classList.add('show'); }
-function saveSettings(){
-    db.settings.companyName = document.getElementById('companyName').value;
-    db.settings.companyPhone = document.getElementById('companyPhone').value;
-    db.settings.companyEmail = document.getElementById('companyEmail').value;
-    saveAll(); closeModal('settingsModal'); notify('✅ تم الحفظ');
-}
-function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+    // ==================== الموردين ====================
+    function renderSuppliers() {
+        const html = `
+            <div class="card-box">
+                <div class="card-header">
+                    <h3>🏭 الموردين</h3>
+                    <button class="btn btn-success" onclick="showAddSupplierModal()">+ مورد جديد</button>
+                </div>
+                <input type="text" id="searchSuppliers" placeholder="🔍 بحث..." style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 12px;">
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>المنتج</th><th>إجمالي المشتريات</th><th>الإجراءات</th></tr></thead>
+                        <tbody id="suppliersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        document.getElementById('pageContent').innerHTML = html;
+        refreshSuppliersTable();
+        document.getElementById('searchSuppliers')?.addEventListener('input', refreshSuppliersTable);
+    }
 
-function logout(){
-    if(confirm('تسجيل الخروج؟')){ localStorage.removeItem('semo_user'); location.href = 'index.html'; }
-}
+    function refreshSuppliersTable() {
+        const search = document.getElementById('searchSuppliers')?.value.toLowerCase() || '';
+        const filtered = db.suppliers.filter(s => s.name.toLowerCase().includes(search));
+        document.getElementById('suppliersTableBody').innerHTML = filtered.map((s, idx) => {
+            const totalPurchases = db.purchases.filter(p => p.supplier === s.name).reduce((sum, p) => sum + p.total, 0);
+            return `
+            <tr>
+                <td>${idx + 1}</td>
+                <td><strong>${s.name}</strong></td>
+                <td>${s.phone || '-'}</td>
+                <td>${s.product || '-'}</td>
+                <td>${formatCurrency(totalPurchases)}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="deleteSupplier(${s.id})">🗑️</button></td>
+            </tr>
+        `}).join('');
+    }
 
-// ==================== INIT ====================
-renderTabs();
-</script>
-</body>
-</html>
+    function showAddSupplierModal() {
+        const name = prompt('اسم المورد:');
+        if (!name) return;
+        const phone = prompt('رقم الهاتف (اختياري):', '');
+        const product = prompt('المنتج المورد (اختياري):', '');
+        db.suppliers.push({ id: Date.now(), name, phone, product });
+        saveAll();
+        refreshSuppliersTable();
+        showNotification('✅ تمت إضافة المورد');
+    }
+
+    function deleteSupplier(id) {
+        if (confirm('حذف المورد؟')) {
+            db.suppliers = db.suppliers.filter(s => s.id !== id);
+            saveAll();
+            refreshSuppliersTable();
+            showNotification('تم الحذف', 'danger');
+        }
+    }
+
+    // ==================== المصروفات والإيرادات ====================
+    function renderExpenses() {
+        const html = `
+            <div class="card-box">
+                <div class="card-header">
+                    <h3>💸 المصروفات</h3>
+                    <button class="btn btn-success" onclick="showAddExpenseModal()">+ مصروف جديد</button>
+                </div>
+                <input type="text" id="searchExpenses" placeholder="🔍 بحث..." style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius:
