@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEMO ERP | نظام محاسبي متكامل</title>
+    <title>SEMO ERP | النظام المحاسبي المتكامل</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+            font-family: 'Cairo', 'Segoe UI', system-ui, sans-serif;
         }
         body {
             background: #0f172a;
             color: #e2e8f0;
             direction: rtl;
         }
-        /* Login Page */
+        /* -- Login Page -- */
         .login-container {
             min-height: 100vh;
             display: flex;
@@ -47,8 +47,16 @@
             font-weight: bold;
             color: white;
         }
-        h1 { color: #3b82f6; font-size: 28px; margin-bottom: 8px; }
-        .sub { color: #94a3b8; font-size: 14px; margin-bottom: 25px; }
+        h1 {
+            color: #3b82f6;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .sub {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
         .demo-box {
             background: #0f172a;
             border: 1px solid #334155;
@@ -57,8 +65,17 @@
             margin: 20px 0;
             text-align: right;
         }
-        .demo-box p { color: #f59e0b; font-weight: bold; margin-bottom: 8px; }
-        .demo-box span { display: block; color: #94a3b8; font-size: 13px; margin: 5px 0; }
+        .demo-box p {
+            color: #f59e0b;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .demo-box span {
+            display: block;
+            color: #94a3b8;
+            font-size: 13px;
+            margin: 5px 0;
+        }
         input {
             width: 100%;
             padding: 12px 16px;
@@ -70,7 +87,10 @@
             font-size: 15px;
             outline: none;
         }
-        input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+        input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+        }
         .btn {
             width: 100%;
             padding: 12px;
@@ -82,23 +102,62 @@
             font-size: 16px;
             margin-top: 10px;
         }
-        .btn-primary { background: #3b82f6; color: white; }
-        .btn-primary:hover { background: #2563eb; transform: translateY(-2px); }
-        .btn-demo { background: #f59e0b; color: #1e293b; }
-        .btn-demo:hover { background: #d97706; transform: translateY(-2px); }
-        .divider { margin: 20px 0; color: #64748b; font-size: 13px; position: relative; }
-        .divider::before, .divider::after { content: ""; position: absolute; top: 50%; width: 40%; height: 1px; background: #334155; }
-        .divider::before { left: 0; }
-        .divider::after { right: 0; }
-        .shortcut { font-size: 12px; color: #64748b; margin-top: 15px; }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        .btn-demo {
+            background: #f59e0b;
+            color: #1e293b;
+        }
+        .btn-demo:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+        }
+        .divider {
+            margin: 20px 0;
+            color: #64748b;
+            font-size: 13px;
+            position: relative;
+        }
+        .divider::before,
+        .divider::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #334155;
+        }
+        .divider::before {
+            left: 0;
+        }
+        .divider::after {
+            right: 0;
+        }
+        .shortcut {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 15px;
+        }
 
-        /* Dashboard */
-        .app { display: none; }
-        .app.active { display: flex; min-height: 100vh; }
+        /* -- Dashboard Layout -- */
+        .app {
+            display: none;
+            flex-direction: row-reverse;
+            min-height: 100vh;
+        }
+        .app.active {
+            display: flex;
+        }
         .sidebar {
             width: 260px;
             background: #1e293b;
-            border-left: 1px solid #334155;
+            border-right: 1px solid #334155;
             position: fixed;
             right: 0;
             top: 0;
@@ -107,8 +166,16 @@
             overflow-y: auto;
             z-index: 100;
         }
-        .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid #334155; margin-bottom: 20px; }
-        .sidebar-header h2 { color: #3b82f6; font-size: 24px; }
+        .sidebar-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 20px;
+        }
+        .sidebar-header h2 {
+            color: #3b82f6;
+            font-size: 24px;
+        }
         .user-info {
             background: #0f172a;
             border-radius: 16px;
@@ -140,8 +207,14 @@
             gap: 12px;
             transition: 0.2s;
         }
-        .menu-item:hover { background: #334155; color: white; }
-        .menu-item.active { background: #3b82f6; color: white; }
+        .menu-item:hover {
+            background: #334155;
+            color: white;
+        }
+        .menu-item.active {
+            background: #3b82f6;
+            color: white;
+        }
         .logout-btn {
             margin-top: 30px;
             background: #ef4444;
@@ -163,6 +236,7 @@
             margin-right: 260px;
             padding: 20px;
         }
+
         .top-bar {
             background: #1e293b;
             border: 1px solid #334155;
@@ -175,6 +249,7 @@
             flex-wrap: wrap;
             gap: 10px;
         }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -188,8 +263,16 @@
             padding: 15px;
             text-align: center;
         }
-        .stat-card .value { font-size: 28px; font-weight: bold; color: #3b82f6; }
-        .stat-card .label { font-size: 12px; color: #94a3b8; margin-top: 5px; }
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        .stat-card .label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
         .card-box {
             background: #1e293b;
             border: 1px solid #334155;
@@ -206,16 +289,54 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-        .table-wrapper { overflow-x: auto; padding: 0 0 15px 0; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: right; padding: 12px 15px; color: #94a3b8; font-weight: 600; border-bottom: 1px solid #334155; }
-        td { padding: 10px 15px; border-bottom: 1px solid #334155; }
-        tr:hover td { background: #334155; }
-        .btn-sm { padding: 5px 12px; font-size: 12px; }
-        .btn-success { background: #10b981; color: white; border: none; border-radius: 40px; cursor: pointer; }
-        .btn-warning { background: #f59e0b; color: #1e293b; border: none; border-radius: 40px; cursor: pointer; }
-        .btn-danger { background: #ef4444; color: white; border: none; border-radius: 40px; cursor: pointer; }
-        .btn-secondary { background: #334155; color: white; border: none; border-radius: 40px; cursor: pointer; }
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 0 0 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            text-align: right;
+            padding: 12px 15px;
+            color: #94a3b8;
+            font-weight: 600;
+            border-bottom: 1px solid #334155;
+        }
+        td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #334155;
+        }
+        tr:hover td {
+            background: #334155;
+        }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-warning {
+            background: #f59e0b;
+            color: #1e293b;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-secondary {
+            background: #334155;
+            color: white;
+        }
+
         .toast {
             position: fixed;
             bottom: 20px;
@@ -229,15 +350,25 @@
             from { transform: translateX(-100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
+
         @media (max-width: 768px) {
-            .sidebar { width: 70px; padding: 10px; }
-            .sidebar-header h2, .menu-item span, .user-info div:not(.avatar) { display: none; }
-            .main-content { margin-right: 70px; padding: 15px; }
+            .sidebar {
+                width: 70px;
+                padding: 10px;
+            }
+            .sidebar-header h2, .menu-item span, .user-info div:not(.avatar) {
+                display: none;
+            }
+            .main-content {
+                margin-right: 70px;
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Login Page -->
+
+    <!-- صفحة تسجيل الدخول -->
     <div class="login-container" id="loginContainer">
         <div class="login-card">
             <div class="logo">S</div>
@@ -257,18 +388,13 @@
         </div>
     </div>
 
-    <!-- Main Dashboard -->
+    <!-- لوحة التحكم الرئيسية -->
     <div class="app" id="appContainer">
         <div class="sidebar">
-            <div class="sidebar-header">
-                <h2>SEMO ERP</h2>
-            </div>
+            <div class="sidebar-header"><h2>SEMO ERP</h2></div>
             <div class="user-info">
                 <div class="avatar" id="userAvatar">A</div>
-                <div>
-                    <div id="userName">المدير</div>
-                    <div style="font-size: 12px; color: #94a3b8;" id="userRole">مدير النظام</div>
-                </div>
+                <div><div id="userName">المدير</div><div style="font-size: 12px; color: #94a3b8;" id="userRole">مدير النظام</div></div>
             </div>
             <div class="menu-item active" data-page="dashboard">🏠 <span>الرئيسية</span></div>
             <div class="menu-item" data-page="inventory">📦 <span>المخزون</span></div>
@@ -281,22 +407,20 @@
             <div class="menu-item" data-page="reports">📊 <span>التقارير</span></div>
             <button class="logout-btn" onclick="logout()">🚪 خروج</button>
         </div>
+
         <div class="main-content">
             <div class="top-bar">
-                <div class="page-title">
-                    <h2 id="pageTitle">🏠 الرئيسية</h2>
-                </div>
-                <div>
-                    <button class="btn-sm btn-secondary" onclick="exportBackup()">💾 نسخة احتياطية</button>
-                    <button class="btn-sm btn-secondary" onclick="showSettings()">⚙️ إعدادات</button>
-                </div>
+                <div class="page-title"><h2 id="pageTitle">🏠 الرئيسية</h2></div>
+                <div><button class="btn-sm btn-secondary" onclick="exportBackup()">💾 نسخة احتياطية</button><button class="btn-sm btn-secondary" onclick="showSettings()">⚙️ إعدادات</button></div>
             </div>
             <div id="pageContainer"></div>
         </div>
     </div>
 
     <script>
-        // ==================== DATA ====================
+        // --------------------------------------------------------------
+        // قاعدة البيانات الأساسية
+        // --------------------------------------------------------------
         let db = {
             inventory: JSON.parse(localStorage.getItem('semo_inventory')) || [],
             sales: JSON.parse(localStorage.getItem('semo_sales')) || [],
@@ -308,16 +432,21 @@
             settings: JSON.parse(localStorage.getItem('semo_settings')) || {}
         };
 
+        // بيانات تجريبية ذكية (عشان البرنامج ميكنش فاضي)
         if(db.inventory.length === 0){
             db.inventory = [
-                {id:1, name:'لابتوب', qty:10, price:15000, category:'الكترونيات'},
-                {id:2, name:'طابعة', qty:5, price:3000, category:'مكتبية'}
+                {id: 1, name: 'لابتوب احترافي', qty: 15, price: 25000, category: 'الكترونيات'},
+                {id: 2, name: 'طابعة ليزر', qty: 8, price: 4500, category: 'مكتبية'},
+                {id: 3, name: 'شاشة 24 بوصة', qty: 12, price: 3200, category: 'الكترونيات'}
             ];
             db.clients = [
-                {id:1, name:'شركة الأمل', phone:'0111111111', totalPurchases:0, debt:0},
-                {id:2, name:'مؤسسة النور', phone:'0222222222', totalPurchases:0, debt:0}
+                {id: 1, name: 'شركة الأمل للتجارة', phone: '0111111111', totalPurchases: 0, debt: 0},
+                {id: 2, name: 'مؤسسة النور للمقاولات', phone: '0222222222', totalPurchases: 0, debt: 0},
+                {id: 3, name: 'شركة التقنية الحديثة', phone: '0333333333', totalPurchases: 0, debt: 0}
             ];
-            db.suppliers = [{id:1, name:'مورد 1', phone:'0333333333', product:'لابتوب', totalPurchases:0}];
+            db.suppliers = [
+                {id: 1, name: 'توزيعات التقنية', phone: '0444444444', product: 'لابتوب', totalPurchases: 0}
+            ];
             saveAll();
         }
 
@@ -333,6 +462,7 @@
         }
 
         function today(){ return new Date().toLocaleDateString('ar-EG'); }
+
         function notify(msg, type='success'){
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -342,7 +472,9 @@
             setTimeout(()=>toast.remove(), 3000);
         }
 
-        // ==================== LOGIN ====================
+        // --------------------------------------------------------------
+        // تسجيل الدخول
+        // --------------------------------------------------------------
         const DEMO_ACCOUNTS = {
             admin: { email: "admin@semo.com", password: "123456", name: "مدير النظام", role: "admin" }
         };
@@ -365,12 +497,14 @@
         document.addEventListener('keydown', (e) => { if(e.key === 'Enter' && document.getElementById('loginContainer').style.display !== 'none') directLogin(); });
         if(localStorage.getItem('semo_user')) directLogin();
 
-        // ==================== RENDER ====================
+        // --------------------------------------------------------------
+        // عرض الصفحات (تبويبات احترافية)
+        // --------------------------------------------------------------
         function renderPage(page){
             document.querySelectorAll('.menu-item').forEach(item=>item.classList.remove('active'));
             document.querySelector(`.menu-item[data-page="${page}"]`).classList.add('active');
-            document.getElementById('pageTitle').innerHTML = { dashboard:'🏠 الرئيسية', inventory:'📦 المخزون', sales:'🛒 المبيعات', purchases:'📥 المشتريات', clients:'👥 العملاء', suppliers:'🏭 الموردين', expenses:'💸 المصروفات', revenues:'💰 الإيرادات', reports:'📊 التقارير' }[page];
-            
+            const titles = { dashboard:'🏠 الرئيسية', inventory:'📦 المخزون', sales:'🛒 المبيعات', purchases:'📥 المشتريات', clients:'👥 العملاء', suppliers:'🏭 الموردين', expenses:'💸 المصروفات', revenues:'💰 الإيرادات', reports:'📊 التقارير' };
+            document.getElementById('pageTitle').innerHTML = titles[page];
             if(page === 'dashboard') renderDashboard();
             else if(page === 'inventory') renderInventory();
             else if(page === 'sales') renderSales();
@@ -389,55 +523,52 @@
             const totalRevenues = db.revenues.reduce((s,i)=>s+(i.amount||0),0);
             const profit = totalSales - totalPurchases - totalExpenses + totalRevenues;
             const lowStock = db.inventory.filter(i=>i.qty<=5).length;
-            
-            let statsHtml = `<div class="stats-grid">
+            const statsHtml = `<div class="stats-grid">
                 <div class="stat-card"><div class="value">${totalSales.toLocaleString()} ج</div><div class="label">إجمالي المبيعات</div></div>
                 <div class="stat-card"><div class="value">${totalPurchases.toLocaleString()} ج</div><div class="label">إجمالي المشتريات</div></div>
                 <div class="stat-card"><div class="value">${totalExpenses.toLocaleString()} ج</div><div class="label">المصروفات</div></div>
                 <div class="stat-card"><div class="value">${totalRevenues.toLocaleString()} ج</div><div class="label">الإيرادات</div></div>
                 <div class="stat-card"><div class="value" style="color:${profit>=0?'#10b981':'#ef4444'}">${profit.toLocaleString()} ج</div><div class="label">صافي الربح</div></div>
-                <div class="stat-card"><div class="value">${db.inventory.length}</div><div class="label">المنتجات</div></div>
-                <div class="stat-card"><div class="value">${lowStock}</div><div class="label">منتجات منخفضة</div></div>
-                <div class="stat-card"><div class="value">${db.clients.length}</div><div class="label">العملاء</div></div>
+                <div class="stat-card"><div class="value">${db.inventory.length}</div><div class="label">إجمالي المنتجات</div></div>
+                <div class="stat-card"><div class="value">${lowStock}</div><div class="label">منتجات منخفضة المخزون</div></div>
+                <div class="stat-card"><div class="value">${db.clients.length}</div><div class="label">عدد العملاء</div></div>
             </div>`;
-            
-            let recentSales = `<div class="card-box"><div class="card-header">📋 آخر الفواتير</div><div class="table-wrapper"><table><thead><tr><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th></tr></thead><tbody>${db.sales.slice(0,5).map(s=>`<tr><td>${s.date}</td><td>${s.clientName}</td><td>${s.total} ج</td><td><span style="background:${s.status==='مدفوع'?'#10b981':'#f59e0b'};padding:2px 12px;border-radius:20px">${s.status}</span></td></tr>`).join('')}</tbody></table></div></div>`;
-            
-            document.getElementById('pageContainer').innerHTML = statsHtml + recentSales;
+            const recentHtml = `<div class="card-box"><div class="card-header">📋 آخر الفواتير</div><div class="table-wrapper"><table><thead><tr><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th></tr></thead><tbody>${db.sales.slice(0,5).map(s=>`<tr><td>${s.date}</td><td>${s.clientName}</td><td>${s.total} ج</td><td><span style="background:${s.status==='مدفوع'?'#10b981':'#f59e0b'};padding:2px 12px;border-radius:20px">${s.status}</span></td></tr>`).join('')}</tbody></table></div></div>`;
+            document.getElementById('pageContainer').innerHTML = statsHtml + recentHtml;
         }
 
         function renderInventory(){
-            let html = `<div class="card-box"><div class="card-header"><span>📦 المنتجات</span><button class="btn-success btn-sm" onclick="showAddInventory()">➕ منتج جديد</button></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>المنتج</th><th>الفئة</th><th>الكمية</th><th>السعر</th><th>الإجراءات</th></tr></thead><tbody>${db.inventory.map((i,idx)=>`<tr><td>${idx+1}</td><td>${i.name}</td><td>${i.category||'-'}</td><td>${i.qty}</td><td>${i.price} ج</td><td><button class="btn-warning btn-sm" onclick="editInventory(${i.id})">✏️</button> <button class="btn-danger btn-sm" onclick="deleteInventory(${i.id})">🗑️</button></td></tr>`).join('')}</tbody></table></div></div>`;
+            let html = `<div class="card-box"><div class="card-header"><span>📦 قائمة المنتجات</span><button class="btn-success btn-sm" onclick="showAddInventory()">➕ منتج جديد</button></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>المنتج</th><th>الفئة</th><th>الكمية</th><th>السعر</th><th>الإجراءات</th></tr></thead><tbody>${db.inventory.map((i,idx)=>`<tr><td>${idx+1}</td><td>${i.name}</td><td>${i.category||'-'}</td><td>${i.qty}</td><td>${i.price} ج</td><td><button class="btn-warning btn-sm" onclick="editInventory(${i.id})">✏️</button> <button class="btn-danger btn-sm" onclick="deleteInventory(${i.id})">🗑️</button></td></tr>`).join('')}</tbody></table></div></div>`;
             document.getElementById('pageContainer').innerHTML = html;
         }
 
         function renderSales(){
-            let html = `<div class="card-box"><div class="card-header"><span>🛒 المبيعات</span><button class="btn-success btn-sm" onclick="showAddSale()">➕ فاتورة جديدة</button></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody>${db.sales.map((s,idx)=>`<tr><td>${idx+1}</td><td>${s.date}</td><td>${s.clientName}</td><td>${s.total} ج</td><td><span style="background:${s.status==='مدفوع'?'#10b981':'#f59e0b'};padding:2px 12px;border-radius:20px">${s.status}</span></td><td><button class="btn-danger btn-sm" onclick="deleteSale(${s.id})">🗑️</button></td></tr>`).join('')}</tbody></table></div></div>`;
+            let html = `<div class="card-box"><div class="card-header"><span>🛒 سجل المبيعات</span><button class="btn-success btn-sm" onclick="showAddSale()">➕ فاتورة جديدة</button></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody>${db.sales.map((s,idx)=>`<tr><td>${idx+1}</td><td>${s.date}</td><td>${s.clientName}</td><td>${s.total} ج</td><td><span style="background:${s.status==='مدفوع'?'#10b981':'#f59e0b'};padding:2px 12px;border-radius:20px">${s.status}</span></td><td><button class="btn-danger btn-sm" onclick="deleteSale(${s.id})">🗑️</button></td></tr>`).join('')}</tbody></table></div></div>`;
             document.getElementById('pageContainer').innerHTML = html;
         }
 
         function renderPurchases(){
-            let html = `<div class="card-box"><div class="card-header"><span>📥 المشتريات</span><button class="btn-success btn-sm" onclick="showAddPurchase()">➕ أمر شراء</button></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>التاريخ</th><th>المورد</th><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th>الإجراءات</th></tr></thead><tbody>${db.purchases.map((p,idx)=>`<tr><td>${idx+1}</td><td>${p.date}</td><td>${p.supplier}</td><td>${p.product}</td><td>${p.qty}</td><td>${p.price} ج</td><td>${p.total} ج</td><td><button class="btn-danger btn-sm" onclick="deletePurchase(${p.id})">🗑️</button></td></tr>`).join('')}</tbody></table></div></div>`;
+            let html = `<div class="card-box"><div class="card-header"><span>📥 سجل المشتريات</span><button class="btn-success btn-sm" onclick="showAddPurchase()">➕ أمر شراء</button></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>التاريخ</th><th>المورد</th><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th>الإجراءات</th></tr></thead><tbody>${db.purchases.map((p,idx)=>`<tr><td>${idx+1}</td><td>${p.date}</td><td>${p.supplier}</td><td>${p.product}</td><td>${p.qty}</td><td>${p.price} ج</td><td>${p.total} ج</td><td><button class="btn-danger btn-sm" onclick="deletePurchase(${p.id})">🗑️</button></td></tr>`).join('')}</tbody></table></div></div>`;
             document.getElementById('pageContainer').innerHTML = html;
         }
 
         function renderClients(){
-            let html = `<div class="card-box"><div class="card-header"><span>👥 العملاء</span><button class="btn-success btn-sm" onclick="showAddClient()">➕ عميل جديد</button></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>إجمالي المشتريات</th><th>الدين</th><th>الإجراءات</th></tr></thead><tbody>${db.clients.map((c,idx)=>`<tr><td>${idx+1}</td><td>${c.name}</td><td>${c.phone||'-'}</td><td>${(c.totalPurchases||0).toLocaleString()} ج</td><td style="color:${(c.debt||0)>0?'#ef4444':'#10b981'}">${(c.debt||0).toLocaleString()} ج</td><td><button class="btn-danger btn-sm" onclick="deleteClient(${c.id})">🗑️</button></td></tr>`).join('')}</tbody></table></div></div>`;
+            let html = `<div class="card-box"><div class="card-header"><span>👥 قائمة العملاء</span><button class="btn-success btn-sm" onclick="showAddClient()">➕ عميل جديد</button></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>إجمالي المشتريات</th><th>الدين</th><th>الإجراءات</th></tr></thead><tbody>${db.clients.map((c,idx)=>`<tr><td>${idx+1}</td><td>${c.name}</td><td>${c.phone||'-'}</td><td>${(c.totalPurchases||0).toLocaleString()} ج</td><td style="color:${(c.debt||0)>0?'#ef4444':'#10b981'}">${(c.debt||0).toLocaleString()} ج</td><td><button class="btn-danger btn-sm" onclick="deleteClient(${c.id})">🗑️</button></td></tr>`).join('')}</tbody></table></div></div>`;
             document.getElementById('pageContainer').innerHTML = html;
         }
 
         function renderSuppliers(){
-            let html = `<div class="card-box"><div class="card-header"><span>🏭 الموردين</span><button class="btn-success btn-sm" onclick="showAddSupplier()">➕ مورد جديد</button></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>المنتج</th><th>إجمالي المشتريات</th><th>الإجراءات</th></tr></thead><tbody>${db.suppliers.map((s,idx)=>`<tr><td>${idx+1}</td><td>${s.name}</td><td>${s.phone||'-'}</td><td>${s.product||'-'}</td><td>${(s.totalPurchases||0).toLocaleString()} ج</td><td><button class="btn-danger btn-sm" onclick="deleteSupplier(${s.id})">🗑️</button></td></tr>`).join('')}</tbody></table></div></div>`;
+            let html = `<div class="card-box"><div class="card-header"><span>🏭 قائمة الموردين</span><button class="btn-success btn-sm" onclick="showAddSupplier()">➕ مورد جديد</button></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>المنتج</th><th>إجمالي المشتريات</th><th>الإجراءات</th></tr></thead><tbody>${db.suppliers.map((s,idx)=>`<tr><td>${idx+1}</td><td>${s.name}</td><td>${s.phone||'-'}</td><td>${s.product||'-'}</td><td>${(s.totalPurchases||0).toLocaleString()} ج</td><td><button class="btn-danger btn-sm" onclick="deleteSupplier(${s.id})">🗑️</button></td></tr>`).join('')}</tbody></table></div></div>`;
             document.getElementById('pageContainer').innerHTML = html;
         }
 
         function renderExpenses(){
-            let html = `<div class="card-box"><div class="card-header"><span>💸 المصروفات</span><button class="btn-success btn-sm" onclick="showAddExpense()">➕ مصروف جديد</button></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>الإجراءات</th></tr></thead><tbody>${db.expenses.map((e,idx)=>`<tr><td>${idx+1}</td><td>${e.date}</td><td>${e.type}</td><td>${e.amount} ج</td><td><button class="btn-danger btn-sm" onclick="deleteExpense(${e.id})">🗑️</button></td></tr>`).join('')}</tbody></table></div></div>`;
+            let html = `<div class="card-box"><div class="card-header"><span>💸 سجل المصروفات</span><button class="btn-success btn-sm" onclick="showAddExpense()">➕ مصروف جديد</button></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>الإجراءات</th></tr></thead><tbody>${db.expenses.map((e,idx)=>`<tr><td>${idx+1}</td><td>${e.date}</td><td>${e.type}</td><td>${e.amount} ج</td><td><button class="btn-danger btn-sm" onclick="deleteExpense(${e.id})">🗑️</button></td></tr>`).join('')}</tbody></table></div></div>`;
             document.getElementById('pageContainer').innerHTML = html;
         }
 
         function renderRevenues(){
-            let html = `<div class="card-box"><div class="card-header"><span>💰 الإيرادات</span><button class="btn-success btn-sm" onclick="showAddRevenue()">➕ إيراد جديد</button></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>الإجراءات</th></tr></thead><tbody>${db.revenues.map((r,idx)=>`<tr><td>${idx+1}</td><td>${r.date}</td><td>${r.type}</td><td>${r.amount} ج</td><td><button class="btn-danger btn-sm" onclick="deleteRevenue(${r.id})">🗑️</button></td></tr>`).join('')}</tbody></table></div></div>`;
+            let html = `<div class="card-box"><div class="card-header"><span>💰 سجل الإيرادات</span><button class="btn-success btn-sm" onclick="showAddRevenue()">➕ إيراد جديد</button></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>المبلغ</th><th>الإجراءات</th></tr></thead><tbody>${db.revenues.map((r,idx)=>`<tr><td>${idx+1}</td><td>${r.date}</td><td>${r.type}</td><td>${r.amount} ج</td><td><button class="btn-danger btn-sm" onclick="deleteRevenue(${r.id})">🗑️</button></td></tr>`).join('')}</tbody></table></div></div>`;
             document.getElementById('pageContainer').innerHTML = html;
         }
 
@@ -448,17 +579,19 @@
             const totalRevenues = db.revenues.reduce((s,i)=>s+(i.amount||0),0);
             const profit = totalSales - totalPurchases - totalExpenses + totalRevenues;
             let html = `<div class="stats-grid">
-                <div class="stat-card"><div class="value">${totalSales.toLocaleString()} ج</div><div class="label">المبيعات</div></div>
-                <div class="stat-card"><div class="value">${totalPurchases.toLocaleString()} ج</div><div class="label">المشتريات</div></div>
+                <div class="stat-card"><div class="value">${totalSales.toLocaleString()} ج</div><div class="label">إجمالي المبيعات</div></div>
+                <div class="stat-card"><div class="value">${totalPurchases.toLocaleString()} ج</div><div class="label">إجمالي المشتريات</div></div>
                 <div class="stat-card"><div class="value">${totalExpenses.toLocaleString()} ج</div><div class="label">المصروفات</div></div>
                 <div class="stat-card"><div class="value">${totalRevenues.toLocaleString()} ج</div><div class="label">الإيرادات</div></div>
                 <div class="stat-card"><div class="value" style="color:${profit>=0?'#10b981':'#ef4444'}">${profit.toLocaleString()} ج</div><div class="label">صافي الربح</div></div>
             </div>
-            <div class="card-box"><div class="card-header">📊 تقرير المبيعات</div><div class="table-wrapper"><table><thead><tr><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th></tr></thead><tbody>${db.sales.map(s=>`<tr><td>${s.clientName}</td><td>${s.total} ج</td><td><span style="background:${s.status==='مدفوع'?'#10b981':'#f59e0b'};padding:2px 12px;border-radius:20px">${s.status}</span></td><td>${s.date}</td></tr>`).join('')}</tbody></table></div></div>`;
+            <div class="card-box"><div class="card-header">📊 تقرير المبيعات التفصيلي</div><div class="table-wrapper"><table><thead><tr><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th></tr></thead><tbody>${db.sales.map(s=>`<tr><td>${s.clientName}</td><td>${s.total} ج</td><td><span style="background:${s.status==='مدفوع'?'#10b981':'#f59e0b'};padding:2px 12px;border-radius:20px">${s.status}</span></td><td>${s.date}</td></tr>`).join('')}</tbody></table></div></div>`;
             document.getElementById('pageContainer').innerHTML = html;
         }
 
-        // CRUD Functions
+        // --------------------------------------------------------------
+        // دوال الإضافة والتعديل والحذف (CRUD)
+        // --------------------------------------------------------------
         function showAddInventory(){
             let name = prompt('اسم المنتج:'); if(!name) return;
             let qty = parseInt(prompt('الكمية:',0)); let price = parseFloat(prompt('السعر:',0));
@@ -477,10 +610,11 @@
         function deleteInventory(id){
             if(confirm('حذف المنتج؟')){ db.inventory = db.inventory.filter(i=>i.id!==id); saveAll(); renderInventory(); notify('تم الحذف','danger'); }
         }
+
         function showAddSale(){
             let client = prompt('اسم العميل:'); if(!client) return;
             let total = parseFloat(prompt('المبلغ:',0)); if(isNaN(total)) return;
-            let status = confirm('مدفوع؟ OK نعم') ? 'مدفوع' : 'آجل';
+            let status = confirm('مدفوع؟ اضغط OK للمدفوع، Cancel للآجل') ? 'مدفوع' : 'آجل';
             db.sales.push({id:Date.now(), clientName:client, total, status, date:today()});
             let existing = db.clients.find(c=>c.name===client);
             if(existing){ existing.totalPurchases = (existing.totalPurchases||0)+total; if(status==='آجل') existing.debt = (existing.debt||0)+total; }
@@ -490,6 +624,7 @@
         function deleteSale(id){
             if(confirm('حذف البيع؟')){ db.sales = db.sales.filter(s=>s.id!==id); saveAll(); renderSales(); notify('تم الحذف','danger'); }
         }
+
         function showAddPurchase(){
             let supplier = prompt('اسم المورد:'); if(!supplier) return;
             let product = prompt('اسم المنتج:'); if(!product) return;
@@ -508,6 +643,7 @@
         function deletePurchase(id){
             if(confirm('حذف الشراء؟')){ db.purchases = db.purchases.filter(p=>p.id!==id); saveAll(); renderPurchases(); notify('تم الحذف','danger'); }
         }
+
         function showAddClient(){
             let name = prompt('اسم العميل:'); if(!name) return;
             let phone = prompt('رقم الهاتف:','');
@@ -517,6 +653,7 @@
         function deleteClient(id){
             if(confirm('حذف العميل؟')){ db.clients = db.clients.filter(c=>c.id!==id); saveAll(); renderClients(); notify('تم الحذف','danger'); }
         }
+
         function showAddSupplier(){
             let name = prompt('اسم المورد:'); if(!name) return;
             let phone = prompt('رقم الهاتف:',''); let product = prompt('المنتج:','');
@@ -526,6 +663,7 @@
         function deleteSupplier(id){
             if(confirm('حذف المورد؟')){ db.suppliers = db.suppliers.filter(s=>s.id!==id); saveAll(); renderSuppliers(); notify('تم الحذف','danger'); }
         }
+
         function showAddExpense(){
             let type = prompt('نوع المصروف:'); if(!type) return;
             let amount = parseFloat(prompt('المبلغ:',0)); if(isNaN(amount)) return;
@@ -535,6 +673,7 @@
         function deleteExpense(id){
             if(confirm('حذف المصروف؟')){ db.expenses = db.expenses.filter(e=>e.id!==id); saveAll(); renderExpenses(); notify('تم الحذف','danger'); }
         }
+
         function showAddRevenue(){
             let type = prompt('نوع الإيراد:'); if(!type) return;
             let amount = parseFloat(prompt('المبلغ:',0)); if(isNaN(amount)) return;
@@ -544,15 +683,20 @@
         function deleteRevenue(id){
             if(confirm('حذف الإيراد؟')){ db.revenues = db.revenues.filter(r=>r.id!==id); saveAll(); renderRevenues(); notify('تم الحذف','danger'); }
         }
+
         function exportBackup(){
             const data = JSON.stringify(db);
             const blob = new Blob([data], {type:'application/json'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url; a.download = `backup_${today()}.json`; a.click();
-            notify('✅ تم التصدير');
+            notify('✅ تم تصدير النسخة الاحتياطية');
         }
-        function showSettings(){ alert('🔧 الإعدادات قيد التطوير'); }
+
+        function showSettings(){
+            alert('🔧 شاشة الإعدادات سيتم إضافتها قريباً');
+        }
+
         function logout(){
             if(confirm('تسجيل الخروج؟')){ localStorage.removeItem('semo_user'); location.reload(); }
         }
