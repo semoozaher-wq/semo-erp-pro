@@ -3,43 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>SEMO ERP PRO | النظام المتكامل السحابي</title>
+    <title>SEMO ERP PRO V7 | النظام المتكامل السحابي</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', 'Segoe UI', sans-serif; }
-        :root { --bg: #0f172a; --card: #1e293b; --card-light: #334155; --text: #f8fafc; --text-muted: #94a3b8; --border: #334155; --primary: #3b82f6; --primary-hover: #2563eb; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --info: #8b5cf6; }
-        body { background: var(--bg); color: var(--text); padding: 20px; transition: all 0.3s ease; }
-        body.light-mode { --bg: #f1f5f9; --card: #ffffff; --card-light: #e2e8f0; --text: #1e293b; --text-muted: #64748b; --border: #e2e8f0; }
-        body.privacy-mode .privacy-value, body.privacy-mode .stat-card .value, body.privacy-mode .data-table td:not(.no-privacy) { filter: blur(5px); transition: filter 0.3s; }
-        body.privacy-mode .privacy-value:hover, body.privacy-mode .stat-card .value:hover, body.privacy-mode .data-table td:not(.no-privacy):hover { filter: blur(0); }
+        :root { --bg: #0f172a; --card: #1e293b; --card-light: #334155; --text: #f8fafc; --text-muted: #94a3b8; --border: #334155; --primary: #3b82f6; --primary-hover: #2563eb; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --info: #8b5cf6; --glass-bg: rgba(255, 255, 255, 0.02); }
+        body { background: var(--bg); color: var(--text); padding: 20px; transition: all 0.3s ease; font-family: 'Cairo', sans-serif; }
+        body.light-mode { --bg: #f1f5f9; --card: #ffffff; --card-light: #e2e8f0; --text: #1e293b; --text-muted: #64748b; --border: #e2e8f0; --glass-bg: rgba(0, 0, 0, 0.02); }
+        [x-cloak] { display: none !important; }
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 2rem; }
+        body.light-mode .glass-card { border: 1px solid rgba(0, 0, 0, 0.05); }
+        .ai-pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); } 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); } }
+        .blur-value { filter: blur(5px); transition: filter 0.3s; cursor: pointer; }
+        .blur-value:hover { filter: blur(0); }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: var(--border); border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
         .container { max-width: 1400px; margin: 0 auto; }
-        .header { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 15px 25px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .logo-area { display: flex; align-items: center; gap: 12px; }
-        .logo-icon { width: 45px; height: 45px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .header h1 { font-size: 1.3rem; color: var(--primary); }
-        .header-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn { padding: 8px 18px; border: none; border-radius: 40px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
-        .btn-secondary { background: var(--card-light); color: var(--text); }
-        .btn-secondary:hover { opacity: 0.8; transform: translateY(-2px); }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-warning { background: var(--warning); color: #1e293b; }
-        .btn-info { background: var(--info); color: white; }
-        .btn-sm { padding: 4px 12px; font-size: 11px; }
-        .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 25px; background: var(--card); padding: 10px 15px; border-radius: 60px; border: 1px solid var(--border); }
-        .tab { padding: 8px 20px; border-radius: 40px; cursor: pointer; background: var(--card-light); color: var(--text-muted); transition: 0.2s; font-weight: bold; }
-        .tab.active { background: var(--primary); color: white; }
-        .tab:hover:not(.active) { background: var(--primary); opacity: 0.7; color: white; }
-        .content { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); }
-        .section { display: none; }
-        .section.active { display: block; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: var(--card-light); border-radius: 15px; padding: 15px; text-align: center; transition: 0.2s; cursor: pointer; }
         .stat-card:hover { transform: translateY(-3px); }
@@ -51,305 +35,238 @@
         td { padding: 10px 12px; text-align: center; border-bottom: 1px solid var(--border); }
         tr:hover td { background: var(--primary); opacity: 0.1; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        input, select, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: inherit; }
-        input:focus, select:focus { outline: none; border-color: var(--primary); }
+        input, select, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: inherit; outline: none; }
+        input:focus, select:focus { border-color: var(--primary); }
         .toast { position: fixed; bottom: 20px; left: 20px; padding: 12px 24px; border-radius: 50px; z-index: 9999; animation: slideIn 0.3s ease; font-weight: bold; }
         @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; justify-content: center; align-items: center; }
         .modal.show { display: flex; }
         .modal-content { background: var(--card); max-width: 650px; width: 90%; max-height: 85vh; overflow-y: auto; border-radius: 20px; padding: 25px; border: 1px solid var(--border); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn { padding: 8px 18px; border: none; border-radius: 40px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-secondary { background: var(--card-light); color: var(--text); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: #1e293b; }
+        .btn-info { background: var(--info); color: white; }
+        .btn-sm { padding: 4px 12px; font-size: 11px; }
         .view-toggle { display: flex; gap: 5px; background: var(--card-light); padding: 4px; border-radius: 40px; }
         .view-btn { padding: 6px 15px; border: none; border-radius: 30px; cursor: pointer; background: transparent; color: var(--text-muted); font-weight: bold; }
         .view-btn.active { background: var(--primary); color: white; }
         body.mobile-view .stats-grid { grid-template-columns: 1fr; }
         body.mobile-view .tabs { flex-wrap: wrap; }
-        body.mobile-view .tab { flex: 1; text-align: center; font-size: 12px; padding: 6px 10px; }
-        .company-logo { width: 80px; height: 80px; background: var(--primary); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 15px; }
         .progress-bar { height: 4px; background: var(--card-light); border-radius: 2px; margin: 10px 0; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
-        @media (max-width: 768px) { body { padding: 10px; } .tabs { border-radius: 15px; } }
+        @media (max-width: 768px) { body { padding: 10px; } }
         @media print { .sidebar, .tabs, .header, .btn, .top-bar, .no-print { display: none !important; } body { background: white; color: black; padding: 0; margin: 0; } }
-        .loading-spinner { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; border: 4px solid var(--card-light); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; z-index: 10001; display: none; }
-        @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
     </style>
 </head>
-<body>
-<div class="loading-spinner" id="loadingSpinner"></div>
-<div class="container">
-    <div class="header">
-        <div class="logo-area"><div class="logo-icon" id="companyLogoDisplay">📊</div><div><h1 id="companyNameDisplay">SEMO ERP PRO</h1><small id="companyInfoDisplay" style="color:var(--text-muted);">النظام المحاسبي المتكامل السحابي</small></div></div>
-        <div class="header-buttons">
-            <div class="view-toggle"><button class="view-btn active" onclick="setView('desktop')">🖥️</button><button class="view-btn" onclick="setView('mobile')">📱</button></div>
-            <button class="btn btn-secondary" onclick="toggleTheme()" id="themeBtn">🌙</button>
-            <button class="btn btn-secondary" onclick="togglePrivacyMode()" id="privacyBtn">🔒 خصوصية</button>
-            <button class="btn btn-secondary" onclick="showSettings()">⚙️ إعدادات</button>
-            <button class="btn btn-secondary" onclick="exportBackup()">💾 نسخة</button>
-            <button class="btn btn-secondary" onclick="importBackup()">📂 استيراد</button>
-            <button class="btn btn-primary" onclick="showAnalytics()">📈 تحليل ذكي</button>
-            <button class="btn btn-secondary" onclick="showAuditLog()">📋 سجل</button>
-            <button class="btn btn-danger" onclick="logout()">🚪 خروج</button>
+<body x-data="erpSystem()" x-cloak :class="darkMode ? 'bg-[#0f172a] text-slate-100' : 'bg-slate-50 text-slate-900'" class="transition-all">
+
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar - تصميم V6 Elite -->
+    <aside class="w-80 bg-[#1e293b] text-white p-6 shadow-2xl z-50 hidden lg:flex flex-col border-l border-white/5 overflow-y-auto">
+        <div class="flex items-center gap-4 mb-10 pb-8 border-b border-indigo-500/20">
+            <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-3xl font-black">S</div>
+            <div><h1 class="font-black text-xl">SEMO PRO V7</h1><span class="text-[9px] text-indigo-400 font-bold tracking-[3px]">ELITE AI SYSTEM</span></div>
         </div>
-    </div>
-    <div class="tabs" id="tabsContainer"></div>
-    <div class="content" id="contentContainer"></div>
+        <nav class="space-y-1 flex-1">
+            <template x-for="item in menuItems">
+                <button @click="currentTab = item.id; loadTabData(item.id)" :class="currentTab === item.id ? 'bg-indigo-600 shadow-xl translate-x-[-5px]' : 'hover:bg-white/5 opacity-60'" class="w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 group">
+                    <span class="text-2xl group-hover:scale-125 transition-transform" x-text="item.icon"></span>
+                    <span class="font-bold text-sm tracking-wide uppercase" x-text="item.name"></span>
+                </button>
+            </template>
+        </nav>
+        <div class="mt-auto p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-[2rem] text-center mt-4">
+            <p class="text-[10px] font-bold text-indigo-400 mb-1 italic">الحالة السحابية</p>
+            <div class="flex items-center justify-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span><span class="text-xs font-black">متصل بـ Firebase</span></div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-y-auto relative">
+        <header class="sticky top-0 z-40 p-6 px-10 flex justify-between items-center backdrop-blur-xl border-b border-white/5 shadow-sm bg-opacity-80" :class="darkMode ? 'bg-[#0f172a]/80' : 'bg-white/80'">
+            <div class="flex items-center gap-8">
+                <h2 class="text-3xl font-black tracking-tighter" x-text="menuItems.find(m => m.id === currentTab)?.name || 'الرئيسية'"></h2>
+                <div class="bg-indigo-500/10 px-6 py-3 rounded-full border border-indigo-500/20 flex items-center gap-3 ai-pulse">
+                    <span class="text-lg">🤖</span>
+                    <p class="text-[11px] font-bold text-indigo-400 leading-tight" x-text="aiInsight"></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="view-toggle"><button class="view-btn active" @click="setView('desktop')">🖥️</button><button class="view-btn" @click="setView('mobile')">📱</button></div>
+                <button @click="privacyMode = !privacyMode" class="p-4 rounded-2xl glass hover:bg-indigo-500/10 transition-all" x-text="privacyMode ? '🕶️' : '👁️'"></button>
+                <button @click="darkMode = !darkMode; saveTheme()" class="p-4 rounded-2xl glass hover:bg-amber-500/10 transition-all" x-text="darkMode ? '🌙' : '☀️'"></button>
+                <button @click="logout()" class="p-4 rounded-2xl glass hover:bg-red-500/10 transition-all text-red-500">🚪</button>
+            </div>
+        </header>
+
+        <div class="p-8 lg:p-12 space-y-12">
+            <!-- Dashboard Tab -->
+            <div x-show="currentTab === 'dashboard'" class="space-y-10">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <template x-for="stat in stats">
+                        <div class="p-10 rounded-[3rem] glass-card shadow-inner relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                            <span class="text-4xl block mb-4" x-text="stat.icon"></span>
+                            <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2" x-text="stat.label"></p>
+                            <h3 class="text-4xl font-black tracking-tighter" :class="privacyMode ? 'blur-value' : 'text-indigo-500'" x-text="stat.value"></h3>
+                        </div>
+                    </template>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                    <div class="lg:col-span-2 p-10 rounded-[3.5rem] glass-card">
+                        <div class="flex justify-between items-center mb-10"><h3 class="font-black text-2xl">إصدار فاتورة / قيد مزدوج ⚖️</h3></div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div><label class="text-xs font-black opacity-40 uppercase">نوع العملية</label><select x-model="newPost.type" class="w-full p-5 rounded-3xl bg-white/5 border border-white/10 outline-none"><option value="SALE">فاتورة مبيعات</option><option value="PURCHASE">فاتورة مشتريات</option><option value="EXPENSE">مصروفات</option></select></div>
+                            <div><label class="text-xs font-black opacity-40 uppercase">البيان</label><input x-model="newPost.desc" type="text" class="w-full p-5 rounded-3xl bg-white/5 border border-white/10 outline-none"></div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                            <div class="md:col-span-2"><label class="text-xs font-black opacity-40 uppercase">المبلغ</label><input x-model="newPost.amount" type="number" class="w-full p-6 rounded-[2rem] bg-indigo-500/5 border border-indigo-500/20 outline-none text-3xl font-black text-indigo-500"></div>
+                            <button @click="processAccounting()" class="bg-indigo-600 hover:bg-indigo-700 text-white p-6 rounded-[2rem] font-black shadow-xl">ترحيل الفاتورة</button>
+                        </div>
+                    </div>
+                    <div class="p-10 rounded-[3.5rem] glass-card"><h3 class="text-xl font-black mb-8">حالة المستودع 📦</h3><div class="space-y-6 max-h-[400px] overflow-y-auto"><template x-for="product in inventory" :key="product.id"><div class="p-6 rounded-3xl bg-white/5 flex justify-between items-center"><div><p class="font-black text-sm" x-text="product.name"></p><p class="text-[10px] text-indigo-400" x-text="product.sku"></p></div><div><p class="text-xl font-black" :class="product.stock < 5 ? 'text-red-500' : 'text-emerald-500'" x-text="product.stock"></p><p class="text-[9px] opacity-40">الكمية</p></div></div></template></div></div>
+                </div>
+                <div class="rounded-[3.5rem] glass-card overflow-hidden"><div class="p-10 border-b border-white/5 flex justify-between items-center"><h3 class="text-2xl font-black">سجل القيود (Ledger)</h3><button @click="exportToExcel()" class="text-emerald-500 font-bold">📥 تصدير Excel</button></div><div class="overflow-x-auto p-6"><table class="w-full"><thead><tr class="text-slate-500 text-[10px] font-black"><th class="p-4">البيان</th><th class="p-4">النوع</th><th class="p-4">القيمة</th><th class="p-4">التاريخ</th></tr></thead><tbody><template x-for="(entry, index) in ledger" :key="index"><tr class="bg-white/5 rounded-3xl"><td class="p-6 font-black text-sm" x-text="entry.desc"></td><td class="p-6"><span :class="entry.type === 'SALE' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'" class="px-4 py-2 rounded-xl text-[10px] font-black" x-text="entry.type"></span></td><td class="p-6 font-black text-2xl" :class="entry.amount < 0 ? 'text-red-500' : 'text-emerald-500'" x-text="Number(entry.amount).toLocaleString()"></td><td class="p-6 text-xs opacity-40" x-text="entry.date"></td></tr></template></tbody></table></div></div>
+            </div>
+
+            <!-- بقية التبويبات -->
+            <div x-show="currentTab === 'inventory'" class="space-y-6"><div class="flex justify-between items-center"><h2 class="text-2xl font-black">📦 إدارة المخزون</h2><button class="btn btn-primary" @click="showAddInventory()">➕ منتج جديد</button></div><div class="table-wrapper"><table class="w-full"><thead><tr><th>#</th><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجراءات</th></tr></thead><tbody id="inventoryTable"></tbody></table></div></div>
+            <div x-show="currentTab === 'sales'" class="space-y-6"><div class="flex justify-between items-center"><h2 class="text-2xl font-black">🛒 المبيعات</h2><button class="btn btn-success" @click="showAddSale()">➕ فاتورة بيع</button></div><div class="table-wrapper"><table class="w-full"><thead><tr><th>#</th><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="salesTable"></tbody></table></div></div>
+            <div x-show="currentTab === 'clients'" class="space-y-6"><div class="flex justify-between items-center"><h2 class="text-2xl font-black">👥 العملاء</h2><button class="btn btn-success" @click="showAddClient()">➕ عميل جديد</button></div><div class="table-wrapper"><table class="w-full"><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>الإجراءات</th></tr></thead><tbody id="clientsTable"></tbody></table></div></div>
+            <div x-show="currentTab === 'reports'" class="space-y-6"><div class="flex justify-between items-center"><h2 class="text-2xl font-black">📊 التقارير المتقدمة</h2><button class="btn btn-primary" @click="showReportsModal()">📅 تقارير</button></div><div id="reportSummary"></div><canvas id="reportChart" height="200"></canvas></div>
+            <div x-show="currentTab === 'users'" class="space-y-6"><div class="flex justify-between items-center"><h2 class="text-2xl font-black">👑 إدارة المستخدمين</h2><button class="btn btn-success" @click="showAddUser()">➕ مستخدم جديد</button></div><div class="table-wrapper"><table class="w-full"><thead><tr><th>البريد</th><th>الاسم</th><th>الدور</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="usersTable"></tbody></table></div></div>
+        </div>
+    </main>
 </div>
 
 <!-- مودالات -->
-<div id="settingsModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>⚙️ إعدادات النظام</h3><button class="btn btn-secondary" onclick="closeModal('settingsModal')">✕</button></div><div class="company-logo" id="logoPreview">📊</div><div class="form-grid"><input type="text" id="companyName" placeholder="اسم الشركة"><input type="text" id="companyLogo" placeholder="رمز الشعار"><input type="text" id="companyPhone" placeholder="رقم الهاتف"><input type="email" id="companyEmail" placeholder="البريد"><input type="text" id="companyAddress" placeholder="العنوان"><input type="text" id="currencySymbol" placeholder="رمز العملة"><input type="text" id="taxRate" placeholder="نسبة الضريبة"><input type="text" id="whatsappNumber" placeholder="واتساب"></div><div style="display:flex;gap:10px;justify-content:flex-end;margin-top:15px"><button class="btn btn-secondary" onclick="closeModal('settingsModal')">إلغاء</button><button class="btn btn-primary" onclick="saveSettings()">💾 حفظ</button></div></div></div>
-<div id="reportsModal" class="modal"><div class="modal-content" style="max-width:800px"><div class="modal-header"><h3>📊 التقارير المتقدمة</h3><button class="btn btn-secondary" onclick="closeModal('reportsModal')">✕</button></div><div class="form-grid"><select id="reportType"><option value="monthly">📅 تقرير شهري</option><option value="yearly">📆 تقرير سنوي</option><option value="client">👤 حسب العميل</option><option value="product">📦 حسب المنتج</option></select><input type="month" id="reportMonth" value="2024-01"><input type="number" id="reportYear" value="2024"></div><div id="reportResult"></div><button class="btn btn-primary" onclick="exportReportExcel()">📥 تصدير Excel</button></div></div>
-<div id="analyticsModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>📈 التحليل الذكي - AI</h3><button class="btn btn-secondary" onclick="closeModal('analyticsModal')">✕</button></div><div id="analyticsContent"></div></div></div>
-<div id="auditModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>📋 سجل العمليات</h3><button class="btn btn-secondary" onclick="closeModal('auditModal')">✕</button></div><div class="table-wrapper"><table class="data-table"><thead><tr><th>الوقت</th><th>المستخدم</th><th>الإجراء</th><th>التفاصيل</th></thead><tbody id="auditTableBody"></tbody></table></div></div></div>
-<div id="usersModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>👑 إدارة المستخدمين</h3><button class="btn btn-secondary" onclick="closeModal('usersModal')">✕</button></div><div style="margin-bottom:15px"><button class="btn btn-success" onclick="showAddUser()">➕ مستخدم جديد</button></div><div class="table-wrapper"><table class="data-table"><thead><tr><th>البريد</th><th>الاسم</th><th>الدور</th><th>الحالة</th><th>الإجراءات</th></thead><tbody id="usersTableBody"></tbody></tr></div></div></div>
+<div id="productModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>➕ منتج جديد</h3><button class="btn btn-secondary" onclick="closeModal('productModal')">✕</button></div><div class="form-grid"><input type="text" id="prodName" placeholder="اسم المنتج"><input type="number" id="prodQty" placeholder="الكمية"><input type="number" id="prodPrice" placeholder="السعر"></div><div class="modal-footer"><button class="btn btn-success" onclick="window.addInventoryItem()">حفظ</button></div></div></div>
+<div id="saleModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>➕ فاتورة بيع</h3><button class="btn btn-secondary" onclick="closeModal('saleModal')">✕</button></div><div class="form-grid"><input type="text" id="saleClient" placeholder="اسم العميل"><input type="text" id="saleProduct" placeholder="المنتج"><input type="number" id="saleQty" placeholder="الكمية"><input type="number" id="salePrice" placeholder="السعر"></div><div class="modal-footer"><button class="btn btn-success" onclick="window.addSaleItem()">حفظ</button></div></div></div>
+<div id="clientModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>➕ عميل جديد</h3><button class="btn btn-secondary" onclick="closeModal('clientModal')">✕</button></div><input type="text" id="clientName" placeholder="اسم العميل"><input type="text" id="clientPhone" placeholder="الهاتف"><div class="modal-footer"><button class="btn btn-success" onclick="window.addClientItem()">حفظ</button></div></div></div>
 <div id="dynamicModal" class="modal"><div class="modal-content" id="modalContent"></div></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
 <script>
-// ==================== إعدادات Firebase ====================
-const firebaseConfig = {
-    apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
-    authDomain: "my-pos-system-11dee.firebaseapp.com",
-    databaseURL: "https://my-pos-system-11dee-default-rtdb.firebaseio.com",
-    projectId: "my-pos-system-11dee",
-    storageBucket: "my-pos-system-11dee.firebasestorage.app",
-    messagingSenderId: "565195477080",
-    appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d"
-};
+const firebaseConfig = { apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU", authDomain: "my-pos-system-11dee.firebaseapp.com", databaseURL: "https://my-pos-system-11dee-default-rtdb.firebaseio.com", projectId: "my-pos-system-11dee", storageBucket: "my-pos-system-11dee.firebasestorage.app", messagingSenderId: "565195477080", appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d" };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ==================== متغيرات عامة ====================
-let currentUser = null;
 let currentUserRole = null;
 let currentCompanyId = null;
-let dbCache = { inventory: [], sales: [], purchases: [], clients: [], suppliers: [], expenses: [], revenues: [], users: [], auditLog: [] };
-let settings = { companyName: 'SEMO ERP PRO', companyLogo: '📊', companyPhone: '', companyEmail: '', companyAddress: '', currencySymbol: 'ج.م', taxRate: 14, whatsappNumber: '' };
+let appData = { inventory: [], sales: [], clients: [], ledger: [], users: [] };
 
-function showLoading(show) { document.getElementById('loadingSpinner').style.display = show ? 'flex' : 'none'; }
-function showToast(msg, type = 'success') { const toast = document.createElement('div'); toast.className = 'toast'; toast.style.background = type === 'success' ? '#10b981' : type === 'danger' ? '#ef4444' : '#f59e0b'; toast.style.color = type === 'warning' ? '#1e293b' : 'white'; toast.innerHTML = msg; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
-function today() { return new Date().toLocaleDateString('ar-EG'); }
-function currency(value) { return value.toLocaleString() + ' ' + (settings.currencySymbol || 'ج.م'); }
-function formatDate(date) { return new Date(date).toLocaleDateString('ar-EG'); }
-
-// ==================== مصادقة المستخدم ====================
-auth.onAuthStateChanged(async (user) => {
-    if (!user) { window.location.href = 'index.html'; return; }
-    if (!user.emailVerified) { showToast('⚠️ يرجى تفعيل بريدك الإلكتروني أولاً', 'error'); auth.signOut(); setTimeout(() => window.location.href = 'index.html', 2000); return; }
-    const userDoc = await db.collection('users').doc(user.uid).get();
-    if (!userDoc.exists) { showToast('❌ لم يتم العثور على بيانات المستخدم', 'error'); auth.signOut(); setTimeout(() => window.location.href = 'index.html', 2000); return; }
-    currentUser = userDoc.data();
-    currentUserRole = currentUser.role;
-    currentCompanyId = currentUser.companyId || null;
-    document.getElementById('companyNameDisplay').innerText = settings.companyName;
-    document.getElementById('companyLogoDisplay').innerHTML = settings.companyLogo;
-    await loadAllData();
-    renderTabs();
-    bindSearchEvents();
-});
-
-// ==================== تحميل البيانات من Firebase ====================
-async function loadAllData() {
-    showLoading(true);
-    try {
-        const collections = ['inventory', 'sales', 'purchases', 'clients', 'suppliers', 'expenses', 'revenues'];
-        for (const col of collections) {
-            let query = db.collection(col);
-            if (currentCompanyId && currentUserRole !== 'admin') query = query.where('companyId', '==', currentCompanyId);
-            const snapshot = await query.get();
-            dbCache[col] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-        if (currentUserRole === 'admin') {
-            const usersSnap = await db.collection('users').get();
-            dbCache.users = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-        const settingsDoc = await db.collection('settings').doc('main').get();
-        if (settingsDoc.exists) settings = settingsDoc.data();
-        applySettings();
-    } catch (err) { console.error(err); showToast('❌ خطأ في تحميل البيانات', 'error'); }
-    showLoading(false);
+async function loadFirebaseData() {
+    if (!auth.currentUser) return;
+    const userDoc = await db.collection('users').doc(auth.currentUser.uid).get();
+    if (userDoc.exists) { currentUserRole = userDoc.data().role; currentCompanyId = userDoc.data().companyId; }
+    const collections = ['inventory', 'sales', 'clients', 'ledger'];
+    for (const col of collections) {
+        let query = db.collection(col);
+        if (currentCompanyId && currentUserRole !== 'admin') query = query.where('companyId', '==', currentCompanyId);
+        const snap = await query.get();
+        appData[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+    if (currentUserRole === 'admin') { const usersSnap = await db.collection('users').get(); appData.users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() })); }
+    window.dispatchEvent(new Event('dataLoaded'));
 }
 
-// ==================== الإعدادات ====================
-function applySettings() {
-    document.getElementById('companyNameDisplay').innerText = settings.companyName || 'SEMO ERP PRO';
-    document.getElementById('companyLogoDisplay').innerHTML = settings.companyLogo || '📊';
-    document.getElementById('companyInfoDisplay').innerHTML = `${settings.companyPhone || ''} ${settings.companyEmail ? '| ' + settings.companyEmail : ''}`;
-    ['companyName', 'companyLogo', 'companyPhone', 'companyEmail', 'companyAddress', 'currencySymbol', 'taxRate', 'whatsappNumber'].forEach(f => { let el = document.getElementById(f); if (el) el.value = settings[f] || ''; });
-    document.getElementById('logoPreview').innerHTML = settings.companyLogo || '📊';
-}
-async function saveSettings() {
-    const newSettings = {};
-    ['companyName', 'companyLogo', 'companyPhone', 'companyEmail', 'companyAddress', 'currencySymbol', 'whatsappNumber'].forEach(f => { newSettings[f] = document.getElementById(f).value; });
-    newSettings.taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
-    settings = newSettings;
-    await db.collection('settings').doc('main').set(settings, { merge: true });
-    applySettings();
-    closeModal('settingsModal');
-    addAuditLog('تحديث الإعدادات', 'تم تحديث إعدادات النظام');
-    showToast('✅ تم حفظ الإعدادات');
-}
-function showSettings() { applySettings(); showModal('settingsModal'); }
+auth.onAuthStateChanged(async (user) => { if (!user) window.location.href = 'index.html'; else { await loadFirebaseData(); document.querySelector('[x-data]').__x.$data.initFirebaseData(); } });
 
-// ==================== الوضعيات ====================
-function togglePrivacyMode() { document.body.classList.toggle('privacy-mode'); document.getElementById('privacyBtn').textContent = document.body.classList.contains('privacy-mode') ? '🔓' : '🔒'; }
-function toggleTheme() { document.body.classList.toggle('light-mode'); document.getElementById('themeBtn').textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙'; localStorage.setItem('semo_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark'); }
-function loadTheme() { if (localStorage.getItem('semo_theme') === 'light') { document.body.classList.add('light-mode'); document.getElementById('themeBtn').textContent = '☀️'; } }
-function setView(type) { if (type === 'mobile') { document.body.classList.add('mobile-view'); localStorage.setItem('semo_view', 'mobile'); } else { document.body.classList.remove('mobile-view'); localStorage.setItem('semo_view', 'desktop'); } document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active')); if (type === 'mobile') document.querySelectorAll('.view-btn')[1]?.classList.add('active'); else document.querySelectorAll('.view-btn')[0]?.classList.add('active'); }
-function loadView() { if (localStorage.getItem('semo_view') === 'mobile') setView('mobile'); else setView('desktop'); }
+function showModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { const m = document.getElementById(id); if (m) m.classList.remove('show'); }
+window.closeModal = closeModal;
+window.showModal = showModal;
 
-// ==================== سجل العمليات ====================
-async function addAuditLog(action, details) {
-    await db.collection('auditLog').add({ userId: currentUser?.uid, userName: currentUser?.name, action, details, time: new Date().toISOString(), companyId: currentCompanyId });
-    dbCache.auditLog.unshift({ time: new Date().toLocaleString('ar-EG'), user: currentUser?.name, action, details });
-    if (dbCache.auditLog.length > 200) dbCache.auditLog.pop();
-}
-async function renderAuditLog() { const tbody = document.getElementById('auditTableBody'); if (!tbody) return; const snap = await db.collection('auditLog').where('companyId', '==', currentCompanyId).orderBy('time', 'desc').limit(100).get(); tbody.innerHTML = snap.docs.map(doc => `<tr><td>${new Date(doc.data().time).toLocaleString('ar-EG')}</td><td>${doc.data().userName}</td><td>${doc.data().action}</td><td>${doc.data().details}</td></tr>`).join(''); }
-function showAuditLog() { renderAuditLog(); showModal('auditModal'); }
-
-// ==================== النسخ والاستيراد ====================
-function exportBackup() { const backup = JSON.stringify(dbCache); const blob = new Blob([backup], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `backup_${today()}.json`; a.click(); addAuditLog('تصدير بيانات', 'تم تصدير نسخة احتياطية'); showToast('✅ تم التصدير'); }
-function importBackup() { const input = document.createElement('input'); input.type = 'file'; input.accept = '.json'; input.onchange = async e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async ev => { try { const imported = JSON.parse(ev.target.result); for (const key of ['inventory','sales','purchases','clients','suppliers','expenses','revenues']) { for (const item of imported[key] || []) { item.companyId = currentCompanyId; await db.collection(key).add(item); } } addAuditLog('استيراد بيانات', 'تم استيراد نسخة احتياطية'); showToast('✅ تم الاستيراد'); setTimeout(() => location.reload(), 1500); } catch (err) { showToast('❌ ملف غير صالح', 'danger'); } }; reader.readAsText(file); }; input.click(); }
-function exportReportExcel() { const ws = XLSX.utils.json_to_sheet(dbCache.sales.map(s => ({ التاريخ: s.date, العميل: s.clientName, المنتج: s.product || '-', الكمية: s.qty || 1, الإجمالي: s.total, الحالة: s.status }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'المبيعات'); XLSX.writeFile(wb, `semo_sales_${today()}.xlsx`); addAuditLog('تصدير Excel', 'تم تصدير تقرير المبيعات'); showToast('✅ تم التصدير'); }
-
-// ======================== إدارة المستخدمين ========================
-async function renderUsers() { if (currentUserRole !== 'admin') { document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="5">غير مصرح به - فقط المدير يمكنه الوصول</td></tr>'; return; } const snap = await db.collection('users').get(); const tbody = document.getElementById('usersTableBody'); tbody.innerHTML = snap.docs.map(u => `<tr><td>${u.data().email}</td><td>${u.data().name}</td><td>${u.data().role === 'admin' ? '👑 مدير' : '👤 مستخدم'}</td><td><span style="background:${u.data().isActive ? '#10b981' : '#ef4444'};padding:2px 10px;border-radius:20px;color:white">${u.data().isActive ? 'نشط' : 'معطل'}</span></td><td><button class="btn btn-warning btn-sm" onclick="toggleUserActive('${u.id}')">🔁</button> <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">🗑️</button></td></tr>`).join(''); }
-async function showAddUser() { const email = prompt('البريد الإلكتروني:'); if (!email) return; const name = prompt('الاسم:'); if (!name) return; const password = prompt('كلمة المرور:', '123456'); if (!password) return; const role = confirm('مدير؟ OK لمدير, Cancel لمستخدم') ? 'admin' : 'user'; try { const cred = await auth.createUserWithEmailAndPassword(email, password); await db.collection('users').doc(cred.user.uid).set({ uid: cred.user.uid, email, name, role, isActive: true, companyId: currentCompanyId, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); await cred.user.sendEmailVerification(); showToast('✅ تمت إضافة المستخدم'); renderUsers(); addAuditLog('إضافة مستخدم', email); } catch (err) { showToast('❌ ' + err.message, 'error'); } }
-async function toggleUserActive(id) { const userRef = db.collection('users').doc(id); const doc = await userRef.get(); await userRef.update({ isActive: !doc.data().isActive }); renderUsers(); }
-async function deleteUser(id) { if (confirm('حذف المستخدم نهائياً؟')) { await db.collection('users').doc(id).delete(); renderUsers(); } }
-
-// ======================== التقارير المتقدمة ========================
-function showReports() { const type = document.getElementById('reportType').value; const month = document.getElementById('reportMonth').value; const year = document.getElementById('reportYear').value; let filtered = dbCache.sales.filter(s => s.status === 'مدفوع'); if (type === 'monthly' && month) filtered = filtered.filter(s => s.date?.startsWith(month)); else if (type === 'yearly' && year) filtered = filtered.filter(s => s.date?.startsWith(year)); else if (type === 'client') { const clients = {}; filtered.forEach(s => { clients[s.clientName] = (clients[s.clientName] || 0) + s.total; }); document.getElementById('reportResult').innerHTML = `<div class="stats-grid">${Object.entries(clients).map(([name, total]) => `<div class="stat-card"><div class="value">${currency(total)}</div><div class="label">${name}</div></div>`).join('')}</div>`; return; } else if (type === 'product') { const products = {}; filtered.forEach(s => { products[s.product || 'منتج'] = (products[s.product || 'منتج'] || 0) + s.total; }); document.getElementById('reportResult').innerHTML = `<div class="stats-grid">${Object.entries(products).map(([name, total]) => `<div class="stat-card"><div class="value">${currency(total)}</div><div class="label">${name}</div></div>`).join('')}</div>`; return; } const total = filtered.reduce((s, i) => s + i.total, 0); document.getElementById('reportResult').innerHTML = `<div class="stats-grid"><div class="stat-card"><div class="value">${currency(total)}</div><div class="label">إجمالي المبيعات</div></div><div class="stat-card"><div class="value">${filtered.length}</div><div class="label">عدد الفواتير</div></div></div>`; }
-function showReportsModal() { showReports(); showModal('reportsModal'); }
-
-// ======================== التحليل الذكي المتقدم ========================
-function showAnalytics() {
-    const totalSales = dbCache.sales.reduce((s, i) => s + (i.total || 0), 0);
-    const totalPurchases = dbCache.purchases.reduce((s, i) => s + (i.total || 0), 0);
-    const totalExpenses = dbCache.expenses.reduce((s, i) => s + (i.amount || 0), 0);
-    const totalRevenues = dbCache.revenues.reduce((s, i) => s + (i.amount || 0), 0);
-    const profit = totalSales - totalPurchases - totalExpenses + totalRevenues;
-    const clientTotals = {};
-    dbCache.sales.forEach(s => { clientTotals[s.clientName] = (clientTotals[s.clientName] || 0) + s.total; });
-    const sortedClients = Object.entries(clientTotals).sort((a, b) => b[1] - a[1]);
-    const totalClientsSales = sortedClients.reduce((s, c) => s + c[1], 0);
-    let cumulative = 0;
-    const abcClients = sortedClients.map(([name, amount]) => { cumulative += amount; const percent = (cumulative / totalClientsSales) * 100; let classType = percent <= 70 ? '🥇 ذهبي' : percent <= 90 ? '🥈 فضي' : '🥉 برونزي'; return { name, amount, class: classType }; });
-    const productPairs = {};
-    dbCache.sales.forEach(sale => { if (sale.product) productPairs[sale.product] = (productPairs[sale.product] || 0) + 1; });
-    const topProducts = Object.entries(productPairs).sort((a, b) => b[1] - a[1]).slice(0, 3);
-    const recommendations = topProducts.map(([p, c]) => `📦 ${p} (${c} مبيعات)`).join('<br>') || 'لا توجد بيانات كافية';
-    const monthlySales = Array(12).fill(0);
-    dbCache.sales.forEach(s => { const d = new Date(s.date); if (!isNaN(d)) monthlySales[d.getMonth()] += s.total || 0; });
-    const last3Months = monthlySales.slice(-3);
-    const nextMonthForecast = last3Months.reduce((a, b) => a + b, 0) / 3;
-    const avgSale = totalSales / (dbCache.sales.length || 1);
-    const anomalies = dbCache.sales.filter(s => s.total > avgSale * 2);
-    document.getElementById('analyticsContent').innerHTML = `
-        <div class="stats-grid">
-            <div class="stat-card"><div class="value">${currency(totalSales)}</div><div class="label">إجمالي المبيعات</div></div>
-            <div class="stat-card"><div class="value" style="color:${profit >= 0 ? '#10b981' : '#ef4444'}">${currency(profit)}</div><div class="label">صافي الربح</div></div>
-            <div class="stat-card"><div class="value">${dbCache.clients.length}</div><div class="label">العملاء</div></div>
-            <div class="stat-card"><div class="value">${dbCache.suppliers.length}</div><div class="label">الموردين</div></div>
-        </div>
-        <div class="stats-grid">
-            <div class="stat-card"><div class="value" style="font-size:18px">🔮 ${currency(nextMonthForecast)}</div><div class="label">توقعات الشهر القادم</div></div>
-            <div class="stat-card"><div class="value" style="font-size:18px">⚠️ ${anomalies.length}</div><div class="label">فواتير غير طبيعية</div></div>
-        </div>
-        <h3 style="margin-top:15px">🏆 تحليل ABC للعملاء</h3>
-        <div class="stats-grid">${abcClients.slice(0, 5).map(c => `<div class="stat-card"><div class="value" style="font-size:14px">${c.name}</div><div class="label">${c.class} - ${currency(c.amount)}</div></div>`).join('')}</div>
-        <h3>🛒 توصيات المنتجات</h3>
-        <div class="stat-card">${recommendations}</div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${Math.min((totalSales / (totalSales + 1)) / 100, 100)}%"></div></div>
-        <p style="margin-top:15px;color:var(--text-muted)">📈 الذكاء الاصطناعي: تم تحليل ${dbCache.sales.length} فاتورة لتقديم هذه التوصيات</p>
-    `;
-    showModal('analyticsModal');
+function erpSystem() {
+    return {
+        darkMode: true, privacyMode: false, currentTab: 'dashboard', aiInsight: 'تحليل: الأنظمة تعمل بكفاءة. لا يوجد عجز مالي مكتشف.',
+        menuItems: [
+            { id: 'dashboard', name: 'اللوحة الرئيسية', icon: '💎' },
+            { id: 'inventory', name: 'المخزون', icon: '📦' },
+            { id: 'sales', name: 'المبيعات', icon: '💰' },
+            { id: 'clients', name: 'العملاء', icon: '👥' },
+            { id: 'reports', name: 'التقارير', icon: '📊' },
+            { id: 'users', name: 'المستخدمين', icon: '👑' }
+        ],
+        stats: [
+            { label: 'إجمالي السيولة', value: '0 $', icon: '🏦' },
+            { label: 'قيمة المستودع', value: '0 $', icon: '📦' },
+            { label: 'المبيعات (30 يوم)', value: '0 $', icon: '📈' },
+            { label: 'عدد العملاء', value: '0', icon: '👥' }
+        ],
+        inventory: [], sales: [], clients: [], ledger: [], users: [],
+        newPost: { desc: '', type: 'SALE', amount: '' },
+        async initFirebaseData() { this.inventory = appData.inventory; this.sales = appData.sales; this.clients = appData.clients; this.ledger = appData.ledger; this.users = appData.users; this.updateStats(); this.renderTables(); },
+        updateStats() {
+            const totalBalance = this.ledger.reduce((a, b) => a + (b.amount || 0), 0);
+            const invValue = this.inventory.reduce((a, b) => a + (b.qty * b.price), 0);
+            const monthSales = this.sales.filter(s => s.date?.startsWith(new Date().toISOString().slice(0,7))).reduce((a,b)=>a+(b.total||0),0);
+            this.stats = [
+                { label: 'إجمالي السيولة', value: totalBalance.toLocaleString() + ' $', icon: '🏦' },
+                { label: 'قيمة المستودع', value: invValue.toLocaleString() + ' $', icon: '📦' },
+                { label: 'المبيعات (30 يوم)', value: monthSales.toLocaleString() + ' $', icon: '📈' },
+                { label: 'عدد العملاء', value: this.clients.length, icon: '👥' }
+            ];
+            const balance = totalBalance;
+            if (balance < 5000) this.aiInsight = "تنبيه: السيولة منخفضة جداً! راجع المصروفات فوراً.";
+            else if (this.inventory.some(i => i.qty < 5)) this.aiInsight = "نصيحة: أعد طلب الأصناف منتهية الكمية.";
+            else this.aiInsight = "الوضع المالي: ممتاز ومستقر ✅";
+        },
+        async processAccounting() {
+            if (!this.newPost.desc || !this.newPost.amount) return;
+            const amount = this.newPost.type === 'SALE' ? parseFloat(this.newPost.amount) : -parseFloat(this.newPost.amount);
+            const entry = { desc: this.newPost.desc, type: this.newPost.type, amount: amount, date: new Date().toLocaleDateString('ar-EG'), companyId: currentCompanyId, createdAt: new Date().toISOString() };
+            await db.collection('ledger').add(entry);
+            this.ledger.unshift(entry);
+            if (this.newPost.type === 'SALE') { await db.collection('inventory').add({ name: 'منتج تجريبي', sku: 'SKU-001', stock: 50, price: 100, companyId: currentCompanyId }); }
+            this.newPost = { desc: '', type: 'SALE', amount: '' };
+            this.updateStats();
+        },
+        renderTables() {
+            const invTbody = document.getElementById('inventoryTable'); if(invTbody) invTbody.innerHTML = this.inventory.map((i,idx)=>`<tr><td>${idx+1}</td><td>${i.name}</td><td>${i.stock||i.qty}</td><td>${i.price}</td><td><button class="btn btn-danger btn-sm" onclick="deleteItem('inventory','${i.id}')">🗑️</button></td></tr>`).join('');
+            const salesTbody = document.getElementById('salesTable'); if(salesTbody) salesTbody.innerHTML = this.sales.map((s,idx)=>`<tr><td>${idx+1}</td><td>${s.date}</td><td>${s.client}</td><td>${s.total}</td><td><span class="badge badge-success">${s.status||'مدفوع'}</span></td><td><button class="btn btn-danger btn-sm" onclick="deleteItem('sales','${s.id}')">🗑️</button></td></tr>`).join('');
+            const clientsTbody = document.getElementById('clientsTable'); if(clientsTbody) clientsTbody.innerHTML = this.clients.map((c,idx)=>`<tr><td>${idx+1}</td><td>${c.name}</td><td>${c.phone}</td><td><button class="btn btn-danger btn-sm" onclick="deleteItem('clients','${c.id}')">🗑️</button></td></tr>`).join('');
+            const usersTbody = document.getElementById('usersTable'); if(usersTbody && currentUserRole === 'admin') usersTbody.innerHTML = this.users.map(u=>`<tr><td>${u.email}</td><td>${u.name}</td><td>${u.role}</td><td><span class="badge ${u.isActive?'badge-success':'badge-danger'}">${u.isActive?'نشط':'معطل'}</span></td><td><button class="btn btn-warning btn-sm" onclick="toggleUser('${u.id}')">🔁</button><button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">🗑️</button></td></tr>`).join('');
+        },
+        loadTabData(tab) { if (tab === 'reports') { this.renderReports(); } },
+        renderReports() {
+            const totalSales = this.sales.reduce((s,i)=>s+(i.total||0),0);
+            const totalPurchases = 0;
+            const profit = totalSales - totalPurchases;
+            document.getElementById('reportSummary').innerHTML = `<div class="stats-grid"><div class="stat-card"><div class="value">${totalSales.toLocaleString()} ج</div><div class="label">المبيعات</div></div><div class="stat-card"><div class="value">${profit.toLocaleString()} ج</div><div class="label">صافي الربح</div></div></div>`;
+            const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+            let monthly = Array(12).fill(0);
+            this.sales.forEach(s => { let d = new Date(s.date); if (!isNaN(d)) monthly[d.getMonth()] += s.total || 0; });
+            new Chart(document.getElementById('reportChart'), { type: 'line', data: { labels: months, datasets: [{ label: 'المبيعات الشهرية', data: monthly, borderColor: '#3b82f6', tension: 0.4 }] } });
+        },
+        setView(type) { if (type === 'mobile') document.body.classList.add('mobile-view'); else document.body.classList.remove('mobile-view'); localStorage.setItem('semo_view', type); },
+        saveTheme() { localStorage.setItem('semo_theme', this.darkMode ? 'dark' : 'light'); },
+        exportToExcel() { const ws = XLSX.utils.json_to_sheet(this.ledger); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Ledger"); XLSX.writeFile(wb, `SEMO_Ledger_${new Date().toLocaleDateString()}.xlsx`); },
+        logout() { if (confirm('تسجيل الخروج؟')) { localStorage.clear(); window.location.href = 'index.html'; } }
+    };
 }
 
-// ======================== طباعة الفاتورة ========================
-function printSaleInvoice(id) { const sale = dbCache.sales.find(s => s.id === id); if (!sale) return; const win = window.open('', '_blank'); win.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>فاتورة</title><style>body{font-family:Arial;padding:30px;direction:rtl}.invoice-header{text-align:center;border-bottom:2px solid #3b82f6;padding-bottom:15px}.total{font-size:22px;font-weight:bold;color:#3b82f6;margin-top:20px}table{width:100%;border-collapse:collapse;margin:20px 0}th,td{padding:10px;border-bottom:1px solid #ddd;text-align:center}</style></head><body><div class="invoice-header"><h2>${settings.companyName}</h2><p>${settings.companyAddress}<br>${settings.companyPhone}</p></div><h3>فاتورة بيع</h3><p><strong>العميل:</strong> ${sale.clientName}</p><p><strong>التاريخ:</strong> ${sale.date}</p><table><thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody><tr><td>${sale.product || '-'}</td><td>${sale.qty || 1}</td><td>${currency(sale.price || sale.total)}</td><td>${currency(sale.total)}</td></tr></tbody></table><div class="total">الإجمالي: ${currency(sale.total)}</div><div>الحالة: ${sale.status}</div><div class="footer">شكراً لتعاملكم</div><script>window.print();<\/script></body></html>`); win.document.close(); addAuditLog('طباعة فاتورة', `فاتورة #${sale.id}`); }
+window.addInventoryItem = async () => { const name = document.getElementById('prodName').value; const qty = parseInt(document.getElementById('prodQty').value); const price = parseFloat(document.getElementById('prodPrice').value); if (!name) return; await db.collection('inventory').add({ name, stock: qty, price, companyId: currentCompanyId }); await loadFirebaseData(); location.reload(); closeModal('productModal'); };
+window.addSaleItem = async () => { const client = document.getElementById('saleClient').value; const product = document.getElementById('saleProduct').value; const qty = parseInt(document.getElementById('saleQty').value); const price = parseFloat(document.getElementById('salePrice').value); if (!client) return; await db.collection('sales').add({ client, product, qty, total: qty * price, status: 'مدفوع', date: new Date().toLocaleDateString('ar-EG'), companyId: currentCompanyId }); await loadFirebaseData(); location.reload(); closeModal('saleModal'); };
+window.addClientItem = async () => { const name = document.getElementById('clientName').value; const phone = document.getElementById('clientPhone').value; if (!name) return; await db.collection('clients').add({ name, phone, companyId: currentCompanyId }); await loadFirebaseData(); location.reload(); closeModal('clientModal'); };
+window.showAddInventory = () => showModal('productModal');
+window.showAddSale = () => showModal('saleModal');
+window.showAddClient = () => showModal('clientModal');
+window.deleteItem = async (col, id) => { if (confirm('حذف؟')) { await db.collection(col).doc(id).delete(); await loadFirebaseData(); location.reload(); } };
+window.showReportsModal = () => { document.querySelector('[x-data]').__x.$data.renderReports(); showModal('dynamicModal'); };
+window.toggleUser = async (id) => { const userRef = db.collection('users').doc(id); const doc = await userRef.get(); await userRef.update({ isActive: !doc.data().isActive }); await loadFirebaseData(); location.reload(); };
+window.deleteUser = async (id) => { if (confirm('حذف المستخدم نهائياً؟')) { await db.collection('users').doc(id).delete(); await loadFirebaseData(); location.reload(); } };
+window.showAddUser = () => { const email = prompt('البريد الإلكتروني:'); if (!email) return; const name = prompt('الاسم:'); if (!name) return; const password = prompt('كلمة المرور:', '123456'); const role = confirm('مدير؟ OK لمدير') ? 'admin' : 'user'; auth.createUserWithEmailAndPassword(email, password).then(async (cred) => { await db.collection('users').doc(cred.user.uid).set({ uid: cred.user.uid, email, name, role, isActive: true, companyId: currentCompanyId }); await loadFirebaseData(); location.reload(); }).catch(err => alert(err.message)); };
 
-// ======================== إدارة المخزون ========================
-async function renderInventory() { const search = document.getElementById('searchInv')?.value.toLowerCase() || ''; const filtered = dbCache.inventory.filter(i => i.name.toLowerCase().includes(search)); document.getElementById('invTable').innerHTML = filtered.map((i, idx) => `<tr><td>${idx+1}</td><td>${i.name}</td><td>${i.qty} <span style="color:${i.qty<=5?'#f59e0b':'#10b981'}">${i.qty<=5?'⚠️ منخفض':''}</span></td><td>${currency(i.buyPrice||0)}</td><td>${currency(i.sellPrice||0)}</td><td>${currency(((i.sellPrice||0)-(i.buyPrice||0))*(i.qty||0))}</td><td><span style="background:${i.qty<=5?'#f59e0b':'#10b981'};padding:2px 10px;border-radius:20px;color:white">${i.qty<=5?'⚠️ منخفض':'متوفر'}</span></td><td><button class="btn btn-warning btn-sm" onclick="editInventory('${i.id}')">✏️</button> <button class="btn btn-info btn-sm" onclick="restockProduct('${i.id}')">📦</button> <button class="btn btn-danger btn-sm" onclick="deleteInventory('${i.id}')">🗑️</button></td></tr>`).join(''); }
-async function showAddInventory() { const name = prompt('اسم المنتج:'); if (!name) return; const qty = parseInt(prompt('الكمية:', '0')); const buyPrice = parseFloat(prompt('سعر الشراء:', '0')); const sellPrice = parseFloat(prompt('سعر البيع:', '0')); if (isNaN(qty) || isNaN(buyPrice) || isNaN(sellPrice)) return; await db.collection('inventory').add({ name, qty, buyPrice, sellPrice, category: 'عام', companyId: currentCompanyId, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); await loadAllData(); renderInventory(); updateDashboard(); addAuditLog('إضافة منتج', name); showToast('✅ تمت الإضافة'); }
-async function editInventory(id) { const item = dbCache.inventory.find(i => i.id === id); if (!item) return; const newName = prompt('اسم المنتج الجديد:', item.name); if (newName) item.name = newName; const newQty = parseInt(prompt('الكمية الجديدة:', item.qty)); if (!isNaN(newQty)) item.qty = newQty; const newBuy = parseFloat(prompt('سعر الشراء الجديد:', item.buyPrice)); if (!isNaN(newBuy)) item.buyPrice = newBuy; const newSell = parseFloat(prompt('سعر البيع الجديد:', item.sellPrice)); if (!isNaN(newSell)) item.sellPrice = newSell; await db.collection('inventory').doc(id).update({ name: item.name, qty: item.qty, buyPrice: item.buyPrice, sellPrice: item.sellPrice }); await loadAllData(); renderInventory(); updateDashboard(); addAuditLog('تعديل منتج', item.name); showToast('✅ تم التعديل'); }
-async function deleteInventory(id) { if (confirm('حذف المنتج؟')) { await db.collection('inventory').doc(id).delete(); await loadAllData(); renderInventory(); updateDashboard(); addAuditLog('حذف منتج', ''); showToast('تم الحذف', 'danger'); } }
-async function restockProduct(id) { const item = dbCache.inventory.find(i => i.id === id); if (!item) return; const qty = parseInt(prompt(`أضف كميّة لـ "${item.name}":`, '10')); if (isNaN(qty)) return; item.qty += qty; await db.collection('inventory').doc(id).update({ qty: item.qty }); await loadAllData(); renderInventory(); updateDashboard(); addAuditLog('إعادة تخزين', `${item.name} +${qty}`); showToast(`✅ تمت إضافة ${qty}`); }
-async function showLowStockReport() { const lowItems = dbCache.inventory.filter(i => i.qty <= 5); if (lowItems.length === 0) { showToast('✅ لا توجد منتجات منخفضة', 'success'); return; } document.getElementById('modalContent').innerHTML = `<div class="modal-header"><h3>⚠️ المنتجات منخفضة المخزون</h3><button class="btn btn-secondary" onclick="closeModal('dynamicModal')">✕</button></div><div class="table-wrapper"><table class="data-table"><thead><tr><th>المنتج</th><th>الكمية</th><th>الحد الأدنى</th><th>إجراء</th></thead><tbody>${lowItems.map(i => `<td><td>${i.name}</td><td style="color:#f59e0b">${i.qty}</td><td>5</td><td><button class="btn btn-info btn-sm" onclick="restockProduct('${i.id}'); closeModal('dynamicModal');">📦 إعادة تخزين</button></td></tr>`).join('')}</tbody></table></div>`; showModal('dynamicModal'); }
-async function exportLowStockReport() { const lowItems = dbCache.inventory.filter(i => i.qty <= 5); if (lowItems.length === 0) { showToast('لا توجد منتجات منخفضة', 'warning'); return; } const ws = XLSX.utils.json_to_sheet(lowItems.map(i => ({ المنتج: i.name, الكمية: i.qty, 'سعر الشراء': i.buyPrice, 'سعر البيع': i.sellPrice }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'مخزون منخفض'); XLSX.writeFile(wb, `low_stock_${today()}.xlsx`); showToast('✅ تم التصدير'); }
-
-// ======================== المبيعات والمشتريات والعملاء والموردين ========================
-async function renderSales() { const search = document.getElementById('searchSales')?.value.toLowerCase() || ''; const filtered = dbCache.sales.filter(s => s.clientName.toLowerCase().includes(search) || (s.product && s.product.toLowerCase().includes(search))); document.getElementById('salesTable').innerHTML = filtered.map((s, idx) => `<tr><td>${idx+1}</td><td>${s.date}</td><td>${s.clientName}</td><td>${s.product || '-'}</td><td>${s.qty || 1}</td><td>${currency(s.total)}</td><td>${currency(s.tax || 0)}</td><td><span style="background:${s.status === 'مدفوع' ? '#10b981' : '#f59e0b'};padding:2px 10px;border-radius:20px;color:white">${s.status}</span></td><td><button class="btn btn-info btn-sm" onclick="printSaleInvoice('${s.id}')">🖨️</button> <button class="btn btn-danger btn-sm" onclick="deleteSale('${s.id}')">🗑️</button></td></tr>`).join(''); }
-async function showAddSale() { const client = prompt('اسم العميل:'); if (!client) return; const product = prompt('اسم المنتج:'); const qty = parseInt(prompt('الكمية:', '1')) || 1; const price = parseFloat(prompt('سعر الوحدة:', '0')); if (isNaN(price)) return; const discount = parseFloat(prompt('الخصم:', '0')) || 0; const subtotal = qty * price; const tax = (subtotal - discount) * (settings.taxRate / 100); const total = subtotal - discount + tax; const status = confirm('مدفوع؟ OK لمدفوع') ? 'مدفوع' : 'آجل'; await db.collection('sales').add({ clientName: client, product, qty, price, discount, tax, total, paid: status === 'مدفوع' ? total : 0, status, date: today(), companyId: currentCompanyId, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); const existingProduct = dbCache.inventory.find(i => i.name === product); if (existingProduct) { existingProduct.qty -= qty; await db.collection('inventory').doc(existingProduct.id).update({ qty: existingProduct.qty }); } await loadAllData(); renderSales(); updateDashboard(); addAuditLog('إضافة بيع', `${client} - ${currency(total)}`); showToast('✅ تمت الإضافة'); }
-async function deleteSale(id) { if (confirm('حذف البيع؟')) { await db.collection('sales').doc(id).delete(); await loadAllData(); renderSales(); updateDashboard(); addAuditLog('حذف بيع', ''); showToast('تم الحذف', 'danger'); } }
-async function renderPurchases() { const search = document.getElementById('searchPurchases')?.value.toLowerCase() || ''; const filtered = dbCache.purchases.filter(p => p.supplier.toLowerCase().includes(search) || p.product.toLowerCase().includes(search)); document.getElementById('purchasesTable').innerHTML = filtered.map((p, idx) => `<tr><td>${idx+1}</td><td>${p.supplier}</td><td>${p.product}</td><td>${p.qty}</td><td>${currency(p.price)}</td><td>${currency(p.total)}</td><td><button class="btn btn-danger btn-sm" onclick="deletePurchase('${p.id}')">🗑️</button></td></tr>`).join(''); }
-async function showAddPurchase() { const supplier = prompt('اسم المورد:'); if (!supplier) return; const product = prompt('اسم المنتج:'); if (!product) return; const qty = parseInt(prompt('الكمية:', '1')); const price = parseFloat(prompt('سعر الشراء:', '0')); if (isNaN(qty) || isNaN(price)) return; const total = qty * price; await db.collection('purchases').add({ supplier, product, qty, price, total, date: today(), companyId: currentCompanyId, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); const existingProduct = dbCache.inventory.find(i => i.name === product); if (existingProduct) { existingProduct.qty += qty; await db.collection('inventory').doc(existingProduct.id).update({ qty: existingProduct.qty }); } else { await db.collection('inventory').add({ name: product, qty, buyPrice: price, sellPrice: price * 1.3, category: 'مشتريات', companyId: currentCompanyId }); } await loadAllData(); renderPurchases(); renderInventory(); updateDashboard(); addAuditLog('إضافة شراء', `${product} - ${currency(total)}`); showToast('✅ تمت الإضافة وتحديث المخزون'); }
-async function deletePurchase(id) { if (confirm('حذف الشراء؟')) { await db.collection('purchases').doc(id).delete(); await loadAllData(); renderPurchases(); updateDashboard(); addAuditLog('حذف شراء', ''); showToast('تم الحذف', 'danger'); } }
-async function renderClients() { const search = document.getElementById('searchClients')?.value.toLowerCase() || ''; const filtered = dbCache.clients.filter(c => c.name.toLowerCase().includes(search)); const getTotal = (id) => dbCache.sales.filter(s => s.clientName === dbCache.clients.find(c => c.id === id)?.name).reduce((s, i) => s + i.total, 0); document.getElementById('clientsTable').innerHTML = filtered.map((c, idx) => `<tr><td>${idx+1}</td><td>${c.name}</td><td>${c.phone || '-'}</td><td>${currency(getTotal(c.id))}</td><td>${currency(c.debt || 0)}</td><td><button class="btn btn-danger btn-sm" onclick="deleteClient('${c.id}')">🗑️</button></td></tr>`).join(''); }
-async function showAddClient() { const name = prompt('اسم العميل:'); if (!name) return; const phone = prompt('رقم الهاتف:'); await db.collection('clients').add({ name, phone: phone || '', debt: 0, companyId: currentCompanyId, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); await loadAllData(); renderClients(); addAuditLog('إضافة عميل', name); showToast('✅ تمت الإضافة'); }
-async function deleteClient(id) { if (confirm('حذف العميل؟')) { await db.collection('clients').doc(id).delete(); await loadAllData(); renderClients(); addAuditLog('حذف عميل', ''); showToast('تم الحذف', 'danger'); } }
-async function renderSuppliers() { const search = document.getElementById('searchSuppliers')?.value.toLowerCase() || ''; const filtered = dbCache.suppliers.filter(s => s.name.toLowerCase().includes(search)); document.getElementById('suppliersTable').innerHTML = filtered.map((s, idx) => `<tr><td>${idx+1}</td><td>${s.name}</td><td>${s.phone || '-'}</td><td>${s.product || '-'}</td><td><button class="btn btn-danger btn-sm" onclick="deleteSupplier('${s.id}')">🗑️</button></td></tr>`).join(''); }
-async function showAddSupplier() { const name = prompt('اسم المورد:'); if (!name) return; const phone = prompt('رقم الهاتف:'); const product = prompt('المنتج:'); await db.collection('suppliers').add({ name, phone: phone || '', product: product || '', companyId: currentCompanyId, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); await loadAllData(); renderSuppliers(); addAuditLog('إضافة مورد', name); showToast('✅ تمت الإضافة'); }
-async function deleteSupplier(id) { if (confirm('حذف المورد؟')) { await db.collection('suppliers').doc(id).delete(); await loadAllData(); renderSuppliers(); addAuditLog('حذف مورد', ''); showToast('تم الحذف', 'danger'); } }
-async function renderExpenses() { const search = document.getElementById('searchExpenses')?.value.toLowerCase() || ''; const filtered = dbCache.expenses.filter(e => e.type.toLowerCase().includes(search)); document.getElementById('expensesTable').innerHTML = filtered.map((e, idx) => `<tr><td>${idx+1}</td><td>${e.type}</td><td>${currency(e.amount)}</td><td>${e.date}</td><td><button class="btn btn-danger btn-sm" onclick="deleteExpense('${e.id}')">🗑️</button></td></tr>`).join(''); }
-async function showAddExpense() { const type = prompt('نوع المصروف:'); if (!type) return; const amount = parseFloat(prompt('المبلغ:', '0')); if (isNaN(amount)) return; await db.collection('expenses').add({ type, amount, date: today(), companyId: currentCompanyId, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); await loadAllData(); renderExpenses(); updateDashboard(); addAuditLog('إضافة مصروف', `${type} - ${currency(amount)}`); showToast('✅ تمت الإضافة'); }
-async function deleteExpense(id) { if (confirm('حذف المصروف؟')) { await db.collection('expenses').doc(id).delete(); await loadAllData(); renderExpenses(); updateDashboard(); addAuditLog('حذف مصروف', ''); showToast('تم الحذف', 'danger'); } }
-async function renderRevenues() { const search = document.getElementById('searchRevenues')?.value.toLowerCase() || ''; const filtered = dbCache.revenues.filter(r => r.type.toLowerCase().includes(search)); document.getElementById('revenuesTable').innerHTML = filtered.map((r, idx) => `<tr><td>${idx+1}</td><td>${r.type}</td><td>${currency(r.amount)}</td><td>${r.date}</td><td><button class="btn btn-danger btn-sm" onclick="deleteRevenue('${r.id}')">🗑️</button></td></tr>`).join(''); }
-async function showAddRevenue() { const type = prompt('نوع الإيراد:'); if (!type) return; const amount = parseFloat(prompt('المبلغ:', '0')); if (isNaN(amount)) return; await db.collection('revenues').add({ type, amount, date: today(), companyId: currentCompanyId, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); await loadAllData(); renderRevenues(); updateDashboard(); addAuditLog('إضافة إيراد', `${type} - ${currency(amount)}`); showToast('✅ تمت الإضافة'); }
-async function deleteRevenue(id) { if (confirm('حذف الإيراد؟')) { await db.collection('revenues').doc(id).delete(); await loadAllData(); renderRevenues(); updateDashboard(); addAuditLog('حذف إيراد', ''); showToast('تم الحذف', 'danger'); } }
-
-// ======================== لوحة التحكم ========================
-async function updateDashboard() {
-    const totalSales = dbCache.sales.reduce((s, i) => s + (i.total || 0), 0);
-    const totalPurchases = dbCache.purchases.reduce((s, i) => s + (i.total || 0), 0);
-    const totalExpenses = dbCache.expenses.reduce((s, i) => s + (i.amount || 0), 0);
-    const totalRevenues = dbCache.revenues.reduce((s, i) => s + (i.amount || 0), 0);
-    const profit = totalSales - totalPurchases - totalExpenses + totalRevenues;
-    const lowStock = dbCache.inventory.filter(i => (i.qty || 0) <= 5).length;
-    document.getElementById('statsGrid').innerHTML = `
-        <div class="stat-card"><div class="value privacy-value">${currency(totalSales)}</div><div class="label">إجمالي المبيعات</div></div>
-        <div class="stat-card"><div class="value privacy-value">${currency(totalPurchases)}</div><div class="label">إجمالي المشتريات</div></div>
-        <div class="stat-card"><div class="value privacy-value">${currency(totalExpenses)}</div><div class="label">المصروفات</div></div>
-        <div class="stat-card"><div class="value privacy-value">${currency(totalRevenues)}</div><div class="label">الإيرادات</div></div>
-        <div class="stat-card"><div class="value privacy-value" style="color:${profit >= 0 ? '#10b981' : '#ef4444'}">${currency(profit)}</div><div class="label">صافي الربح</div></div>
-        <div class="stat-card"><div class="value">${dbCache.inventory.length}</div><div class="label">المنتجات</div></div>
-        <div class="stat-card"><div class="value">${lowStock}</div><div class="label">منتجات منخفضة</div></div>
-        <div class="stat-card"><div class="value">${dbCache.clients.length}</div><div class="label">العملاء</div></div>
-    `;
-    document.getElementById('lowStockAlert').innerHTML = lowStock > 0 ? `<div class="stat-card" style="background:var(--warning);color:#1e293b"><div class="value">⚠️ تنبيه</div><div class="label">${lowStock} منتج بحاجة لإعادة تخزين</div><button class="btn btn-sm" onclick="showLowStockReport()">📦 عرض</button></div>` : '';
-    drawCharts();
-}
-function drawCharts() {
-    document.getElementById('chartsGrid').innerHTML = `<div style="background:var(--card-light);border-radius:15px;padding:15px;"><canvas id="monthlyChart" height="200"></canvas></div><div style="background:var(--card-light);border-radius:15px;padding:15px;"><canvas id="categoryChart" height="200"></canvas></div>`;
-    const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-    let monthly = Array(12).fill(0);
-    dbCache.sales.forEach(s => { const d = new Date(s.date); if (!isNaN(d)) monthly[d.getMonth()] += s.total || 0; });
-    new Chart(document.getElementById('monthlyChart'), { type: 'bar', data: { labels: months, datasets: [{ label: 'المبيعات', data: monthly, backgroundColor: '#3b82f6' }] }, options: { responsive: true } });
-    let categories = {};
-    dbCache.inventory.forEach(i => { const c = i.category || 'عام'; categories[c] = (categories[c] || 0) + (i.qty || 0) * (i.sellPrice || 0); });
-    new Chart(document.getElementById('categoryChart'), { type: 'doughnut', data: { labels: Object.keys(categories), datasets: [{ data: Object.values(categories), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'] }] }, options: { responsive: true } });
-}
-async function renderReports() {
-    const totalSales = dbCache.sales.reduce((s, i) => s + (i.total || 0), 0);
-    const totalPurchases = dbCache.purchases.reduce((s, i) => s + (i.total || 0), 0);
-    const totalExpenses = dbCache.expenses.reduce((s, i) => s + (i.amount || 0), 0);
-    const totalRevenues = dbCache.revenues.reduce((s, i) => s + (i.amount || 0), 0);
-    const profit = totalSales - totalPurchases - totalExpenses + totalRevenues;
-    document.getElementById('reportSummary').innerHTML = `<div class="stats-grid"><div class="stat-card"><div class="value">${currency(totalSales)}</div><div class="label">المبيعات</div></div><div class="stat-card"><div class="value">${currency(totalPurchases)}</div><div class="label">المشتريات</div></div><div class="stat-card"><div class="value">${currency(totalExpenses)}</div><div class="label">المصروفات</div></div><div class="stat-card"><div class="value">${currency(totalRevenues)}</div><div class="label">الإيرادات</div></div><div class="stat-card"><div class="value" style="color:${profit >= 0 ? '#10b981' : '#ef4444'}">${currency(profit)}</div><div class="label">صافي الربح</div></div></div>`;
-    const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-    let monthly = Array(12).fill(0);
-    dbCache.sales.forEach(s => { const d = new Date(s.date); if (!isNaN(d)) monthly[d.getMonth()] += s.total || 0; });
-    new Chart(document.getElementById('reportChart'), { type: 'line', data: { labels: months, datasets: [{ label: 'المبيعات الشهرية', data: monthly, borderColor: '#3b82f6', tension: 0.4, fill: true }] }, options: { responsive: true } });
-}
-
-// ======================== التبويبات ========================
-const sections = ['dashboard', 'inventory', 'sales', 'purchases', 'clients', 'suppliers', 'expenses', 'revenues', 'reports', 'users'];
-const titles = { dashboard: '🏠 الرئيسية', inventory: '📦 المخزون', sales: '🛒 المبيعات', purchases: '📥 المشتريات', clients: '👥 العملاء', suppliers: '🏭 الموردين', expenses: '💸 المصروفات', revenues: '💰 الإيرادات', reports: '📊 التقارير', users: '👑 المستخدمين' };
-
-function renderTabs() {
-    const tabsDiv = document.getElementById('tabsContainer');
-    tabsDiv.innerHTML = sections.map(s => `<div class="tab" data-tab="${s}">${titles[s]}</div>`).join('');
-    document.querySelectorAll('.tab').forEach(tab => { tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); switchSection(tab.dataset.tab); }); });
-    document.querySelector('.tab')?.cla
+window.loadTheme = () => { const theme = localStorage.getItem('semo_theme'); const view = localStorage.getItem('semo_view'); if (theme === 'light') document.querySelector('[x-data]').__x.$data.darkMode = false; if (view === 'mobile') document.body.classList.add('mobile-view'); };
+setTimeout(() => { if (window.loadTheme) window.loadTheme(); }, 100);
+</script>
+</body>
+</html>
