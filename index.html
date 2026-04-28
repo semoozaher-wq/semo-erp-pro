@@ -3,55 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEMO ERP - النسخة المصححة</title>
+    <title>SEMO ERP Pro 2026 - نظام محاسبي متكامل</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         :root { --p: #3b82f6; --s: #10b981; --d: #ef4444; --w: #f59e0b; --bg: #0f172a; --c: #1e293b; --t: #f8fafc; --b: #334155; }
         .light { --bg: #f1f5f9; --c: #ffffff; --t: #1e293b; --b: #e2e8f0; }
-        body { background: var(--bg); color: var(--t); transition: 0.3s; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: var(--bg); color: var(--t); min-height: 100vh; transition: 0.3s; }
+        
+        .login-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #0f172a, #1e1b4b); position: fixed; top: 0; left: 0; width: 100%; z-index: 2000; }
+        .login-container { background: #1e293b; padding: 40px; border-radius: 30px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #334155; }
+        .login-container input { width: 100%; padding: 15px; margin: 10px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 12px; font-size: 16px; }
+        .login-container button { width: 100%; padding: 15px; background: #3b82f6; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .error-msg { background: rgba(239,68,68,0.2); color: #f87171; padding: 12px; border-radius: 10px; margin-top: 15px; display: none; }
+        
         .app-container { display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background: var(--c); padding: 20px; border-left: 1px solid var(--b); position: fixed; height: 100vh; right: 0; overflow-y: auto; }
+        .sidebar { width: 260px; background: var(--c); padding: 20px; border-left: 1px solid var(--b); position: fixed; height: 100vh; right: 0; overflow-y: auto; z-index: 100; }
         .main { margin-right: 260px; padding: 30px; width: calc(100% - 260px); }
-        .menu-item { padding: 12px; margin: 5px 0; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
-        .menu-item:hover, .menu-item.active { background: var(--p); color: white; }
-        .menu-title { font-size: 11px; color: var(--p); margin: 15px 0 5px; }
+        .menu-item { padding: 12px; margin: 5px 0; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; transition: 0.2s; }
+        .menu-item:hover, .menu-item.active { background: var(--p); color: #fff; transform: translateX(-5px); }
+        .menu-title { font-size: 11px; color: var(--p); margin: 15px 0 5px; font-weight: bold; opacity: 0.6; }
         .card { background: var(--c); padding: 20px; border-radius: 20px; border: 1px solid var(--b); margin-bottom: 20px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat { background: var(--c); padding: 20px; border-radius: 18px; border-right: 5px solid var(--p); cursor: pointer; }
+        .stat { background: var(--c); padding: 20px; border-radius: 18px; border-right: 5px solid var(--p); cursor: pointer; transition: 0.2s; }
+        .stat:hover { transform: translateY(-3px); }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: right; border-bottom: 1px solid var(--b); }
-        .btn { padding: 10px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        .btn-p { background: var(--p); color: white; }
-        .btn-s { background: var(--s); color: white; }
-        .btn-d { background: var(--d); color: white; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; background: var(--bg); border: 1px solid var(--b); color: var(--t); border-radius: 10px; }
+        th { background: rgba(0,0,0,0.05); padding: 12px; text-align: right; color: var(--p); border-bottom: 2px solid var(--b); }
+        td { padding: 12px; border-bottom: 1px solid var(--b); font-size: 14px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-p { background: var(--p); color: #fff; }
+        .btn-s { background: var(--s); color: #fff; }
+        .btn-d { background: var(--d); color: #fff; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; background: var(--bg); border: 1px solid var(--b); color: var(--t); border-radius: 10px; font-size: 14px; outline: none; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
         .modal.show { display: flex; }
-        .modal-content { background: var(--c); padding: 30px; border-radius: 25px; width: 95%; max-width: 500px; }
-        .badge-w { background: rgba(245,158,11,0.2); color: var(--w); padding: 4px 10px; border-radius: 8px; }
+        .modal-content { background: var(--c); padding: 30px; border-radius: 25px; width: 95%; max-width: 550px; }
+        .badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; }
+        .badge-w { background: rgba(245,158,11,0.2); color: var(--w); }
         .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 10px; background: var(--bg); border-radius: 12px; }
-        @media (max-width: 768px) { .sidebar { width: 70px; } .sidebar span { display: none; } .main { margin-right: 70px; } }
+        @media print { .sidebar, .btn, .no-print { display: none !important; } .main { margin: 0; width: 100%; } }
+        @media (max-width: 768px) { .sidebar { width: 70px; } .sidebar h2, .menu-item span, .menu-title { display: none; } .main { margin-right: 70px; } }
     </style>
 </head>
 <body>
 
+<!-- صفحة الدخول -->
+<div id="loginPage" class="login-page">
+    <div class="login-container">
+        <div class="logo" style="font-size: 60px;">📊</div>
+        <h1 style="color: #3b82f6;">SEMO ERP PRO</h1>
+        <input type="text" id="loginUsername" placeholder="👤 اسم المستخدم" autocomplete="off">
+        <input type="password" id="loginPassword" placeholder="🔒 كلمة المرور">
+        <button onclick="doLogin()">🚪 دخول</button>
+        <div id="loginError" class="error-msg"></div>
+        <div class="login-info" style="margin-top: 20px; font-size: 12px;">🔑 admin / admin123</div>
+    </div>
+</div>
+
+<!-- النظام الأساسي -->
+<div id="appSystem" style="display: none;">
 <div class="app-container">
-    <div class="sidebar">
-        <h2 style="text-align:center; color:var(--p);">SEMO</h2>
-        <div class="menu-title">المخازن</div>
-        <div class="menu-item active" onclick="sp('inv')">📦 <span>المخزون</span></div>
-        <div class="menu-item" onclick="sp('sales')">🛒 <span>المبيعات</span></div>
-        <div class="menu-title">المالية</div>
-        <div class="menu-item" onclick="sp('exp')">💸 <span>المصروفات</span></div>
-        <div class="menu-title">جهات</div>
-        <div class="menu-item" onclick="sp('cli')">👥 <span>العملاء</span></div>
+    <div class="sidebar no-print">
+        <h2 style="text-align:center; margin-bottom:20px; color:var(--p);">SEMO ERP</h2>
+        <div id="userDisplay" class="user-info">
+            <span>👤</span>
+            <span id="userName"></span>
+            <span id="userRole" style="font-size:11px; opacity:0.7"></span>
+        </div>
+        <div class="menu-item active" onclick="sp('dash', this)">🏠 <span>الرئيسية</span></div>
+        <div class="menu-title">المخازن والبيع</div>
+        <div class="menu-item" onclick="sp('inv', this)">📦 <span>المخزون</span></div>
+        <div class="menu-item" onclick="sp('sales', this)">🛒 <span>المبيعات</span></div>
+        <div class="menu-item" onclick="sp('pur', this)">🚚 <span>المشتريات</span></div>
+        <div class="menu-title">الحسابات</div>
+        <div class="menu-item" onclick="sp('exp', this)">💸 <span>المصروفات</span></div>
+        <div class="menu-item" onclick="sp('debt', this)">⏳ <span>الديون</span></div>
+        <div class="menu-title">الأشخاص</div>
+        <div class="menu-item" onclick="sp('cli', this)">👥 <span>العملاء</span></div>
+        <div class="menu-item" onclick="sp('sup', this)">🏢 <span>الموردين</span></div>
+        <div class="menu-title">النظام</div>
+        <div class="menu-item" onclick="toggleTheme()">🌓 <span>الوضع ليلي/نهاري</span></div>
+        <div class="menu-item" onclick="exportData()">💾 <span>نسخة احتياطية</span></div>
+        <div class="menu-item logout-btn" onclick="logout()">🚪 <span>تسجيل خروج</span></div>
     </div>
 
     <div class="main">
         <div id="content"></div>
     </div>
+</div>
 </div>
 
 <div id="modal" class="modal" onclick="if(event.target===this)cm()">
@@ -59,340 +99,431 @@
 </div>
 
 <script>
+// ========== المستخدمين ==========
+const users = [
+    { username: "admin", password: "admin123", name: "مدير النظام", role: "مدير عام" },
+    { username: "user", password: "user123", name: "محاسب", role: "محاسب" }
+];
+
 // ========== قاعدة البيانات ==========
 let db = {
     inv: JSON.parse(localStorage.getItem('erp_inv')) || [],
     sales: JSON.parse(localStorage.getItem('erp_sales')) || [],
+    pur: JSON.parse(localStorage.getItem('erp_pur')) || [],
     exp: JSON.parse(localStorage.getItem('erp_exp')) || [],
-    cli: JSON.parse(localStorage.getItem('erp_cli')) || []
+    cli: JSON.parse(localStorage.getItem('erp_cli')) || [],
+    sup: JSON.parse(localStorage.getItem('erp_sup')) || []
 };
 
+// ========== وظائف مساعدة ==========
 const save = () => {
     localStorage.setItem('erp_inv', JSON.stringify(db.inv));
     localStorage.setItem('erp_sales', JSON.stringify(db.sales));
+    localStorage.setItem('erp_pur', JSON.stringify(db.pur));
     localStorage.setItem('erp_exp', JSON.stringify(db.exp));
     localStorage.setItem('erp_cli', JSON.stringify(db.cli));
+    localStorage.setItem('erp_sup', JSON.stringify(db.sup));
 };
 
 const v = (id) => document.getElementById(id).value;
 const f = (id) => parseFloat(document.getElementById(id).value) || 0;
 const om = () => document.getElementById('modal').classList.add('show');
 const cm = () => document.getElementById('modal').classList.remove('show');
+const toggleTheme = () => document.body.classList.toggle('light');
 
-// ========== بيانات تجريبية ==========
+// ========== تسجيل الدخول ==========
+function doLogin() {
+    let username = document.getElementById('loginUsername').value;
+    let password = document.getElementById('loginPassword').value;
+    let errorDiv = document.getElementById('loginError');
+    
+    let user = users.find(u => u.username === username && u.password === password);
+    
+    if(user) {
+        localStorage.setItem('semo_user', JSON.stringify(user));
+        localStorage.setItem('semo_logged_in', 'true');
+        initApp(user);
+    } else {
+        errorDiv.style.display = 'block';
+        errorDiv.innerHTML = '❌ اسم المستخدم أو كلمة المرور غير صحيحة';
+    }
+}
+
+function initApp(user) {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('appSystem').style.display = 'block';
+    document.getElementById('userName').innerHTML = user.name;
+    document.getElementById('userRole').innerHTML = user.role;
+    initData();
+    renderDash();
+}
+
+function logout() {
+    localStorage.removeItem('semo_user');
+    localStorage.removeItem('semo_logged_in');
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('appSystem').style.display = 'none';
+}
+
+// ========== تهيئة البيانات التجريبية ==========
 function initData() {
     if(db.inv.length === 0) {
         db.inv = [
             {id:1, n:'مكتب خشبي', c:500, p:800, q:15},
-            {id:2, n:'كرسي دوار', c:300, p:550, q:25}
+            {id:2, n:'كرسي دوار', c:300, p:550, q:25},
+            {id:3, n:'طابعة HP', c:1200, p:1800, q:5},
+            {id:4, n:'شاشة 24 بوصة', c:2000, p:3200, q:8}
         ];
         db.cli = [
-            {id:101, n:'شركة الأهرام', p:'01001112223'}
+            {id:101, n:'شركة الأهرام', p:'01001112223'},
+            {id:102, n:'مؤسسة النور', p:'01002223334'}
+        ];
+        db.sup = [
+            {id:201, n:'معرض القاهرة', p:'01555556667'},
+            {id:202, n:'شركة التقنية', p:'01556667778'}
         ];
         save();
     }
 }
 
-// ========== التنقل ==========
-function sp(page) {
-    if(page === 'inv') renderInv();
-    else if(page === 'sales') renderSales();
-    else if(page === 'exp') renderExp();
-    else if(page === 'cli') renderCli();
+// ========== التنقل بين الصفحات ==========
+function sp(p, el) {
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+    if(el) el.classList.add('active');
+    
+    if(p === 'dash') renderDash();
+    else if(p === 'inv') renderInv();
+    else if(p === 'sales') renderSales();
+    else if(p === 'pur') renderPur();
+    else if(p === 'exp') renderExp();
+    else if(p === 'debt') renderDebt();
+    else if(p === 'cli') renderPeople('cli', 'العملاء');
+    else if(p === 'sup') renderPeople('sup', 'الموردين');
 }
 
-// ========== المخزون (المصحح) ==========
+// ========== 1. الرئيسية ==========
+function renderDash() {
+    let sVal = db.sales.reduce((a,b)=>a+(b.tot||0), 0);
+    let pVal = db.sales.reduce((a,b)=>a+(b.prof||0), 0);
+    let eVal = db.exp.reduce((a,b)=>a+(b.amt||0), 0);
+    let low = db.inv.filter(i=>i.q <= 5).length;
+    let user = JSON.parse(localStorage.getItem('semo_user'));
+
+    document.getElementById('content').innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+            <h2>👋 أهلاً بك، ${user.name}</h2>
+            <button class="btn btn-p" onclick="exportData()">📥 تصدير البيانات</button>
+        </div>
+        <div class="grid">
+            <div class="stat" onclick="sp('sales')"><h3>💰 إجمالي المبيعات</h3><div style="font-size:24px;font-weight:800">${sVal.toLocaleString()}</div></div>
+            <div class="stat" style="border-color:var(--s)" onclick="sp('sales')"><h3>📈 صافي الربح</h3><div style="font-size:24px;font-weight:800;color:var(--s)">${(pVal - eVal).toLocaleString()}</div></div>
+            <div class="stat" style="border-color:var(--d)" onclick="sp('exp')"><h3>💸 المصروفات</h3><div style="font-size:24px;font-weight:800">${eVal.toLocaleString()}</div></div>
+            <div class="stat" style="border-color:var(--w)" onclick="sp('inv')"><h3>⚠️ نواقص المخزن</h3><div style="font-size:24px;font-weight:800">${low}</div></div>
+        </div>
+        <div class="card"><h3>📊 حركة المبيعات</h3><canvas id="chart" height="100"></canvas></div>`;
+    
+    new Chart(document.getElementById('chart'), {
+        type: 'line', 
+        data: { 
+            labels: db.sales.map(s=>s.d).slice(-7), 
+            datasets:[{label:'المبيعات', data:db.sales.map(s=>s.tot).slice(-7), borderColor:'#3b82f6', tension:0.3}]
+        }
+    });
+}
+
+// ========== 2. المخزون ==========
 function renderInv() {
     document.getElementById('content').innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
-            <h2>📦 المخزون</h2>
-            <button class="btn btn-p" onclick="openAddProduct()">+ إضافة منتج</button>
-        </div>
-        <div class="card">
-            <input type="text" id="searchInv" placeholder="🔍 بحث..." onkeyup="filterInv()">
-            <table id="invTable">
-                <thead><tr><th>المنتج</th><th>سعر الشراء</th><th>سعر البيع</th><th>الكمية</th><th>إجراءات</th></tr></thead>
-                <tbody id="invBody"></tbody>
-            </table>
-        </div>
-    `;
-    refreshInv();
-}
-
-function refreshInv() {
-    let search = document.getElementById('searchInv')?.value.toLowerCase() || '';
-    let filtered = db.inv.filter(i => i.n.toLowerCase().includes(search));
-    document.getElementById('invBody').innerHTML = filtered.map(i => `
-        <tr>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px"><h2>📦 المخزون</h2><button class="btn btn-p" onclick="openInv()">+ صنف جديد</button></div>
+        <div class="card"><input type="text" id="searchInv" placeholder="🔍 بحث سريع..." onkeyup="filterT(this, 'tInv')">
+        <table id="tInv"><thead><tr><th>الصنف</th><th>التكلفة</th><th>البيع</th><th>الكمية</th><th>تحكم</th></tr></thead>
+        <tbody>${db.inv.map(i => `<tr>
             <td>${i.n}</td>
-            <td>${i.c} ج.م</td>
-            <td>${i.p} ج.م</td>
-            <td class="${i.q <= 5 ? 'badge-w' : ''}">${i.q}</td>
-            <td>
-                <button class="btn btn-p" style="padding:5px" onclick="editProduct(${i.id})">✏️</button>
-                <button class="btn btn-d" style="padding:5px" onclick="deleteProduct(${i.id})">🗑️</button>
-            </td>
-        </td>
-    `).join('');
+            <td>${i.c} 
+            <td>${i.p} 
+            <td><span class="${i.q<=5?'badge badge-w':''}">${i.q}</span></td>
+            <td><button class="btn btn-p" style="padding:5px" onclick="editInv(${i.id})">✏️</button>
+                <button class="btn btn-d" style="padding:5px" onclick="del('inv', ${i.id})">🗑️</button>
+            </tr>
+        `).join('')}</tbody></table></div>`;
 }
 
-// ✅ دالة إضافة منتج - دي اللي كانت ناقصة!!!
-window.openAddProduct = function() {
+function openInv() {
     document.getElementById('mBody').innerHTML = `
-        <h3>➕ إضافة منتج جديد</h3>
-        <input type="text" id="prodName" placeholder="اسم المنتج" autocomplete="off">
-        <input type="number" id="prodCost" placeholder="سعر الشراء (التكلفة)">
-        <input type="number" id="prodPrice" placeholder="سعر البيع">
-        <input type="number" id="prodQty" placeholder="الكمية">
-        <button class="btn btn-s" style="width:100%; margin-top:10px" onclick="saveProduct()">💾 حفظ المنتج</button>
+        <h3>➕ منتج جديد</h3>
+        <input id="n" placeholder="اسم المنتج">
+        <input id="c" type="number" placeholder="سعر التكلفة">
+        <input id="p" type="number" placeholder="سعر البيع">
+        <input id="q" type="number" placeholder="الكمية">
+        <button class="btn btn-s" onclick="addInv()">حفظ</button>
     `;
     om();
-};
+}
 
-// ✅ حفظ المنتج
-window.saveProduct = function() {
-    let name = document.getElementById('prodName').value;
-    let cost = parseFloat(document.getElementById('prodCost').value);
-    let price = parseFloat(document.getElementById('prodPrice').value);
-    let qty = parseInt(document.getElementById('prodQty').value);
-    
+function addInv() {
+    let name = document.getElementById('n').value;
     if(!name || name === '') {
-        alert('❌ يرجى كتابة اسم المنتج أولاً!');
+        alert('❌ يرجى كتابة اسم المنتج');
         return;
     }
-    
-    if(isNaN(cost)) cost = 0;
-    if(isNaN(price)) price = 0;
-    if(isNaN(qty)) qty = 0;
-    
     db.inv.push({
         id: Date.now(),
         n: name,
-        c: cost,
-        p: price,
-        q: qty
+        c: parseFloat(document.getElementById('c').value) || 0,
+        p: parseFloat(document.getElementById('p').value) || 0,
+        q: parseInt(document.getElementById('q').value) || 0
     });
-    
     save();
     cm();
     renderInv();
-    alert(`✅ تم إضافة المنتج: ${name}`);
-};
+    alert('✅ تم إضافة المنتج: ' + name);
+}
 
-// تعديل منتج
-window.editProduct = function(id) {
-    let p = db.inv.find(x => x.id === id);
-    if(!p) return;
+function editInv(id) {
+    let i = db.inv.find(x=>x.id==id);
     document.getElementById('mBody').innerHTML = `
         <h3>✏️ تعديل منتج</h3>
-        <input type="text" id="prodName" value="${p.n}" placeholder="اسم المنتج">
-        <input type="number" id="prodCost" value="${p.c}" placeholder="سعر الشراء">
-        <input type="number" id="prodPrice" value="${p.p}" placeholder="سعر البيع">
-        <input type="number" id="prodQty" value="${p.q}" placeholder="الكمية">
-        <button class="btn btn-s" style="width:100%" onclick="updateProduct(${id})">💾 تحديث</button>
+        <input id="n" value="${i.n}">
+        <input id="c" type="number" value="${i.c}">
+        <input id="p" type="number" value="${i.p}">
+        <input id="q" type="number" value="${i.q}">
+        <button class="btn btn-s" onclick="updateInv(${id})">حفظ</button>
     `;
     om();
-};
+}
 
-window.updateProduct = function(id) {
-    let idx = db.inv.findIndex(x => x.id === id);
-    if(idx !== -1) {
-        db.inv[idx] = {
-            id: id,
-            n: document.getElementById('prodName').value,
-            c: parseFloat(document.getElementById('prodCost').value) || 0,
-            p: parseFloat(document.getElementById('prodPrice').value) || 0,
-            q: parseInt(document.getElementById('prodQty').value) || 0
-        };
-        save();
-        cm();
-        renderInv();
-        alert('✅ تم التعديل');
-    }
-};
+function updateInv(id) {
+    let idx = db.inv.findIndex(x=>x.id==id);
+    db.inv[idx] = {
+        id: id,
+        n: document.getElementById('n').value,
+        c: parseFloat(document.getElementById('c').value) || 0,
+        p: parseFloat(document.getElementById('p').value) || 0,
+        q: parseInt(document.getElementById('q').value) || 0
+    };
+    save();
+    cm();
+    renderInv();
+}
 
-window.deleteProduct = function(id) {
-    if(confirm('⚠️ هل أنت متأكد من حذف هذا المنتج؟')) {
-        db.inv = db.inv.filter(x => x.id !== id);
-        save();
-        renderInv();
-        alert('🗑️ تم حذف المنتج');
-    }
-};
-
-window.filterInv = function() {
-    refreshInv();
-};
-
-// ========== المبيعات ==========
+// ========== 3. المبيعات ==========
 function renderSales() {
     document.getElementById('content').innerHTML = `
         <h2>🛒 المبيعات</h2>
-        <div class="card">
-            <select id="saleProduct">
-                ${db.inv.map(i => `<option value="${i.id}">${i.n} (متوفر: ${i.q}) - ${i.p} ج.م</option>`)}
-            </select>
-            <select id="saleClient">
-                ${db.cli.map(c => `<option value="${c.n}">${c.n}</option>`)}
-                <option value="زبون نقدي">زبون نقدي</option>
-            </select>
-            <input type="number" id="saleQty" value="1" placeholder="الكمية">
-            <select id="saleStatus">
-                <option value="مدفوع">✅ مدفوع</option>
-                <option value="آجل">⏳ آجل (دين)</option>
-            </select>
-            <button class="btn btn-s" style="width:100%" onclick="doSale()">💰 إتمام البيع</button>
+        <div class="card no-print">
+            <select id="si">${db.inv.map(i=>`<option value="${i.id}">${i.n} (متوفر: ${i.q})</option>`)}</select>
+            <select id="sc">${db.cli.map(c=>`<option value="${c.n}">${c.n}</option>`)}<option value="زبون نقدي">زبون نقدي</option></select>
+            <input id="sq" type="number" value="1" placeholder="الكمية">
+            <select id="st"><option value="مدفوع">✅ مدفوع</option><option value="آجل">⏳ آجل (دين)</option></select>
+            <button class="btn btn-s" style="width:100%" onclick="doS()">💰 إتمام الفاتورة</button>
         </div>
-        <div id="invoiceArea"></div>
-    `;
+        <div id="invArea"></div>`;
 }
 
-window.doSale = function() {
-    let productId = parseInt(document.getElementById('saleProduct').value);
-    let product = db.inv.find(i => i.id === productId);
-    let qty = parseInt(document.getElementById('saleQty').value);
-    
-    if(!product) {
-        alert('❌ المنتج غير موجود');
-        return;
-    }
-    
-    if(product.q < qty) {
-        alert(`❌ الكمية غير كافية! المتوفر: ${product.q}`);
-        return;
-    }
-    
-    product.q -= qty;
-    
-    let sale = {
-        id: Date.now(),
-        date: new Date().toLocaleDateString('ar-EG'),
-        product: product.n,
-        client: document.getElementById('saleClient').value,
-        qty: qty,
-        price: product.p,
-        total: qty * product.p,
-        profit: qty * (product.p - product.c),
-        status: document.getElementById('saleStatus').value
-    };
-    
-    db.sales.push(sale);
-    save();
-    
-    document.getElementById('invoiceArea').innerHTML = `
+function doS() {
+    let i = db.inv.find(x=>x.id==v('si')), q = f('sq');
+    if(i && i.q >= q) {
+        i.q -= q; 
+        let s = {
+            id: Date.now(), 
+            d: new Date().toLocaleDateString('ar-EG'), 
+            item: i.n, 
+            cli: v('sc'), 
+            qty: q, 
+            tot: q * i.p, 
+            prof: q * (i.p - i.c), 
+            st: v('st')
+        };
+        db.sales.push(s); 
+        save(); 
+        renderSales(); 
+        showInvoice(s);
+    } else alert('❌ الكمية غير كافية في المخزون!');
+}
+
+function showInvoice(s) {
+    document.getElementById('invArea').innerHTML = `
         <div class="card" style="border:2px dashed var(--p); text-align:center">
-            <h2>🧾 فاتورة #${sale.id}</h2>
-            <p>📅 ${sale.date} | 👤 ${sale.client}</p>
+            <h2>🧾 فاتورة #${s.id}</h2>
+            <p>📅 التاريخ: ${s.d} | 👤 العميل: ${s.cli}</p>
             <hr>
-            <table style="margin:10px auto; width:80%">
-                <tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr>
-                <tr><td>${sale.product}</td><td>${sale.qty}</td><td>${sale.price}</td><td>${sale.total} ج.م</td></tr>
+            <table style="margin:15px 0"><tr><th>البيان</th><th>الكمية</th><th>الإجمالي</th></tr>
+            <tr><td style="text-align:center">${s.item}</td><td style="text-align:center">${s.qty}</td><td style="text-align:center">${s.tot.toLocaleString()} ج.م</td></tr>
             </table>
-            <h3>💰 المطلوب: ${sale.total} ج.م (${sale.status})</h3>
-            <button class="btn btn-p" onclick="window.print()">🖨️ طباعة</button>
-        </div>
-    `;
-    
-    renderSales();
-    alert(`✅ تم بيع ${sale.qty} من ${sale.product}`);
-};
+            <h3>💰 المطلوب: ${s.tot.toLocaleString()} ج.م (${s.st})</h3>
+            <button class="btn btn-p no-print" onclick="window.print()">🖨️ طباعة الفاتورة</button>
+        </div>`;
+}
 
-// ========== المصروفات ==========
+// ========== 4. المشتريات ==========
+function renderPur() {
+    document.getElementById('content').innerHTML = `
+        <h2>🚚 المشتريات (توريد للمخزن)</h2>
+        <div class="card">
+            <select id="pi">${db.inv.map(i=>`<option value="${i.id}">${i.n}</option>`)}</select>
+            <select id="ps">${db.sup.map(s=>`<option value="${s.n}">${s.n}</option>`)}</select>
+            <input id="pq" type="number" placeholder="الكمية المشتراة">
+            <button class="btn btn-p" style="width:100%" onclick="doP()">✅ تحديث المخزن</button>
+        </div>`;
+}
+
+function doP() { 
+    let i = db.inv.find(x=>x.id==v('pi')), q = f('pq'); 
+    if(i && q > 0){ 
+        i.q += q; 
+        db.pur.push({d:new Date().toLocaleDateString('ar-EG'), n:i.n, qty:q, s:v('ps')}); 
+        save(); 
+        alert(`✅ تم توريد ${q} من ${i.n} بنجاح`);
+        sp('inv'); 
+    } else alert('❌ يرجى إدخال كمية صحيحة');
+}
+
+// ========== 5. المصروفات ==========
 function renderExp() {
-    let total = db.exp.reduce((a,b) => a + (b.amt || 0), 0);
+    let total = db.exp.reduce((a,b)=>a+(b.amt||0),0);
     document.getElementById('content').innerHTML = `
-        <div style="display:flex; justify-content:space-between">
-            <h2>💸 المصروفات (الإجمالي: ${total} ج.م)</h2>
-            <button class="btn btn-d" onclick="openAddExp()">+ إضافة</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
+            <h2>💸 المصروفات <span style="font-size:16px;color:var(--d)">(الإجمالي: ${total.toLocaleString()} ج.م)</span></h2>
+            <button class="btn btn-d" onclick="openExp()">+ تسجيل مصروف</button>
         </div>
         <div class="card">
-            <table>
-                <thead><tr><th>التاريخ</th><th>البيان</th><th>المبلغ</th></thead>
-                <tbody>
-                    ${db.exp.map(e => `<tr><td>${e.d}</td><td>${e.n}</td><td>${e.amt} ج.م</td></tr>`).join('')}
-                </tbody>
+            <table id="expTable"><thead><tr><th>التاريخ</th><th>البيان</th><th>المبلغ</th></thead>
+            <tbody>${db.exp.map(e=>`<tr><td>${e.d}</td><td>${e.n}</td><td style="color:var(--d)">${e.amt.toLocaleString()}</td></tr>`).join('')}</tbody>
             </table>
-        </div>
-    `;
+        </div>`;
 }
 
-window.openAddExp = function() {
+function openExp() { 
     document.getElementById('mBody').innerHTML = `
-        <h3>➕ إضافة مصروف</h3>
-        <input type="text" id="expName" placeholder="البيان (كهرباء، إيجار...)">
-        <input type="number" id="expAmount" placeholder="المبلغ">
-        <button class="btn btn-d" style="width:100%" onclick="addExpense()">💾 حفظ</button>
-    `;
-    om();
-};
+        <h3>➕ مصروف جديد</h3>
+        <input id="en" placeholder="البيان (مثال: كهرباء، إيجار)">
+        <input id="ea" type="number" placeholder="المبلغ">
+        <button class="btn btn-d" style="width:100%" onclick="addExp()">💾 حفظ</button>
+    `; 
+    om(); 
+}
 
-window.addExpense = function() {
-    let name = document.getElementById('expName').value;
-    let amount = parseFloat(document.getElementById('expAmount').value);
-    if(!name) { alert('❌ اكتب البيان'); return; }
-    if(isNaN(amount)) { alert('❌ اكتب المبلغ'); return; }
-    db.exp.push({
-        id: Date.now(),
-        d: new Date().toLocaleDateString('ar-EG'),
-        n: name,
-        amt: amount
-    });
-    save();
-    cm();
-    renderExp();
-    alert('✅ تم إضافة المصروف');
-};
+function addExp() { 
+    db.exp.push({id:Date.now(), d:new Date().toLocaleDateString('ar-EG'), n:v('en'), amt:f('ea')}); 
+    save(); 
+    cm(); 
+    renderExp(); 
+}
 
-// ========== العملاء ==========
-function renderCli() {
+// ========== 6. الديون ==========
+function renderDebt() {
+    let debts = db.sales.filter(s=>s.st === 'آجل');
+    let totalDebts = debts.reduce((a,b)=>a+(b.tot||0),0);
     document.getElementById('content').innerHTML = `
-        <div style="display:flex; justify-content:space-between">
-            <h2>👥 العملاء</h2>
-            <button class="btn btn-p" onclick="openAddClient()">+ عميل جديد</button>
+        <h2>⏳ الديون <span style="font-size:16px;color:var(--w)">(إجمالي المستحق: ${totalDebts.toLocaleString()} ج.م)</span></h2>
+        <div class="card">
+            <table><thead><tr><th>التاريخ</th><th>العميل</th><th>المنتج</th><th>المبلغ</th><th>تحصيل</th></tr></thead>
+            <tbody>${debts.map(x=>`
+                <tr>
+                    <td>${x.d}</td>
+                    <td>${x.cli}</td>
+                    <td>${x.item}</td>
+                    <td style="color:var(--w)">${x.tot.toLocaleString()} ج.م</td>
+                    <td><button class="btn btn-s" style="padding:5px 10px" onclick="payD(${x.id})">✅ تحصيل</button></td>
+                </tr>
+            `).join('')}</tbody>
+            </table>
+        </div>`;
+}
+
+function payD(id) { 
+    let s = db.sales.find(x=>x.id==id); 
+    if(s) s.st = 'مدفوع'; 
+    save(); 
+    renderDebt(); 
+}
+
+// ========== 7. العملاء والموردين ==========
+function renderPeople(t, title) {
+    document.getElementById('content').innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
+            <h2>${title === 'العملاء' ? '👥' : '🏢'} ${title}</h2>
+            <button class="btn btn-p" onclick="openPerson('${t}')">+ إضافة جديد</button>
         </div>
         <div class="card">
-            <table>
-                <thead><tr><th>الاسم</th><th>الهاتف</th><th></th></thead>
-                <tbody>
-                    ${db.cli.map(c => `<tr><td>${c.n}</td><td>${c.p}</td><td><button class="btn btn-d" style="padding:5px" onclick="deleteClient(${c.id})">🗑️</button></td></tr>`).join('')}
-                </tbody>
-            </tr>
-        </div>
-    `;
+            <table><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>حذف</th></tr></thead>
+            <tbody>${db[t].map((x,idx)=>`
+                <tr>
+                    <td>${idx+1}</td>
+                    <td>${x.n}</td>
+                    <td>${x.p || '-'}</td>
+                    <td><button class="btn btn-d" style="padding:5px 10px" onclick="del('${t}', ${x.id})">🗑️</button></td>
+                </tr>
+            `).join('')}</tbody>
+            </table>
+        </div>`;
 }
 
-window.openAddClient = function() {
+function openPerson(t) { 
     document.getElementById('mBody').innerHTML = `
-        <h3>➕ عميل جديد</h3>
-        <input type="text" id="clientName" placeholder="الاسم">
-        <input type="text" id="clientPhone" placeholder="رقم الهاتف">
-        <button class="btn btn-s" style="width:100%" onclick="addClient()">💾 حفظ</button>
-    `;
-    om();
-};
+        <h3>➕ إضافة جديد</h3>
+        <input id="pn" placeholder="الاسم">
+        <input id="pp" placeholder="رقم الهاتف">
+        <button class="btn btn-s" style="width:100%" onclick="addPerson('${t}')">💾 حفظ</button>
+    `; 
+    om(); 
+}
 
-window.addClient = function() {
-    let name = document.getElementById('clientName').value;
-    let phone = document.getElementById('clientPhone').value;
-    if(!name) { alert('❌ اكتب اسم العميل'); return; }
-    db.cli.push({id: Date.now(), n: name, p: phone || '-'});
-    save();
-    cm();
-    renderCli();
-    alert(`✅ تم إضافة العميل: ${name}`);
-};
+function addPerson(t) { 
+    db[t].push({id:Date.now(), n:v('pn'), p:v('pp')}); 
+    save(); 
+    cm(); 
+    renderPeople(t, t==='cli' ? 'العملاء' : 'الموردين'); 
+}
 
-window.deleteClient = function(id) {
-    if(confirm('⚠️ حذف العميل؟')) {
-        db.cli = db.cli.filter(c => c.id !== id);
-        save();
-        renderCli();
+// ========== أدوات عامة ==========
+function del(t,id) { 
+    if(confirm('⚠️ هل أنت متأكد من الحذف؟')){ 
+        db[t] = db[t].filter(x=>x.id != id); 
+        save(); 
+        sp(t); 
     }
-};
+}
 
-// ========== بدء التشغيل ==========
-initData();
-renderInv();
+function filterT(inp, tid) {
+    let filter = inp.value.toLowerCase();
+    let rows = document.querySelectorAll(`#${tid} tbody tr`);
+    rows.forEach(row => {
+        let text = row.innerText.toLowerCase();
+        row.style.display = text.includes(filter) ? '' : 'none';
+    });
+}
+
+function exportData() {
+    let exportData = {
+        inventory: db.inv,
+        sales: db.sales,
+        purchases: db.pur,
+        expenses: db.exp,
+        clients: db.cli,
+        suppliers: db.sup,
+        exportedAt: new Date().toLocaleString('ar-EG')
+    };
+    let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+    let a = document.createElement('a');
+    a.href = dataStr;
+    a.download = `SEMO_ERP_Backup_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.json`;
+    a.click();
+    alert('✅ تم تصدير النسخة الاحتياطية بنجاح');
+}
+
+// ========== التحقق من حالة الدخول عند بدء التشغيل ==========
+if(localStorage.getItem('semo_logged_in') === 'true') {
+    let user = JSON.parse(localStorage.getItem('semo_user'));
+    if(user) {
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('appSystem').style.display = 'block';
+        document.getElementById('userName').innerHTML = user.name;
+        document.getElementById('userRole').innerHTML = user.role;
+        initData();
+        renderDash();
+    }
+}
 </script>
 </body>
 </html>
