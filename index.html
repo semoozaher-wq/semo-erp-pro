@@ -5,88 +5,363 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SEMO ERP - نظام محاسبي</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Cairo',sans-serif;background:#0f172a;color:#fff;direction:rtl}
-        .login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0f172a,#1e1b4b);display:flex;justify-content:center;align-items:center;z-index:1000}
-        .login-card{background:#1e293b;padding:40px;border-radius:30px;width:90%;max-width:400px;text-align:center}
-        .login-card input{width:100%;padding:15px;margin:10px 0;background:#0f172a;border:1px solid #334155;color:#fff;border-radius:12px}
-        .login-card button{width:100%;padding:15px;background:#3b82f6;color:#fff;border:none;border-radius:12px;font-size:18px;font-weight:bold;cursor:pointer}
-        .app{display:none}
-        .sidebar{width:260px;background:#1e293b;padding:20px;position:fixed;right:0;top:0;height:100vh;overflow-y:auto}
-        .main{margin-right:260px;padding:30px}
-        .menu-item{padding:12px;margin:5px 0;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:10px}
-        .menu-item:hover,.menu-item.active{background:#3b82f6}
-        .menu-group-title{font-size:11px;color:#3b82f6;margin:15px 0 5px}
-        .card{background:#1e293b;padding:20px;border-radius:20px;margin-bottom:20px}
-        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:25px}
-        .stat-card{background:#1e293b;padding:20px;border-radius:18px;border-right:4px solid #3b82f6;cursor:pointer}
-        table{width:100%;border-collapse:collapse}
-        th,td{padding:12px;text-align:right;border-bottom:1px solid #334155}
-        .btn{padding:10px 20px;border:none;border-radius:10px;cursor:pointer;font-weight:bold}
-        .btn-p{background:#3b82f6;color:#fff}
-        .btn-s{background:#10b981;color:#fff}
-        .btn-d{background:#ef4444;color:#fff}
-        input,select{width:100%;padding:12px;margin:8px 0;background:#0f172a;border:1px solid #334155;color:#fff;border-radius:10px}
-        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);justify-content:center;align-items:center;z-index:1100}
-        .modal.show{display:flex}
-        .modal-content{background:#1e293b;padding:30px;border-radius:25px;width:90%;max-width:500px}
-        @media(max-width:768px){.sidebar{width:70px}.main{margin-right:70px}.sidebar span{display:none}}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #0f172a;
+            color: #fff;
+            direction: rtl;
+        }
+        
+        /* شاشة الدخول */
+        .login-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .login-card {
+            background: #1e293b;
+            padding: 40px;
+            border-radius: 30px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+        .login-card input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #fff;
+            border-radius: 12px;
+            font-size: 16px;
+        }
+        .login-card button {
+            width: 100%;
+            padding: 15px;
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .login-card select {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #fff;
+            border-radius: 12px;
+            font-size: 16px;
+        }
+        
+        /* التطبيق */
+        .app {
+            display: none;
+        }
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* الشريط الجانبي */
+        .sidebar {
+            width: 280px;
+            background: #1e293b;
+            padding: 25px 20px;
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            border-left: 1px solid #334155;
+        }
+        .sidebar h2 {
+            text-align: center;
+            color: #3b82f6;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: #0f172a;
+            border-radius: 16px;
+            margin-bottom: 25px;
+        }
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .user-info h4 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        .user-info p {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .menu-group {
+            margin-bottom: 25px;
+        }
+        .menu-title {
+            font-size: 12px;
+            color: #3b82f6;
+            margin-bottom: 10px;
+            font-weight: bold;
+            padding-right: 10px;
+        }
+        .menu-item {
+            padding: 12px 15px;
+            margin: 5px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        .menu-item:hover {
+            background: #3b82f6;
+            transform: translateX(-5px);
+        }
+        .menu-item.active {
+            background: #3b82f6;
+        }
+        
+        /* المحتوى الرئيسي */
+        .main-content {
+            margin-right: 280px;
+            padding: 30px;
+            width: calc(100% - 280px);
+        }
+        
+        /* البطاقات */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 20px;
+            border-right: 4px solid #3b82f6;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card h3 {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+        }
+        
+        /* الجداول */
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
+        .card h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+        }
+        th {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        /* الأزرار */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+        .btn-success {
+            background: #10b981;
+            color: #fff;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: #fff;
+        }
+        
+        /* النوافذ المنبثقة */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1100;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 25px;
+            width: 90%;
+            max-width: 500px;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #fff;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        
+        /* استجابة للجوال */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+                padding: 15px 10px;
+            }
+            .sidebar h2, .menu-item span, .user-info, .menu-title {
+                display: none;
+            }
+            .main-content {
+                margin-right: 70px;
+                padding: 15px;
+                width: calc(100% - 70px);
+            }
+            .user-card {
+                justify-content: center;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
 
 <!-- شاشة الدخول -->
-<div id="loginScreen" class="login-screen">
+<div id="loginPage" class="login-page">
     <div class="login-card">
-        <div style="font-size:60px;">📊</div>
-        <h1 style="color:#3b82f6;margin:20px 0">SEMO ERP</h1>
-        
-        <!-- اختيار العملة -->
-        <select id="currencySelect" style="margin-bottom:15px">
+        <div style="font-size: 60px;">📊</div>
+        <h1 style="color: #3b82f6; margin: 20px 0;">SEMO ERP</h1>
+        <select id="currencySelect">
             <option value="EGP">🇪🇬 جنيه مصري (ج.م)</option>
             <option value="LYD">🇱🇾 دينار ليبي (د.ل)</option>
         </select>
-        
         <input type="text" id="loginUser" placeholder="اسم المستخدم">
         <input type="password" id="loginPass" placeholder="كلمة المرور">
         <button onclick="doLogin()">دخول</button>
-        <div id="loginError" style="color:#f87171;margin-top:15px;display:none"></div>
-        <div style="margin-top:20px;font-size:12px">admin / admin123</div>
+        <div id="loginError" style="color: #f87171; margin-top: 15px; display: none;"></div>
+        <div style="margin-top: 20px; font-size: 12px; opacity: 0.7;">admin / admin123</div>
     </div>
 </div>
 
-<!-- النظام -->
-<div id="appSystem" class="app">
-    <div style="display:flex">
+<!-- التطبيق -->
+<div id="app" class="app">
+    <div class="app-container">
         <div class="sidebar">
-            <h2 style="text-align:center;color:#3b82f6;margin-bottom:20px">SEMO</h2>
-            <div class="menu-group-title">الرئيسية</div>
-            <div class="menu-item active" onclick="switchPage('dash',this)">🏠 الرئيسية</div>
-            <div class="menu-group-title">المخازن</div>
-            <div class="menu-item" onclick="switchPage('inv',this)">📦 المخزون</div>
-            <div class="menu-item" onclick="switchPage('sales',this)">🛒 المبيعات</div>
-            <div class="menu-group-title">المالية</div>
-            <div class="menu-item" onclick="switchPage('exp',this)">💸 المصروفات</div>
-            <div class="menu-group-title">جهات الاتصال</div>
-            <div class="menu-item" onclick="switchPage('clients',this)">👥 العملاء</div>
-            <div class="menu-group-title">النظام</div>
-            <div class="menu-item" onclick="logout()">🚪 خروج</div>
+            <h2>SEMO</h2>
+            <div class="user-card">
+                <div class="user-avatar">👑</div>
+                <div class="user-info">
+                    <h4 id="userName">مدير النظام</h4>
+                    <p id="userRole">مدير عام</p>
+                </div>
+            </div>
+            <div class="menu-group">
+                <div class="menu-title">الرئيسية</div>
+                <div class="menu-item active" onclick="switchPage('dashboard', this)">🏠 <span>لوحة التحكم</span></div>
+            </div>
+            <div class="menu-group">
+                <div class="menu-title">المخازن</div>
+                <div class="menu-item" onclick="switchPage('inventory', this)">📦 <span>المخزون</span></div>
+                <div class="menu-item" onclick="switchPage('sales', this)">🛒 <span>المبيعات</span></div>
+            </div>
+            <div class="menu-group">
+                <div class="menu-title">المالية</div>
+                <div class="menu-item" onclick="switchPage('expenses', this)">💸 <span>المصروفات</span></div>
+            </div>
+            <div class="menu-group">
+                <div class="menu-title">جهات الاتصال</div>
+                <div class="menu-item" onclick="switchPage('clients', this)">👥 <span>العملاء</span></div>
+            </div>
+            <div class="menu-group">
+                <div class="menu-title">النظام</div>
+                <div class="menu-item" onclick="logout()">🚪 <span>تسجيل خروج</span></div>
+            </div>
         </div>
-        <div class="main">
+        <div class="main-content">
             <div id="pageContent"></div>
         </div>
     </div>
 </div>
 
-<div id="modal" class="modal" onclick="if(event.target===this)closeModal()">
+<div id="modal" class="modal" onclick="if(event.target===this) closeModal()">
     <div class="modal-content" id="modalBody"></div>
 </div>
 
 <script>
 // ========== العملة ==========
-let currencySymbol = 'ج.م';  // الافتراضي مصري
+let currencySymbol = 'ج.م';
 
 function setCurrency() {
     let selected = document.getElementById('currencySelect').value;
@@ -153,33 +428,32 @@ function doLogin() {
     let pass = document.getElementById('loginPass').value;
     
     if(user === 'admin' && pass === 'admin123') {
-        setCurrency();  // حفظ العملة المختارة
+        setCurrency();
         localStorage.setItem('semo_logged', 'true');
         localStorage.setItem('semo_currency', currencySymbol);
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('appSystem').style.display = 'block';
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
         renderDashboard();
     } else {
         let err = document.getElementById('loginError');
         err.style.display = 'block';
-        err.innerHTML = 'خطأ في اسم المستخدم أو كلمة المرور';
+        err.innerHTML = '❌ اسم المستخدم أو كلمة المرور غير صحيحة';
     }
 }
 
 function logout() {
     localStorage.removeItem('semo_logged');
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('appSystem').style.display = 'none';
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
 }
 
-// استعادة العملة المحفوظة
 let savedCurrency = localStorage.getItem('semo_currency');
 if(savedCurrency === 'ج.م') currencySymbol = 'ج.م';
 else if(savedCurrency === 'د.ل') currencySymbol = 'د.ل';
 
 if(localStorage.getItem('semo_logged') === 'true') {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appSystem').style.display = 'block';
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
     renderDashboard();
 }
 
@@ -187,59 +461,74 @@ if(localStorage.getItem('semo_logged') === 'true') {
 function switchPage(page, el) {
     document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
     if(el) el.classList.add('active');
-    if(page === 'dash') renderDashboard();
-    else if(page === 'inv') renderInventory();
+    
+    if(page === 'dashboard') renderDashboard();
+    else if(page === 'inventory') renderInventory();
     else if(page === 'sales') renderSales();
-    else if(page === 'exp') renderExpenses();
+    else if(page === 'expenses') renderExpenses();
     else if(page === 'clients') renderClients();
 }
 
-// ========== الرئيسية ==========
+// ========== لوحة التحكم ==========
 function renderDashboard() {
     let totalSales = db.sales.reduce((a,b)=>a+b.total, 0);
-    let totalExp = db.expenses.reduce((a,b)=>a+b.amount, 0);
-    let profit = totalSales - totalExp;
+    let totalExpenses = db.expenses.reduce((a,b)=>a+b.amount, 0);
+    let profit = totalSales - totalExpenses;
     let lowStock = db.products.filter(p=>p.qty<=5).length;
     
     document.getElementById('pageContent').innerHTML = `
-        <div class="grid">
-            <div class="stat-card" onclick="switchPage('sales')"><h3>💰 إجمالي المبيعات</h3><div style="font-size:24px;font-weight:800">${formatMoney(totalSales)}</div></div>
-            <div class="stat-card" onclick="switchPage('exp')" style="border-color:#ef4444"><h3>💸 المصروفات</h3><div style="font-size:24px;font-weight:800">${formatMoney(totalExp)}</div></div>
-            <div class="stat-card" onclick="switchPage('sales')" style="border-color:#10b981"><h3>📈 صافي الربح</h3><div style="font-size:24px;font-weight:800;color:${profit>=0?'#10b981':'#ef4444'}">${formatMoney(profit)}</div></div>
-            <div class="stat-card" onclick="switchPage('inv')" style="border-color:#f59e0b"><h3>📦 عدد المنتجات</h3><div style="font-size:24px;font-weight:800">${db.products.length}</div></div>
-            <div class="stat-card" onclick="switchPage('inv')" style="border-color:#f59e0b"><h3>⚠️ منتجات منخفضة</h3><div style="font-size:24px;font-weight:800">${lowStock}</div></div>
-            <div class="stat-card" onclick="switchPage('clients')" style="border-color:#8b5cf6"><h3>👥 العملاء</h3><div style="font-size:24px;font-weight:800">${db.clients.length}</div></div>
+        <div class="stats-grid">
+            <div class="stat-card" onclick="switchPage('sales')"><h3>💰 إجمالي المبيعات</h3><div class="stat-value">${formatMoney(totalSales)}</div></div>
+            <div class="stat-card" onclick="switchPage('expenses')" style="border-color:#ef4444"><h3>💸 المصروفات</h3><div class="stat-value">${formatMoney(totalExpenses)}</div></div>
+            <div class="stat-card" onclick="switchPage('sales')" style="border-color:#10b981"><h3>📈 صافي الربح</h3><div class="stat-value" style="color:${profit>=0?'#10b981':'#ef4444'}">${formatMoney(profit)}</div></div>
+            <div class="stat-card" onclick="switchPage('inventory')" style="border-color:#f59e0b"><h3>📦 عدد المنتجات</h3><div class="stat-value">${db.products.length}</div></div>
+            <div class="stat-card" onclick="switchPage('inventory')" style="border-color:#f59e0b"><h3>⚠️ منتجات منخفضة</h3><div class="stat-value">${lowStock}</div></div>
+            <div class="stat-card" onclick="switchPage('clients')" style="border-color:#8b5cf6"><h3>👥 العملاء</h3><div class="stat-value">${db.clients.length}</div></div>
         </div>
-        <div class="card"><h3>📋 آخر المبيعات</h3><table class="data-table"><thead><tr><th>التاريخ</th><th>المنتج</th><th>العميل</th><th>الكمية</th><th>المبلغ</th></tr></thead>
-        <tbody>${db.sales.slice().reverse().slice(0,5).map(s=>`<tr><td style="text-align:center">${s.date}</td><td style="text-align:center">${s.product}</td><td style="text-align:center">${s.client}</td><td style="text-align:center">${s.qty}</td><td style="text-align:center">${formatMoney(s.total)}</td></tr>`).join('')}</tbody></tr></div>`;
+        <div class="card">
+            <h3>📋 آخر المبيعات</h3>
+            <table>
+                <thead><tr><th>التاريخ</th><th>المنتج</th><th>العميل</th><th>الكمية</th><th>المبلغ</th></tr></thead>
+                <tbody>${db.sales.slice().reverse().slice(0,5).map(s=>`<tr><td>${s.date}</td><td>${s.product}</td><td>${s.client}</td><td>${s.qty}</td><td>${formatMoney(s.total)}</td></tr>`).join('')}</tbody>
+            </table>
+        </div>
+    `;
 }
 
 // ========== المخزون ==========
 function renderInventory() {
     document.getElementById('pageContent').innerHTML = `
-        <div style="display:flex;justify-content:space-between;margin-bottom:15px"><h2>📦 إدارة المخزون</h2><button class="btn btn-p" onclick="openProductModal()">+ منتج جديد</button></div>
-        <div class="card"><input type="text" id="searchProd" placeholder="بحث في المنتجات..." onkeyup="refreshProducts()" style="width:100%;padding:12px;margin-bottom:15px">
-        <table class="data-table"><thead><tr><th>#</th><th>المنتج</th><th>سعر الشراء</th><th>سعر البيع</th><th>الكمية</th><th>الحالة</th><th>إجراءات</th></tr></thead>
-        <tbody id="prodList"></tbody></table></div>`;
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px">
+            <h2>📦 إدارة المخزون</h2>
+            <button class="btn btn-primary" onclick="openProductModal()">+ منتج جديد</button>
+        </div>
+        <div class="card">
+            <input type="text" id="searchProduct" placeholder="🔍 بحث في المنتجات..." onkeyup="refreshProducts()" style="margin-bottom:15px">
+            <table>
+                <thead><tr><th>#</th><th>المنتج</th><th>سعر الشراء</th><th>سعر البيع</th><th>الكمية</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+                <tbody id="productsList"></tbody>
+            </table>
+        </div>
+    `;
     refreshProducts();
 }
 
 function refreshProducts() {
-    let search = document.getElementById('searchProd')?.value.toLowerCase() || '';
+    let search = document.getElementById('searchProduct')?.value.toLowerCase() || '';
     let filtered = db.products.filter(p=>p.name.toLowerCase().includes(search));
-    document.getElementById('prodList').innerHTML = filtered.map((p,idx)=>`
+    document.getElementById('productsList').innerHTML = filtered.map((p,idx)=>`
         <tr>
-            <td style="text-align:center">${idx+1}</td>
+            <td>${idx+1}</td>
             <td><strong>${p.name}</strong></td>
-            <td style="text-align:center">${formatMoney(p.cost)}</td>
-            <td style="text-align:center">${formatMoney(p.price)}</td>
-            <td style="text-align:center">${p.qty}</td>
-            <td style="text-align:center">${p.qty<=5?'⚠️ منخفض':'متوفر'}</td>
-            <td style="text-align:center">
-                <button class="btn btn-p" style="padding:5px" onclick="editProduct(${p.id})">✏️</button>
-                <button class="btn btn-d" style="padding:5px" onclick="deleteProduct(${p.id})">🗑️</button>
+            <td>${formatMoney(p.cost)}</td>
+            <td>${formatMoney(p.price)}</td>
+            <td style="${p.qty<=5?'color:#f59e0b':''}">${p.qty}</td>
+            <td>${p.qty<=5?'⚠️ منخفض':'متوفر'}</td>
+            <td>
+                <button class="btn btn-primary" style="padding:5px 10px" onclick="editProduct(${p.id})">✏️</button>
+                <button class="btn btn-danger" style="padding:5px 10px" onclick="deleteProduct(${p.id})">🗑️</button>
             </td>
-        </table>
+        </tr>
     `).join('');
 }
 
@@ -251,14 +540,14 @@ function openProductModal(id=null) {
         <input id="prodCost" type="number" value="${p.cost}" placeholder="سعر الشراء (${currencySymbol})">
         <input id="prodPrice" type="number" value="${p.price}" placeholder="سعر البيع (${currencySymbol})">
         <input id="prodQty" type="number" value="${p.qty}" placeholder="الكمية">
-        <button class="btn btn-s" style="width:100%" onclick="saveProduct(${id})">حفظ</button>
+        <button class="btn btn-success" style="width:100%; margin-top:10px" onclick="saveProduct(${id})">💾 حفظ</button>
     `;
     document.getElementById('modal').classList.add('show');
 }
 
 function saveProduct(id) {
     let name = document.getElementById('prodName').value;
-    if(!name) { alert('❌ اكتب اسم المنتج'); return; }
+    if(!name) { alert('❌ يرجى كتابة اسم المنتج'); return; }
     let newProd = {
         id: id || Date.now(),
         name: name,
@@ -275,14 +564,16 @@ function saveProduct(id) {
     saveData();
     closeModal();
     renderInventory();
+    alert(`✅ ${id?'تم التعديل':'تمت الإضافة'} بنجاح`);
 }
 
 function editProduct(id) { openProductModal(id); }
 function deleteProduct(id) {
-    if(confirm('⚠️ هل أنت متأكد؟')) {
+    if(confirm('⚠️ هل أنت متأكد من الحذف؟')) {
         db.products = db.products.filter(p=>p.id!==id);
         saveData();
         renderInventory();
+        alert('🗑️ تم الحذف');
     }
 }
 
@@ -291,13 +582,19 @@ function renderSales() {
     document.getElementById('pageContent').innerHTML = `
         <h2>🛒 المبيعات</h2>
         <div class="card">
-            <select id="saleProduct">${db.products.map(p=>`<option value="${p.id}">${p.name} (المتوفر: ${p.qty}) - ${formatMoney(p.price)}</option>`)}</select>
+            <select id="saleProduct">${db.products.map(p=>`<option value="${p.id}">${p.name} (متوفر: ${p.qty}) - ${formatMoney(p.price)}</option>`)}</select>
             <select id="saleClient">${db.clients.map(c=>`<option value="${c.name}">${c.name}</option>`)}<option>زبون نقدي</option></select>
             <input id="saleQty" type="number" value="1" placeholder="الكمية">
-            <button class="btn btn-s" style="width:100%" onclick="doSale()">💰 إتمام البيع</button>
+            <button class="btn btn-success" style="width:100%" onclick="doSale()">💰 إتمام البيع</button>
         </div>
-        <div class="card"><h3>📋 سجل الفواتير</h3><table class="data-table"><thead><tr><th>#</th><th>التاريخ</th><th>المنتج</th><th>العميل</th><th>الكمية</th><th>الإجمالي</th></tr></thead>
-        <tbody>${db.sales.slice().reverse().map((s,idx)=>`<tr><td style="text-align:center">${idx+1}</td><td style="text-align:center">${s.date}</td><td style="text-align:center">${s.product}</td><td style="text-align:center">${s.client}</td><td style="text-align:center">${s.qty}</td><td style="text-align:center">${formatMoney(s.total)}</td></tr>`).join('')}</tbody></table></div>`;
+        <div class="card">
+            <h3>📋 سجل الفواتير</h3>
+            <table>
+                <thead><tr><th>#</th><th>التاريخ</th><th>المنتج</th><th>العميل</th><th>الكمية</th><th>الإجمالي</th></tr></thead>
+                <tbody>${db.sales.slice().reverse().map((s,idx)=>`<tr><td>${idx+1}</td><td>${s.date}</td><td>${s.product}</td><td>${s.client}</td><td>${s.qty}</td><td>${formatMoney(s.total)}</td></tr>`).join('')}</tbody>
+            </table>
+        </div>
+    `;
 }
 
 function doSale() {
@@ -327,65 +624,95 @@ function doSale() {
 function renderExpenses() {
     let total = db.expenses.reduce((a,b)=>a+b.amount, 0);
     document.getElementById('pageContent').innerHTML = `
-        <div style="display:flex;justify-content:space-between;margin-bottom:15px"><h2>💸 المصروفات (${formatMoney(total)})</h2><button class="btn btn-d" onclick="openExpModal()">+ إضافة</button></div>
-        <div class="card"><table class="data-table"><thead><tr><th>#</th><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th></th></tr></thead>
-        <tbody>${db.expenses.map((e,idx)=>`<tr><td style="text-align:center">${idx+1}</td><td style="text-align:center">${e.date}</td><td style="text-align:center">${e.name}</td><td style="text-align:center">${formatMoney(e.amount)}</td><td style="text-align:center"><button class="btn btn-d" style="padding:5px" onclick="deleteExpense(${e.id})">🗑️</button></td></tr>`).join('')}</tbody></tr></div>`;
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px">
+            <h2>💸 المصروفات (${formatMoney(total)})</h2>
+            <button class="btn btn-danger" onclick="openExpenseModal()">+ إضافة مصروف</button>
+        </div>
+        <div class="card">
+            <table>
+                <thead><tr><th>#</th><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th></th></tr></thead>
+                <tbody>${db.expenses.map((e,idx)=>`<tr><td>${idx+1}</td><td>${e.date}</td><td>${e.name}</td><td>${formatMoney(e.amount)}</td><td><button class="btn btn-danger" style="padding:5px 10px" onclick="deleteExpense(${e.id})">🗑️</button></td></tr>`).join('')}</tbody>
+            </table>
+        </div>
+    `;
 }
 
-function openExpModal() {
-    document.getElementById('modalBody').innerHTML = `<h3>➕ مصروف جديد</h3><input id="expName" placeholder="البيان"><input id="expAmount" type="number" placeholder="المبلغ (${currencySymbol})"><button class="btn btn-d" style="width:100%" onclick="addExpense()">حفظ</button>`;
+function openExpenseModal() {
+    document.getElementById('modalBody').innerHTML = `
+        <h3>➕ إضافة مصروف</h3>
+        <input id="expName" placeholder="البيان (مثال: كهرباء، إيجار)">
+        <input id="expAmount" type="number" placeholder="المبلغ (${currencySymbol})">
+        <button class="btn btn-danger" style="width:100%; margin-top:10px" onclick="addExpense()">💾 حفظ</button>
+    `;
     document.getElementById('modal').classList.add('show');
 }
 
 function addExpense() {
     let name = document.getElementById('expName').value;
     let amount = parseFloat(document.getElementById('expAmount').value);
-    if(!name) { alert('❌ اكتب البيان'); return; }
-    if(isNaN(amount)) { alert('❌ اكتب المبلغ'); return; }
+    if(!name) { alert('❌ يرجى كتابة البيان'); return; }
+    if(isNaN(amount)) { alert('❌ يرجى كتابة المبلغ'); return; }
     db.expenses.push({id:Date.now(), date:new Date().toLocaleDateString('ar-EG'), name:name, amount:amount});
     saveData();
     closeModal();
     renderExpenses();
+    alert('✅ تمت إضافة المصروف');
 }
 
 function deleteExpense(id) {
-    if(confirm('⚠️ حذف؟')) {
+    if(confirm('⚠️ هل أنت متأكد من الحذف؟')) {
         db.expenses = db.expenses.filter(e=>e.id!==id);
         saveData();
         renderExpenses();
+        alert('🗑️ تم الحذف');
     }
 }
 
 // ========== العملاء ==========
 function renderClients() {
     document.getElementById('pageContent').innerHTML = `
-        <div style="display:flex;justify-content:space-between;margin-bottom:15px"><h2>👥 العملاء</h2><button class="btn btn-p" onclick="openClientModal()">+ عميل جديد</button></div>
-        <div class="card"><table class="data-table"><thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>إجمالي مشترياته</th><th></th></tr></thead>
-        <tbody>${db.clients.map((c,idx)=> {
-            let total = db.sales.filter(s=>s.client===c.name).reduce((a,b)=>a+b.total, 0);
-            return `<tr><td style="text-align:center">${idx+1}</td><td><strong>${c.name}</strong></td><td style="text-align:center">${c.phone || '-'}</td><td style="text-align:center">${formatMoney(total)}</td><td style="text-align:center"><button class="btn btn-d" style="padding:5px" onclick="deleteClient(${c.id})">🗑️</button></td></tr>`;
-        }).join('')}</tbody></table></div>`;
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px">
+            <h2>👥 العملاء</h2>
+            <button class="btn btn-primary" onclick="openClientModal()">+ عميل جديد</button>
+        </div>
+        <div class="card">
+            <table>
+                <thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>إجمالي مشترياته</th><th></th></tr></thead>
+                <tbody>${db.clients.map((c,idx)=> {
+                    let total = db.sales.filter(s=>s.client===c.name).reduce((a,b)=>a+b.total, 0);
+                    return `<tr><td>${idx+1}</td><td><strong>${c.name}</strong></td><td>${c.phone || '-'}</td><td>${formatMoney(total)}</td><td><button class="btn btn-danger" style="padding:5px 10px" onclick="deleteClient(${c.id})">🗑️</button></td></tr>`;
+                }).join('')}</tbody>
+            </table>
+        </div>
+    `;
 }
 
 function openClientModal() {
-    document.getElementById('modalBody').innerHTML = `<h3>➕ عميل جديد</h3><input id="clientName" placeholder="اسم العميل"><input id="clientPhone" placeholder="رقم الهاتف"><button class="btn btn-s" style="width:100%" onclick="addClient()">حفظ</button>`;
+    document.getElementById('modalBody').innerHTML = `
+        <h3>➕ إضافة عميل</h3>
+        <input id="clientName" placeholder="اسم العميل">
+        <input id="clientPhone" placeholder="رقم الهاتف">
+        <button class="btn btn-success" style="width:100%; margin-top:10px" onclick="addClient()">💾 حفظ</button>
+    `;
     document.getElementById('modal').classList.add('show');
 }
 
 function addClient() {
     let name = document.getElementById('clientName').value;
-    if(!name) { alert('❌ اكتب الاسم'); return; }
+    if(!name) { alert('❌ يرجى كتابة اسم العميل'); return; }
     db.clients.push({id:Date.now(), name:name, phone:document.getElementById('clientPhone').value || '-'});
     saveData();
     closeModal();
     renderClients();
+    alert(`✅ تمت إضافة العميل: ${name}`);
 }
 
 function deleteClient(id) {
-    if(confirm('⚠️ حذف العميل؟')) {
+    if(confirm('⚠️ هل أنت متأكد من حذف العميل؟')) {
         db.clients = db.clients.filter(c=>c.id!==id);
         saveData();
         renderClients();
+        alert('🗑️ تم الحذف');
     }
 }
 
