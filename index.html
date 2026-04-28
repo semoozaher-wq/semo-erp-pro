@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="description" content="SEMO ERP PRO - النظام المحاسبي المتكامل">
     <title>SEMO ERP PRO | النظام المحاسبي المتكامل</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -387,7 +390,7 @@ function renderDashboard() {
             <div class="stat-card" onclick="openCardDetails('clients')"><div class="stat-icon">👥</div><div class="stat-value">${db.clients.length}</div><div class="stat-label">العملاء</div></div>
         </div>
         <div class="card-box"><canvas id="monthlyChart" height="250"></canvas></div>
-        <div class="card-box"><div class="card-header"><h3>📋 آخر المبيعات</h3></div><div class="table-wrapper"><table class="data-table"><thead><tr><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th></tr></thead><tbody id="recentSalesTable"></tbody></table></div></div>
+        <div class="card-box"><div class="card-header"><h3>📋 آخر المبيعات</h3></div><div class="table-wrapper"><table class="data-table"><thead><tr><th>التاريخ</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><tr></thead><tbody id="recentSalesTable"></tbody></table></div></div>
     `;
     document.getElementById('pageContent').innerHTML = html;
     
@@ -401,7 +404,7 @@ function renderDashboard() {
 }
 
 function renderInventory() {
-    const html = `<div class="card-box"><div class="card-header"><h3>📦 إدارة المخزون</h3><button class="btn btn-success" onclick="addProduct()">+ منتج جديد</button></div><input type="text" id="searchInventory" placeholder="🔍 بحث..." style="width:100%; padding:12px; margin-bottom:15px;"><div class="table-wrapper"><table class="data-table"><thead><tr><th>#</th><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الحالة</th><th>الإجراءات</th></thead><tbody id="inventoryTable"></tbody></td></div></div>`;
+    const html = `<div class="card-box"><div class="card-header"><h3>📦 إدارة المخزون</h3><button class="btn btn-success" onclick="addProduct()">+ منتج جديد</button></div><input type="text" id="searchInventory" placeholder="🔍 بحث..." style="width:100%; padding:12px; margin-bottom:15px;"><div class="table-wrapper"><table class="data-table"><thead><tr><th>#</th><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الحالة</th><th>الإجراءات</th></thead><tbody id="inventoryTable"></tbody></table></div></div>`;
     document.getElementById('pageContent').innerHTML = html;
     refreshInventory();
     document.getElementById('searchInventory')?.addEventListener('input', refreshInventory);
@@ -418,7 +421,7 @@ function refreshInventory() {
             <td>${formatCurrency(i.price)}</td>
             <td><span class="badge ${i.qty<=5?'badge-warning':'badge-success'}">${i.qty<=5?'⚠️ منخفض':'متوفر'}</span></td>
             <td><button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); editProduct(${i.id})">✏️</button> <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteProduct(${i.id})">🗑️</button></td>
-        </tr>
+        </table>
     `).join('');
 }
 
@@ -739,4 +742,65 @@ function logout() {
 
 function initDemoData() {
     if (db.inventory.length === 0) {
-       
+        db.inventory.push(
+            { id: 1001, name: 'مكتب خشبي', qty: 15, price: 2500 },
+            { id: 1002, name: 'كرسي دوار', qty: 25, price: 850 },
+            { id: 1003, name: 'خزانة حديدية', qty: 8, price: 3500 },
+            { id: 1004, name: 'طابعة HP', qty: 5, price: 1800 },
+            { id: 1005, name: 'شاشة 24 بوصة', qty: 12, price: 3200 },
+            { id: 1006, name: 'ماوس لاسلكي', qty: 40, price: 150 },
+            { id: 1007, name: 'لوحة مفاتيح', qty: 35, price: 200 },
+            { id: 1008, name: 'سماعة رأس', qty: 20, price: 350 }
+        );
+        db.clients.push(
+            { id: 2001, name: 'شركة الأهرام', phone: '01001112223' },
+            { id: 2002, name: 'مؤسسة النور', phone: '01002223334' },
+            { id: 2003, name: 'شركة الاتحاد', phone: '01003334445' },
+            { id: 2004, name: 'محل الرحاب', phone: '01004445556' }
+        );
+        const todayDate = today();
+        db.sales.push(
+            { id: 3001, clientId: 2001, clientName: 'شركة الأهرام', total: 8500, paid: 8500, status: 'مدفوع', date: todayDate },
+            { id: 3002, clientId: 2002, clientName: 'مؤسسة النور', total: 3200, paid: 1500, status: 'آجل', date: todayDate },
+            { id: 3003, clientId: 2003, clientName: 'شركة الاتحاد', total: 6400, paid: 6400, status: 'مدفوع', date: todayDate },
+            { id: 3004, clientId: 2004, clientName: 'محل الرحاب', total: 2200, paid: 1000, status: 'آجل', date: todayDate }
+        );
+        db.purchases.push(
+            { id: 4001, supplier: 'معرض القاهرة للأثاث', product: 'مكتب خشبي', qty: 10, price: 1800, total: 18000, date: todayDate },
+            { id: 4002, supplier: 'شركة التقنية الحديثة', product: 'طابعة HP', qty: 5, price: 1200, total: 6000, date: todayDate }
+        );
+        db.suppliers.push(
+            { id: 5001, name: 'معرض القاهرة للأثاث', phone: '01555556667' },
+            { id: 5002, name: 'شركة التقنية الحديثة', phone: '01556667778' }
+        );
+        db.expenses.push(
+            { id: 6001, type: 'إيجار المحل', amount: 5000, date: todayDate },
+            { id: 6002, type: 'فواتير كهرباء', amount: 800, date: todayDate },
+            { id: 6003, type: 'رواتب موظفين', amount: 7500, date: todayDate }
+        );
+        db.revenues.push(
+            { id: 7001, type: 'إيرادات خدمات', amount: 2500, date: todayDate },
+            { id: 7002, type: 'إيرادات استشارات', amount: 1800, date: todayDate }
+        );
+        saveAll();
+        showNotification('✅ تم تحميل البيانات التجريبية بنجاح');
+    }
+}
+
+// ==================== تشغيل التطبيق ====================
+loadTheme();
+loadMobileView();
+applySettings();
+document.getElementById('dateDisplay').innerHTML = today();
+initDemoData();
+switchPage('dashboard');
+
+// Service Worker للتطبيق (PWA)
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').then(() => {
+        console.log('Service Worker registered');
+    });
+}
+</script>
+</body>
+</html>
