@@ -25,11 +25,16 @@
         .menu-item:hover, .menu-item.active { background: var(--primary); color: white; transform: translateX(-4px); }
         .menu-item.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
         .main-content { margin-right: var(--sidebar-width); margin-top: 65px; padding: 20px; min-height: calc(100vh - 65px); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-        .stat-card { background: var(--card); border-radius: 20px; padding: 1rem; cursor: pointer; transition: all 0.3s; border: 1px solid var(--border); position: relative; overflow: hidden; }
-        .stat-card:hover { transform: translateY(-5px); background: var(--card-light); }
-        .stat-title { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.5rem; }
-        .stat-value { font-size: 1.5rem; font-weight: 800; }
+        
+        /* كروت الإحصائيات */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem; }
+        .stat-card { background: var(--card); border-radius: 20px; padding: 1.2rem; cursor: pointer; transition: all 0.3s; border: 1px solid var(--border); position: relative; overflow: hidden; }
+        .stat-card::before { content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%; background: var(--primary); }
+        .stat-card:hover { transform: translateY(-5px); background: var(--card-light); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); }
+        .stat-title { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 1.8rem; font-weight: 800; line-height: 1.2; }
+        .stat-icon { position: absolute; bottom: 10px; left: 15px; font-size: 2.5rem; opacity: 0.1; }
+        
         .card-box { background: var(--card); border-radius: 20px; padding: 1.2rem; margin-bottom: 1.2rem; border: 1px solid var(--border); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px; }
         .btn { padding: 6px 14px; border: none; border-radius: 40px; cursor: pointer; font-weight: 600; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
@@ -121,10 +126,10 @@
 // =====================================================
 // SEMO ERP ULTIMATE - النظام المتكامل الكامل
 // المالك: سموح زاهر (SEMO ZAHER)
-// الإصدار: 5.0 النهائي
+// الإصدار: 5.0 النهائي - الكروت ظاهرة
 // =====================================================
 
-// ==================== 1. العملات المتعددة ====================
+// ==================== العملات المتعددة ====================
 let currencies = JSON.parse(localStorage.getItem('semo_currencies')) || [
     { code: 'SAR', name: 'ريال سعودي', symbol: 'ر.س', rate: 1 },
     { code: 'USD', name: 'دولار أمريكي', symbol: '$', rate: 3.75 },
@@ -134,13 +139,13 @@ let currencies = JSON.parse(localStorage.getItem('semo_currencies')) || [
 ];
 let currentCurrency = localStorage.getItem('semo_current_currency') || 'SAR';
 
-// ==================== 2. المخازن المتعددة ====================
+// ==================== المخازن المتعددة ====================
 let warehouses = JSON.parse(localStorage.getItem('semo_warehouses')) || [
     { id: 1, name: 'المخزن الرئيسي', location: 'الرياض', manager: 'أحمد' },
     { id: 2, name: 'مخزن جدة', location: 'جدة', manager: 'محمد' }
 ];
 
-// ==================== 3. المستخدمين والصلاحيات ====================
+// ==================== المستخدمين والصلاحيات ====================
 let users = JSON.parse(localStorage.getItem('semo_users')) || [
     { id: 1, username: 'admin', password: 'admin123', role: 'admin', name: 'المدير العام' },
     { id: 2, username: 'semo', password: 'semo123', role: 'admin', name: 'سموح زاهر - المالك' },
@@ -150,7 +155,7 @@ let users = JSON.parse(localStorage.getItem('semo_users')) || [
 ];
 let currentUser = JSON.parse(localStorage.getItem('semo_current_user')) || null;
 
-// ==================== 4. قاعدة البيانات الأساسية ====================
+// ==================== قاعدة البيانات الأساسية ====================
 let db = {
     inventory: JSON.parse(localStorage.getItem('semo_inventory')) || [],
     sales: JSON.parse(localStorage.getItem('semo_sales')) || [],
@@ -192,9 +197,7 @@ function sendPushNotification(title, body) {
     showNotification(`${title}: ${body}`, 'info');
 }
 
-function requestNotificationPermission() {
-    if('Notification' in window) Notification.requestPermission();
-}
+function requestNotificationPermission() { if('Notification' in window) Notification.requestPermission(); }
 
 function saveAll() {
     localStorage.setItem('semo_inventory', JSON.stringify(db.inventory));
@@ -244,30 +247,16 @@ function updateMenuByRole() {
 
 // ==================== إدارة المخازن ====================
 function addWarehouse() {
-    let name = prompt('اسم المخزن:');
-    if(!name) return;
-    let location = prompt('الموقع:');
-    let manager = prompt('المدير المسؤول:');
+    let name = prompt('اسم المخزن:'); if(!name) return;
+    let location = prompt('الموقع:'); let manager = prompt('المدير المسؤول:');
     warehouses.push({ id: Date.now(), name, location, manager });
-    saveAll();
-    showNotification(`✅ تم إضافة مخزن ${name}`);
-    renderWarehouses();
+    saveAll(); showNotification(`✅ تم إضافة مخزن ${name}`); renderWarehouses();
 }
-
-function deleteWarehouse(id) {
-    if(confirm('حذف المخزن؟')) {
-        warehouses = warehouses.filter(w => w.id !== id);
-        db.inventory.forEach(p => { if(p.warehouseId === id) p.warehouseId = null; });
-        saveAll();
-        showNotification('✅ تم حذف المخزن');
-        renderWarehouses();
-    }
-}
+function deleteWarehouse(id) { if(confirm('حذف المخزن؟')) { warehouses = warehouses.filter(w => w.id !== id); saveAll(); showNotification('✅ تم حذف المخزن'); renderWarehouses(); } }
 
 // ==================== إدارة المنتجات ====================
 function addProduct() {
-    let name = prompt('اسم المنتج:');
-    if(!name) return;
+    let name = prompt('اسم المنتج:'); if(!name) return;
     let qty = parseInt(prompt('الكمية:')) || 0;
     let costPrice = parseFloat(prompt('سعر الشراء:')) || 0;
     let sellPrice = parseFloat(prompt('سعر البيع:')) || 0;
@@ -278,40 +267,22 @@ function addProduct() {
         if(idx && warehouses[parseInt(idx)-1]) warehouseId = warehouses[parseInt(idx)-1].id;
     }
     db.inventory.push({ id: Date.now(), name, qty, costPrice, sellPrice, warehouseId });
-    saveAll();
-    sendPushNotification('➕ منتج جديد', `تم إضافة ${name}`);
-    showNotification(`✅ تم إضافة ${name}`);
-    renderInventory();
+    saveAll(); sendPushNotification('➕ منتج جديد', `تم إضافة ${name}`); showNotification(`✅ تم إضافة ${name}`); renderInventory();
 }
+function deleteProduct(id) { if(confirm('حذف المنتج؟')) { db.inventory = db.inventory.filter(p => p.id !== id); saveAll(); showNotification('✅ تم حذف المنتج'); renderInventory(); } }
 
-function deleteProduct(id) {
-    if(confirm('حذف المنتج؟')) {
-        db.inventory = db.inventory.filter(p => p.id !== id);
-        saveAll();
-        showNotification('✅ تم حذف المنتج');
-        renderInventory();
-    }
-}
-
-// ==================== إدارة الموردين ====================
+// ==================== إدارة الموردين والمشتريات ====================
 function addSupplier() {
-    let name = prompt('اسم المورد:');
-    if(!name) return;
+    let name = prompt('اسم المورد:'); if(!name) return;
     db.suppliers.push({ id: Date.now(), name, phone: prompt('الهاتف:') || '', address: prompt('العنوان:') || '' });
-    saveAll();
-    showNotification(`✅ تم إضافة المورد ${name}`);
-    renderSuppliers();
+    saveAll(); showNotification(`✅ تم إضافة المورد ${name}`); renderSuppliers();
 }
-
-// ==================== المشتريات ====================
 function addPurchase() {
     if(db.suppliers.length === 0) { showNotification('⚠️ أضف مورد أولا', 'error'); return; }
     let supList = db.suppliers.map((s,i) => `${i+1}. ${s.name}`).join('\n');
-    let idx = prompt(`اختر المورد:\n${supList}`);
-    if(!idx) return;
+    let idx = prompt(`اختر المورد:\n${supList}`); if(!idx) return;
     let supplier = db.suppliers[parseInt(idx)-1];
-    let productName = prompt('اسم المنتج:');
-    if(!productName) return;
+    let productName = prompt('اسم المنتج:'); if(!productName) return;
     let qty = parseInt(prompt('الكمية:')) || 0;
     let price = parseFloat(prompt('سعر الوحدة:')) || 0;
     let total = qty * price;
@@ -322,28 +293,21 @@ function addPurchase() {
     if(existing) { existing.qty += qty; existing.costPrice = price; }
     else { db.inventory.push({ id: Date.now(), name: productName, qty, costPrice: price, sellPrice: price * 1.3, warehouseId: warehouses[0]?.id }); }
     addJournalEntry(`شراء #${newId} من ${supplier.name}`, 'المخزون', 'الموردين', total);
-    saveAll();
-    sendPushNotification('🛒 فاتورة شراء', `فاتورة شراء من ${supplier.name} بمبلغ ${formatCurrency(total)}`);
-    showNotification(`✅ تمت فاتورة شراء`);
-    renderPurchases();
+    saveAll(); sendPushNotification('🛒 فاتورة شراء', `فاتورة شراء من ${supplier.name} بمبلغ ${formatCurrency(total)}`); showNotification(`✅ تمت فاتورة شراء`); renderPurchases();
 }
 
 // ==================== إدارة العملاء ====================
 function addClient() {
-    let name = prompt('اسم العميل:');
-    if(!name) return;
+    let name = prompt('اسم العميل:'); if(!name) return;
     db.clients.push({ id: Date.now(), name, phone: prompt('الهاتف:') || '', address: prompt('العنوان:') || '' });
-    saveAll();
-    showNotification(`✅ تم إضافة العميل ${name}`);
-    renderClients();
+    saveAll(); showNotification(`✅ تم إضافة العميل ${name}`); renderClients();
 }
 
 // ==================== المبيعات السريعة ====================
 function quickAddSale() {
     if(db.inventory.length === 0) { showNotification('⚠️ لا توجد منتجات', 'error'); return; }
     let prodList = db.inventory.map((p,i) => `${i+1}. ${p.name} (${p.qty}) - ${formatCurrency(p.sellPrice || p.costPrice * 1.3)}`).join('\n');
-    let idx = prompt(`اختر المنتج:\n${prodList}`);
-    if(!idx) return;
+    let idx = prompt(`اختر المنتج:\n${prodList}`); if(!idx) return;
     let product = db.inventory[parseInt(idx)-1];
     let qty = parseInt(prompt(`الكمية المتاحة: ${product.qty}`));
     if(isNaN(qty) || qty > product.qty) { showNotification('⚠️ كمية غير متوفرة', 'error'); return; }
@@ -354,122 +318,48 @@ function quickAddSale() {
     product.qty -= qty;
     db.sales.push({ id: newId, clientName: clientName || 'عميل نقدي', productName: product.name, qty, price: product.sellPrice || product.costPrice * 1.3, total, paid, status: paid >= total ? 'مدفوع' : 'آجل', dateISO: todayISO() });
     addJournalEntry(`مبيعات #${newId}`, paid >= total ? 'النقدية' : 'العملاء', 'المبيعات', total);
-    saveAll();
-    sendPushNotification('💰 فاتورة مبيعات', `فاتورة جديدة بمبلغ ${formatCurrency(total)}`);
-    showNotification(`✅ تمت فاتورة ${formatCurrency(total)}`);
-    renderSales();
+    saveAll(); sendPushNotification('💰 فاتورة مبيعات', `فاتورة جديدة بمبلغ ${formatCurrency(total)}`); showNotification(`✅ تمت فاتورة ${formatCurrency(total)}`); renderSales();
 }
 
 // ==================== المصروفات والإيرادات ====================
 function addExpense() {
-    let type = prompt('نوع المصروف:');
-    if(!type) return;
+    let type = prompt('نوع المصروف:'); if(!type) return;
     let amount = parseFloat(prompt('المبلغ:')) || 0;
     db.expenses.push({ id: Date.now(), type, amount, date: todayISO() });
     addJournalEntry(`مصروف ${type}`, 'المصروفات', 'النقدية', amount);
-    saveAll();
-    showNotification(`✅ تم إضافة مصروف ${formatCurrency(amount)}`);
-    renderExpensesRevenues();
+    saveAll(); showNotification(`✅ تم إضافة مصروف ${formatCurrency(amount)}`); renderExpensesRevenues();
 }
-
 function addRevenue() {
-    let type = prompt('نوع الإيراد:');
-    if(!type) return;
+    let type = prompt('نوع الإيراد:'); if(!type) return;
     let amount = parseFloat(prompt('المبلغ:')) || 0;
     db.revenues.push({ id: Date.now(), type, amount, date: todayISO() });
     addJournalEntry(`إيراد ${type}`, 'النقدية', 'الإيرادات', amount);
-    saveAll();
-    showNotification(`✅ تم إضافة إيراد ${formatCurrency(amount)}`);
-    renderExpensesRevenues();
+    saveAll(); showNotification(`✅ تم إضافة إيراد ${formatCurrency(amount)}`); renderExpensesRevenues();
 }
 
 // ==================== المستخدمين والصلاحيات ====================
 function addUser() {
-    let name = prompt('الاسم الكامل:');
-    if(!name) return;
-    let username = prompt('اسم المستخدم:');
-    let password = prompt('كلمة المرور:');
+    let name = prompt('الاسم الكامل:'); if(!name) return;
+    let username = prompt('اسم المستخدم:'); let password = prompt('كلمة المرور:');
     let role = prompt('الصلاحية (admin/accountant/inventory/cashier):');
     if(!['admin','accountant','inventory','cashier'].includes(role)) { showNotification('صلاحية غير صحيحة', 'error'); return; }
     users.push({ id: Date.now(), username, password, role, name });
-    saveAll();
-    showNotification(`✅ تم إضافة المستخدم ${name}`);
-    renderUsers();
+    saveAll(); showNotification(`✅ تم إضافة المستخدم ${name}`); renderUsers();
 }
-
-function deleteUser(id) {
-    if(id === currentUser?.id) { showNotification('لا يمكن حذف نفسك', 'error'); return; }
-    if(confirm('حذف المستخدم؟')) {
-        users = users.filter(u => u.id !== id);
-        saveAll();
-        showNotification('✅ تم حذف المستخدم');
-        renderUsers();
-    }
-}
+function deleteUser(id) { if(id === currentUser?.id) { showNotification('لا يمكن حذف نفسك', 'error'); return; } if(confirm('حذف المستخدم؟')) { users = users.filter(u => u.id !== id); saveAll(); showNotification('✅ تم حذف المستخدم'); renderUsers(); } }
 
 // ==================== العملات ====================
-function setCurrentCurrency(code) {
-    currentCurrency = code;
-    localStorage.setItem('semo_current_currency', code);
-    document.getElementById('currencySelector').value = code;
-    showNotification(`✅ تم تغيير العملة إلى ${currencies.find(c => c.code === code)?.name || code}`);
-    if(currentPage === 'dashboard') renderDashboard();
-    else if(currentPage === 'currencies') renderCurrencies();
-}
-
-function updateCurrencyRate(code, rate) {
-    let currency = currencies.find(c => c.code === code);
-    if(currency) currency.rate = rate;
-    saveAll();
-    showNotification(`✅ تم تحديث سعر صرف ${code}`);
-    renderCurrencies();
-}
-
-function addCurrency() {
-    let code = prompt('رمز العملة (مثل: KWD):');
-    if(!code) return;
-    let name = prompt('اسم العملة:');
-    let symbol = prompt('الرمز:');
-    let rate = parseFloat(prompt('سعر الصرف مقابل الريال:'));
-    currencies.push({ code: code.toUpperCase(), name, symbol, rate });
-    saveAll();
-    showNotification(`✅ تم إضافة عملة ${name}`);
-    renderCurrencies();
-}
+function setCurrentCurrency(code) { currentCurrency = code; localStorage.setItem('semo_current_currency', code); document.getElementById('currencySelector').value = code; showNotification(`✅ تم تغيير العملة إلى ${currencies.find(c => c.code === code)?.name || code}`); if(currentPage === 'dashboard') renderDashboard(); else if(currentPage === 'currencies') renderCurrencies(); }
+function updateCurrencyRate(code, rate) { let currency = currencies.find(c => c.code === code); if(currency) currency.rate = rate; saveAll(); showNotification(`✅ تم تحديث سعر صرف ${code}`); renderCurrencies(); }
+function addCurrency() { let code = prompt('رمز العملة:'); if(!code) return; let name = prompt('اسم العملة:'); let symbol = prompt('الرمز:'); let rate = parseFloat(prompt('سعر الصرف مقابل الريال:')); currencies.push({ code: code.toUpperCase(), name, symbol, rate }); saveAll(); showNotification(`✅ تم إضافة عملة ${name}`); renderCurrencies(); }
 
 // ==================== المزامنة السحابية ====================
 async function syncWithCloud() {
     sendPushNotification('🔄 مزامنة', 'جاري حفظ البيانات في السحابة...');
     await new Promise(resolve => setTimeout(resolve, 1000));
-    let backup = {
-        inventory: db.inventory, sales: db.sales, clients: db.clients, suppliers: db.suppliers,
-        purchases: db.purchases, expenses: db.expenses, revenues: db.revenues, journalEntries: db.journalEntries,
-        warehouses, users, currencies, lastSync: new Date().toISOString()
-    };
+    let backup = { inventory: db.inventory, sales: db.sales, clients: db.clients, suppliers: db.suppliers, purchases: db.purchases, expenses: db.expenses, revenues: db.revenues, journalEntries: db.journalEntries, warehouses, users, currencies, lastSync: new Date().toISOString() };
     localStorage.setItem('semo_cloud_backup', JSON.stringify(backup));
-    sendPushNotification('✅ مزامنة ناجحة', 'تم حفظ جميع البيانات');
-    showNotification('✅ تمت المزامنة مع السحابة بنجاح');
-}
-
-function loadFromCloud() {
-    let backup = localStorage.getItem('semo_cloud_backup');
-    if(backup) {
-        let data = JSON.parse(backup);
-        if(data.inventory) db.inventory = data.inventory;
-        if(data.sales) db.sales = data.sales;
-        if(data.clients) db.clients = data.clients;
-        if(data.suppliers) db.suppliers = data.suppliers;
-        if(data.purchases) db.purchases = data.purchases;
-        if(data.expenses) db.expenses = data.expenses;
-        if(data.revenues) db.revenues = data.revenues;
-        if(data.journalEntries) db.journalEntries = data.journalEntries;
-        if(data.warehouses) warehouses = data.warehouses;
-        if(data.users) users = data.users;
-        if(data.currencies) currencies = data.currencies;
-        saveAll();
-        showNotification('✅ تم تحميل البيانات من السحابة');
-        switchPage(currentPage);
-    } else showNotification('⚠️ لا توجد نسخة احتياطية', 'warning');
+    sendPushNotification('✅ مزامنة ناجحة', 'تم حفظ جميع البيانات'); showNotification('✅ تمت المزامنة مع السحابة بنجاح');
 }
 
 // ==================== التصدير والطباعة ====================
@@ -477,128 +367,122 @@ function exportToExcel() {
     let data = [];
     db.inventory.forEach(i => data.push({ القسم: 'المخزون', المنتج: i.name, الكمية: i.qty, سعر_الشراء: i.costPrice, سعر_البيع: i.sellPrice }));
     db.sales.forEach(s => data.push({ القسم: 'المبيعات', التاريخ: s.dateISO, العميل: s.clientName, المنتج: s.productName, المبلغ: s.total, الحالة: s.status }));
-    db.journalEntries.forEach(j => data.push({ القسم: 'القيود', التاريخ: j.date, البيان: j.description, مدين: j.debitAccount, دائن: j.creditAccount, المبلغ: j.amount }));
-    let ws = XLSX.utils.json_to_sheet(data);
-    let wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "SEMO_ERP_DATA");
-    XLSX.writeFile(wb, `SEMO_ERP_${todayISO()}.xlsx`);
+    let ws = XLSX.utils.json_to_sheet(data); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "SEMO_ERP_DATA"); XLSX.writeFile(wb, `SEMO_ERP_${todayISO()}.xlsx`);
     showNotification('✅ تم تصدير البيانات إلى Excel');
 }
-
 function printPage() { window.print(); }
 
 // ==================== صفحة معلومات التطبيق ====================
 function renderAbout() {
     let html = `
-        <div class="card-box">
-            <div class="info-card">
-                <div class="owner-img"><i class="fas fa-user-tie"></i></div>
-                <h2 style="margin-bottom: 10px;">سموح زاهر</h2>
-                <h3 style="margin-bottom: 15px; color: var(--primary);">SEMO ZAHER</h3>
-                <p style="margin-bottom: 8px;"><i class="fas fa-phone"></i> <strong>الهاتف:</strong> <span id="ownerPhone">+218 91 234 5678</span> <button class="btn btn-primary btn-sm" onclick="editOwnerPhone()" style="padding: 2px 8px;">تعديل</button></p>
-                <p style="margin-bottom: 8px;"><i class="fas fa-envelope"></i> <strong>البريد الإلكتروني:</strong> <span id="ownerEmail">semo@zaher.com</span> <button class="btn btn-primary btn-sm" onclick="editOwnerEmail()" style="padding: 2px 8px;">تعديل</button></p>
-                <p><i class="fas fa-globe"></i> <strong>الموقع:</strong> ليبيا / مصر / السعودية</p>
+        <div class="card-box"><div class="info-card"><div class="owner-img"><i class="fas fa-user-tie"></i></div>
+        <h2>سموح زاهر</h2><h3 style="color: var(--primary);">SEMO ZAHER</h3>
+        <p><i class="fas fa-phone"></i> <strong>الهاتف:</strong> <span id="ownerPhone">+218 91 234 5678</span> <button class="btn btn-primary btn-sm" onclick="editOwnerPhone()">تعديل</button></p>
+        <p><i class="fas fa-envelope"></i> <strong>البريد:</strong> <span id="ownerEmail">semo@zaher.com</span> <button class="btn btn-primary btn-sm" onclick="editOwnerEmail()">تعديل</button></p>
+        <p><i class="fas fa-globe"></i> <strong>الموقع:</strong> ليبيا / مصر / السعودية</p></div></div>
+        <div class="card-box"><div class="card-header"><h3>📊 إحصائيات التطبيق</h3></div><div class="grid-2">
+            <div class="stat-card" style="cursor:default;"><div class="stat-title">👥 المستخدمين</div><div class="stat-value">${users.length}</div></div>
+            <div class="stat-card" style="cursor:default;"><div class="stat-title">📦 المنتجات</div><div class="stat-value">${db.inventory.length}</div></div>
+            <div class="stat-card" style="cursor:default;"><div class="stat-title">💰 الفواتير</div><div class="stat-value">${db.sales.length}</div></div>
+            <div class="stat-card" style="cursor:default;"><div class="stat-title">👤 العملاء</div><div class="stat-value">${db.clients.length}</div></div>
+        </div></div>
+        <div class="card-box"><div style="text-align:center;"><p>© 2025 SEMO ERP - جميع الحقوق محفوظة</p><p style="color: var(--text-muted);">تم التطوير بواسطة <strong style="color: var(--primary);">سموح زاهر (SEMO ZAHER)</strong></p></div></div>`;
+    document.getElementById('pageContent').innerHTML = html;
+    let savedPhone = localStorage.getItem('semo_owner_phone'); let savedEmail = localStorage.getItem('semo_owner_email');
+    if(savedPhone) { let span = document.getElementById('ownerPhone'); if(span) span.innerText = savedPhone; }
+    if(savedEmail) { let span = document.getElementById('ownerEmail'); if(span) span.innerText = savedEmail; }
+}
+function editOwnerPhone() { let newPhone = prompt('أدخل رقم الهاتف الجديد:', document.getElementById('ownerPhone')?.innerText || '+218 91 234 5678'); if(newPhone && document.getElementById('ownerPhone')) { document.getElementById('ownerPhone').innerText = newPhone; localStorage.setItem('semo_owner_phone', newPhone); showNotification('✅ تم تحديث رقم الهاتف'); } }
+function editOwnerEmail() { let newEmail = prompt('أدخل البريد الإلكتروني الجديد:', document.getElementById('ownerEmail')?.innerText || 'semo@zaher.com'); if(newEmail && document.getElementById('ownerEmail')) { document.getElementById('ownerEmail').innerText = newEmail; localStorage.setItem('semo_owner_email', newEmail); showNotification('✅ تم تحديث البريد الإلكتروني'); } }
+
+// ==================== عرض الكروت والرسوم البيانية ====================
+function renderDashboard() {
+    let monthlyData = Array(12).fill(0);
+    db.sales.forEach(s => { if(s.dateISO) { let m = parseInt(s.dateISO.split('-')[1]) - 1; if(m >= 0) monthlyData[m] += s.total || 0; } });
+    
+    let html = `
+        <div class="stats-grid">
+            <div class="stat-card" onclick="switchPage('sales')">
+                <div class="stat-title"><i class="fas fa-chart-line"></i> إجمالي المبيعات</div>
+                <div class="stat-value">${formatCurrency(totalSales())}</div>
+                <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+            </div>
+            <div class="stat-card" onclick="switchPage('purchases')">
+                <div class="stat-title"><i class="fas fa-truck"></i> المشتريات</div>
+                <div class="stat-value">${formatCurrency(totalPurchases())}</div>
+                <div class="stat-icon"><i class="fas fa-truck"></i></div>
+            </div>
+            <div class="stat-card" onclick="switchPage('expenses_rev')">
+                <div class="stat-title"><i class="fas fa-money-bill-wave"></i> المصروفات</div>
+                <div class="stat-value">${formatCurrency(totalExpenses())}</div>
+                <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+            </div>
+            <div class="stat-card" onclick="switchPage('expenses_rev')">
+                <div class="stat-title"><i class="fas fa-hand-holding-usd"></i> الإيرادات</div>
+                <div class="stat-value">${formatCurrency(totalRevenues())}</div>
+                <div class="stat-icon"><i class="fas fa-hand-holding-usd"></i></div>
+            </div>
+            <div class="stat-card" onclick="switchPage('accounting')">
+                <div class="stat-title"><i class="fas fa-chart-simple"></i> صافي الربح</div>
+                <div class="stat-value ${netProfit() >= 0 ? 'profit-positive' : 'profit-negative'}">${formatCurrency(netProfit())}</div>
+                <div class="stat-icon"><i class="fas fa-chart-simple"></i></div>
+            </div>
+            <div class="stat-card" onclick="switchPage('inventory')">
+                <div class="stat-title"><i class="fas fa-boxes"></i> قيمة المخزون</div>
+                <div class="stat-value">${formatCurrency(inventoryValue())}</div>
+                <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+            </div>
+            <div class="stat-card" onclick="switchPage('warehouses')">
+                <div class="stat-title"><i class="fas fa-warehouse"></i> المخازن</div>
+                <div class="stat-value">${warehouses.length}</div>
+                <div class="stat-icon"><i class="fas fa-warehouse"></i></div>
+            </div>
+            <div class="stat-card" onclick="switchPage('clients')">
+                <div class="stat-title"><i class="fas fa-users"></i> العملاء</div>
+                <div class="stat-value">${db.clients.length}</div>
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
             </div>
         </div>
         <div class="card-box">
-            <div class="card-header"><h3><i class="fas fa-chart-line"></i> إحصائيات التطبيق</h3></div>
-            <div class="grid-2">
-                <div class="stat-card" style="cursor:default;"><div class="stat-title">👥 المستخدمين</div><div class="stat-value">${users.length}</div></div>
-                <div class="stat-card" style="cursor:default;"><div class="stat-title">📦 المنتجات</div><div class="stat-value">${db.inventory.length}</div></div>
-                <div class="stat-card" style="cursor:default;"><div class="stat-title">💰 الفواتير</div><div class="stat-value">${db.sales.length}</div></div>
-                <div class="stat-card" style="cursor:default;"><div class="stat-title">👤 العملاء</div><div class="stat-value">${db.clients.length}</div></div>
-                <div class="stat-card" style="cursor:default;"><div class="stat-title">🚚 الموردين</div><div class="stat-value">${db.suppliers.length}</div></div>
-                <div class="stat-card" style="cursor:default;"><div class="stat-title">📈 صافي الربح</div><div class="stat-value ${netProfit() >= 0 ? 'profit-positive' : 'profit-negative'}">${formatCurrency(netProfit())}</div></div>
-            </div>
+            <div class="card-header"><h3><i class="fas fa-chart-bar"></i> المبيعات الشهرية</h3></div>
+            <canvas id="monthlyChart" height="150"></canvas>
         </div>
         <div class="card-box">
-            <div class="card-header"><h3><i class="fas fa-info-circle"></i> معلومات تقنية</h3></div>
-            <div class="grid-2">
-                <div><strong>📌 الإصدار:</strong> v5.0 ULTIMATE</div>
-                <div><strong>📅 آخر تحديث:</strong> ${todayISO()}</div>
-                <div><strong>💱 العملة الحالية:</strong> ${currencies.find(c => c.code === currentCurrency)?.name || 'ريال'}</div>
-                <div><strong>🔔 الإشعارات:</strong> ${Notification.permission === 'granted' ? 'مفعلة ✅' : 'غير مفعلة ❌'}</div>
-            </div>
-            <hr style="margin: 15px 0;">
-            <div style="text-align: center;">
-                <p>© 2025 SEMO ERP - جميع الحقوق محفوظة</p>
-                <p style="color: var(--text-muted); font-size: 0.7rem;">تم التطوير بواسطة <strong style="color: var(--primary);">سموح زاهر (SEMO ZAHER)</strong></p>
+            <div class="card-header"><h3><i class="fas fa-receipt"></i> آخر المبيعات</h3><button class="btn btn-primary" onclick="switchPage('sales')">عرض الكل</button></div>
+            <div style="overflow-x:auto">
+                <table class="data-table"><thead><th>التاريخ</th><th>العميل</th><th>المنتج</th><th>المبلغ</th><th>الحالة</th></thead><tbody id="recentSales"></tbody></table>
             </div>
         </div>
     `;
     document.getElementById('pageContent').innerHTML = html;
-    loadOwnerData();
-}
-
-function editOwnerPhone() {
-    let newPhone = prompt('أدخل رقم الهاتف الجديد:', document.getElementById('ownerPhone')?.innerText || '+218 91 234 5678');
-    if(newPhone && document.getElementById('ownerPhone')) {
-        document.getElementById('ownerPhone').innerText = newPhone;
-        localStorage.setItem('semo_owner_phone', newPhone);
-        showNotification('✅ تم تحديث رقم الهاتف');
-    }
-}
-
-function editOwnerEmail() {
-    let newEmail = prompt('أدخل البريد الإلكتروني الجديد:', document.getElementById('ownerEmail')?.innerText || 'semo@zaher.com');
-    if(newEmail && document.getElementById('ownerEmail')) {
-        document.getElementById('ownerEmail').innerText = newEmail;
-        localStorage.setItem('semo_owner_email', newEmail);
-        showNotification('✅ تم تحديث البريد الإلكتروني');
-    }
-}
-
-function loadOwnerData() {
-    let savedPhone = localStorage.getItem('semo_owner_phone');
-    let savedEmail = localStorage.getItem('semo_owner_email');
-    if(savedPhone) { let span = document.getElementById('ownerPhone'); if(span) span.innerText = savedPhone; }
-    if(savedEmail) { let span = document.getElementById('ownerEmail'); if(span) span.innerText = savedEmail; }
-}
-
-// ==================== باقي العارضات ====================
-function renderDashboard() {
-    let monthlyData = Array(12).fill(0);
-    db.sales.forEach(s => { if(s.dateISO) { let m = parseInt(s.dateISO.split('-')[1]) - 1; if(m >= 0) monthlyData[m] += s.total || 0; } });
-    let html = `<div class="stats-grid">
-        <div class="stat-card" onclick="switchPage('sales')"><div class="stat-title">💰 المبيعات</div><div class="stat-value">${formatCurrency(totalSales())}</div></div>
-        <div class="stat-card" onclick="switchPage('purchases')"><div class="stat-title">🚚 المشتريات</div><div class="stat-value">${formatCurrency(totalPurchases())}</div></div>
-        <div class="stat-card" onclick="switchPage('expenses_rev')"><div class="stat-title">💸 المصروفات</div><div class="stat-value">${formatCurrency(totalExpenses())}</div></div>
-        <div class="stat-card" onclick="switchPage('expenses_rev')"><div class="stat-title">💰 الإيرادات</div><div class="stat-value">${formatCurrency(totalRevenues())}</div></div>
-        <div class="stat-card" onclick="switchPage('accounting')"><div class="stat-title">📈 صافي الربح</div><div class="stat-value ${netProfit() >= 0 ? 'profit-positive' : 'profit-negative'}">${formatCurrency(netProfit())}</div></div>
-        <div class="stat-card" onclick="switchPage('inventory')"><div class="stat-title">📦 قيمة المخزون</div><div class="stat-value">${formatCurrency(inventoryValue())}</div></div>
-        <div class="stat-card" onclick="switchPage('warehouses')"><div class="stat-title">🏭 المخازن</div><div class="stat-value">${warehouses.length}</div></div>
-        <div class="stat-card" onclick="switchPage('clients')"><div class="stat-title">👥 العملاء</div><div class="stat-value">${db.clients.length}</div></div>
-    </div>
-    <div class="card-box"><canvas id="monthlyChart" height="150"></canvas></div>
-    <div class="card-box"><div class="card-header"><h3>📋 آخر المبيعات</h3><button class="btn btn-primary" onclick="switchPage('sales')">عرض الكل</button></div>
-    <div style="overflow-x:auto"><table class="data-table"><thead><th>التاريخ</th><th>العميل</th><th>المنتج</th><th>المبلغ</th><th>الحالة</th></thead><tbody id="recentSales"></tbody>}</div></div>`;
-    document.getElementById('pageContent').innerHTML = html;
+    
     let ctx = document.getElementById('monthlyChart')?.getContext('2d');
     if(ctx) charts.push(new Chart(ctx, { type: 'bar', data: { labels: ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'], datasets: [{ label: 'المبيعات', data: monthlyData, backgroundColor: '#3b82f6', borderRadius: 8 }] }, options: { responsive: true } }));
+    
     let recent = [...db.sales].sort((a,b) => (b.dateISO || '').localeCompare(a.dateISO || '')).slice(0,5);
     let tbody = document.getElementById('recentSales');
-    if(tbody) tbody.innerHTML = recent.map(s => `<tr onclick="showSaleDetails(${s.id})"><td>${s.dateISO}</td><td>${s.clientName}</td><td>${s.productName || '-'}</td><td>${formatCurrency(s.total)}</td><td><span class="badge ${s.status === 'مدفوع' ? 'badge-success' : 'badge-warning'}">${s.status}</span></td></td>`).join('');
+    if(tbody) tbody.innerHTML = recent.map(s => `<tr onclick="showSaleDetails(${s.id})"><td>${s.dateISO}</td><td>${s.clientName}</td><td>${s.productName || '-'}</td><td>${formatCurrency(s.total)}</td><td><span class="badge ${s.status === 'مدفوع' ? 'badge-success' : 'badge-warning'}">${s.status}</span></td></tr>`).join('');
 }
 
+// باقي العارضات (مختصرة ولكن كاملة)
 function renderInventory() {
     let html = `<div class="card-box"><div class="card-header"><h3>📦 المخزون</h3><button class="btn btn-success" onclick="addProduct()">+ منتج</button><select id="warehouseFilter" onchange="filterInventory()" style="width:auto;"><option value="all">كل المخازن</option>${warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('')}</select></div>
     <div style="overflow-x:auto"><table class="data-table"><thead><th>المنتج</th><th>المخزن</th><th>الكمية</th><th>سعر الشراء</th><th>سعر البيع</th><th>القيمة</th><th>الحالة</th><th></th></thead><tbody id="inventoryBody"></tbody>}</div></div>`;
     document.getElementById('pageContent').innerHTML = html;
     filterInventory();
 }
-
 function filterInventory() {
     let filter = document.getElementById('warehouseFilter')?.value || 'all';
     let filtered = filter === 'all' ? db.inventory : db.inventory.filter(p => p.warehouseId == filter);
     let tbody = document.getElementById('inventoryBody');
-    if(tbody) tbody.innerHTML = filtered.map(p => { let w = warehouses.find(w => w.id === p.warehouseId); return `<tr><td><strong>${p.name}</strong></td><td>${w ? w.name : '—'}</td><td>${p.qty}</td><td>${formatCurrency(p.costPrice || 0)}</td><td>${formatCurrency(p.sellPrice || 0)}</td><td>${formatCurrency((p.qty||0)*(p.costPrice||0))}</td><td><span class="badge ${p.qty <=5 ? 'badge-warning' : 'badge-success'}">${p.qty <=5 ? 'مخزون منخفض' : 'متوفر'}</span></td><td><button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">🗑️</button></td></tr>`; }).join('');
+    if(tbody) tbody.innerHTML = filtered.map(p => { let w = warehouses.find(w => w.id === p.warehouseId); return `<tr><td><strong>${p.name}</strong></td><td>${w ? w.name : '—'}</td><td>${p.qty}</td><td>${formatCurrency(p.costPrice || 0)}</td><td>${formatCurrency(p.sellPrice || 0)}</td><td>${formatCurrency((p.qty||0)*(p.costPrice||0))}</td><td><span class="badge ${p.qty <=5 ? 'badge-warning' : 'badge-success'}">${p.qty <=5 ? 'مخزون منخفض' : 'متوفر'}</span></td><td><button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">🗑️</button></td>`; }).join('');
 }
 
 function renderWarehouses() {
     let html = `<div class="card-box"><div class="card-header"><h3>🏭 إدارة المخازن</h3><button class="btn btn-success" onclick="addWarehouse()">+ مخزن جديد</button></div>
     <div style="overflow-x:auto"><table class="data-table"><thead><th>المخزن</th><th>الموقع</th><th>المدير</th><th>عدد المنتجات</th><th>قيمة المخزون</th><th></th></thead><tbody>
     ${warehouses.map(w => { let prods = db.inventory.filter(p => p.warehouseId === w.id); let val = prods.reduce((s,p) => s + ((p.qty||0)*(p.costPrice||0)),0); return `<tr><td><strong>${w.name}</strong></td><td>${w.location || '—'}</td><td>${w.manager || '—'}</td><td>${prods.length}</td><td>${formatCurrency(val)}</td><td><button class="btn btn-danger btn-sm" onclick="deleteWarehouse(${w.id})">حذف</button></td></tr>`; }).join('')}
-    </tbody>}</div><div class="flex-between" style="margin-top:15px;"><div>إجمالي قيمة المخزون: ${formatCurrency(inventoryValue())}</div><div>عدد المخازن: ${warehouses.length}</div></div></div>`;
+    </tbody></div><div class="flex-between" style="margin-top:15px;"><div>إجمالي قيمة المخزون: ${formatCurrency(inventoryValue())}</div><div>عدد المخازن: ${warehouses.length}</div></div></div>`;
     document.getElementById('pageContent').innerHTML = html;
 }
 
@@ -606,23 +490,23 @@ function renderSuppliers() {
     let html = `<div class="card-box"><div class="card-header"><h3>🚚 الموردين</h3><button class="btn btn-success" onclick="addSupplier()">+ مورد</button></div>
     <div style="overflow-x:auto"><table class="data-table"><thead><th>الاسم</th><th>الهاتف</th><th>العنوان</th><th>إجمالي المشتريات</th><th>المدفوع</th><th>المتبقي</th></thead><tbody>
     ${db.suppliers.map(sup => { let pur = db.purchases.filter(p => p.supplierId === sup.id); let total = pur.reduce((s,p) => s + (p.total||0),0); let paid = pur.reduce((s,p) => s + (p.paid||0),0); return `<tr><td><strong>${sup.name}</strong></td><td>${sup.phone || '-'}</td><td>${sup.address || '-'}</td><td>${formatCurrency(total)}</td><td>${formatCurrency(paid)}</td><td class="${total-paid>0?'profit-negative':'profit-positive'}">${formatCurrency(total-paid)}</td></tr>`; }).join('')}
-    </tbody>}</div></div>`;
+    </tbody></div></div>`;
     document.getElementById('pageContent').innerHTML = html;
 }
 
 function renderPurchases() {
     let html = `<div class="card-box"><div class="card-header"><h3>🛒 المشتريات</h3><button class="btn btn-success" onclick="addPurchase()">+ فاتورة شراء</button></div>
-    <div style="overflow-x:auto"><table class="data-table"><thead><th>التاريخ</th><th>المورد</th><th>المنتج</th><th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي</th><th>المدفوع</th><th>الحالة</th></thead><tbody>
-    ${db.purchases.map(p => `<td><td>${p.dateISO}</td><td>${p.supplierName}</td><td>${p.productName}</td><td>${p.qty}</td><td>${formatCurrency(p.price)}</td><td>${formatCurrency(p.total)}</td><td>${formatCurrency(p.paid||0)}</td><td><span class="badge ${p.status === 'مدفوع' ? 'badge-success' : 'badge-warning'}">${p.status}</span></td></tr>`).join('')}
-    </tbody>}</div></div>`;
+    <div style="overflow-x:auto"><table class="data-table"><thead><th>التاريخ</th><th>المورد</th><th>المنتج</th><th>الكمية</th><th>الإجمالي</th><th>الحالة</th></thead><tbody>
+    ${db.purchases.map(p => `<tr><td>${p.dateISO}</td><td>${p.supplierName}</td><td>${p.productName}</td><td>${p.qty}</td><td>${formatCurrency(p.total)}</td><td><span class="badge ${p.status === 'مدفوع' ? 'badge-success' : 'badge-warning'}">${p.status}</span></td></tr>`).join('')}
+    </tbody></div></div>`;
     document.getElementById('pageContent').innerHTML = html;
 }
 
 function renderSales() {
     let html = `<div class="card-box"><div class="card-header"><h3>💰 المبيعات</h3><button class="btn btn-success" onclick="quickAddSale()">+ فاتورة جديدة</button></div>
-    <div style="overflow-x:auto"><table class="data-table"><thead><th>رقم</th><th>التاريخ</th><th>العميل</th><th>المنتج</th><th>الكمية</th><th>المبلغ</th><th>المدفوع</th><th>الحالة</th></thead><tbody>
-    ${db.sales.map(s => `<tr onclick="showSaleDetails(${s.id})"><td>${s.id}</td><td>${s.dateISO}</td><td>${s.clientName}</td><td>${s.productName || '-'}</td><td>${s.qty}</td><td>${formatCurrency(s.total)}</td><td>${formatCurrency(s.paid||0)}</td><td><span class="badge ${s.status === 'مدفوع' ? 'badge-success' : 'badge-warning'}">${s.status}</span></td></tr>`).join('')}
-    </tbody>}</div></div>`;
+    <div style="overflow-x:auto"><table class="data-table"><thead><th>التاريخ</th><th>العميل</th><th>المنتج</th><th>المبلغ</th><th>المدفوع</th><th>الحالة</th></thead><tbody>
+    ${db.sales.map(s => `<tr onclick="showSaleDetails(${s.id})" style="cursor:pointer;"><td>${s.dateISO}</td><td>${s.clientName}</td><td>${s.productName || '-'}</td><td>${formatCurrency(s.total)}</td><td>${formatCurrency(s.paid||0)}</td><td><span class="badge ${s.status === 'مدفوع' ? 'badge-success' : 'badge-warning'}">${s.status}</span></td></tr>`).join('')}
+    </tbody></div></div>`;
     document.getElementById('pageContent').innerHTML = html;
 }
 
@@ -639,22 +523,11 @@ function addToCart(id) {
         if(existing) { existing.qty++; existing.total = existing.qty * existing.price; }
         else { cart.push({ id: p.id, name: p.name, price: p.sellPrice || p.costPrice * 1.3, qty: 1, total: p.sellPrice || p.costPrice * 1.3 }); }
         p.qty--;
-        saveAll();
-        renderCart();
-        showNotification(`✅ تم إضافة ${p.name}`);
+        saveAll(); renderCart(); showNotification(`✅ تم إضافة ${p.name}`);
     } else showNotification('⚠️ الكمية غير متوفرة', 'error');
 }
-
-function renderCart() {
-    let div = document.getElementById('cartDisplay');
-    let totalDiv = document.getElementById('cartTotal');
-    if(div) div.innerHTML = cart.map((item,i) => `<div style="background:var(--dark);padding:8px;margin:5px;border-radius:8px;display:flex;justify-content:space-between;"><span>${item.name} x${item.qty} = ${formatCurrency(item.total)}</span><button class="btn btn-danger btn-sm" onclick="removeFromCart(${i})">🗑️</button></div>`).join('');
-    let total = cart.reduce((s,i) => s + i.total, 0);
-    if(totalDiv) totalDiv.innerText = `الإجمالي: ${formatCurrency(total)}`;
-}
-
+function renderCart() { let div = document.getElementById('cartDisplay'); let totalDiv = document.getElementById('cartTotal'); if(div) div.innerHTML = cart.map((item,i) => `<div style="background:var(--dark);padding:8px;margin:5px;border-radius:8px;display:flex;justify-content:space-between;"><span>${item.name} x${item.qty} = ${formatCurrency(item.total)}</span><button class="btn btn-danger btn-sm" onclick="removeFromCart(${i})">🗑️</button></div>`).join(''); let total = cart.reduce((s,i) => s + i.total, 0); if(totalDiv) totalDiv.innerText = `الإجمالي: ${formatCurrency(total)}`; }
 function removeFromCart(index) { cart.splice(index,1); renderCart(); }
-
 function checkoutPOS() {
     if(cart.length === 0) { showNotification('⚠️ السلة فارغة', 'error'); return; }
     let total = cart.reduce((s,i) => s + i.total, 0);
@@ -663,26 +536,22 @@ function checkoutPOS() {
     let newId = db.settings.nextInvoiceId++;
     db.sales.push({ id: newId, clientName, productName: cart.map(i => i.name).join(', '), qty: cart.reduce((s,i) => s + i.qty, 0), price: total / cart.reduce((s,i) => s + i.qty, 0), total, paid, status: paid >= total ? 'مدفوع' : 'آجل', dateISO: todayISO() });
     addJournalEntry(`مبيعات #${newId}`, paid >= total ? 'النقدية' : 'العملاء', 'المبيعات', total);
-    saveAll();
-    cart = [];
-    sendPushNotification('💰 فاتورة مبيعات', `فاتورة جديدة بمبلغ ${formatCurrency(total)}`);
-    showNotification(`✅ تمت الفاتورة ${formatCurrency(total)}`);
-    renderPOS();
+    saveAll(); cart = []; sendPushNotification('💰 فاتورة مبيعات', `فاتورة جديدة بمبلغ ${formatCurrency(total)}`); showNotification(`✅ تمت الفاتورة ${formatCurrency(total)}`); renderPOS();
 }
 
 function renderClients() {
     let html = `<div class="card-box"><div class="card-header"><h3>👥 العملاء</h3><button class="btn btn-success" onclick="addClient()">+ عميل جديد</button></div>
     <div style="overflow-x:auto"><table class="data-table"><thead><th>الاسم</th><th>الهاتف</th><th>العنوان</th><th>إجمالي المشتريات</th></thead><tbody>
-    ${db.clients.map(c => { let total = db.sales.filter(s => s.clientName === c.name).reduce((sum,s) => sum + (s.total||0),0); return `<td><td><strong>${c.name}</strong></td><td>${c.phone || '-'}</td><td>${c.address || '-'}</td><td>${formatCurrency(total)}</td></tr>`; }).join('')}
-    </tbody>}</div></div>`;
+    ${db.clients.map(c => { let total = db.sales.filter(s => s.clientName === c.name).reduce((sum,s) => sum + (s.total||0),0); return `<tr><td><strong>${c.name}</strong></td><td>${c.phone || '-'}</td><td>${c.address || '-'}</td><td>${formatCurrency(total)}</td></tr>`; }).join('')}
+    </tbody></div></div>`;
     document.getElementById('pageContent').innerHTML = html;
 }
 
 function renderExpensesRevenues() {
     let html = `<div class="card-box"><div class="card-header"><h3>💸 المصروفات</h3><button class="btn btn-primary" onclick="addExpense()">+ إضافة مصروف</button></div>
-    <div style="overflow-x:auto"><table class="data-table"><thead><th>النوع</th><th>المبلغ</th><th>التاريخ</th></thead><tbody>${db.expenses.map(e => `<tr><td>${e.type}</td><td>${formatCurrency(e.amount)}</td><td>${e.date}</td></tr>`).join('')}</tbody>}</div><div>الإجمالي: ${formatCurrency(totalExpenses())}</div></div>
+    <div style="overflow-x:auto"><table class="data-table"><thead><th>النوع</th><th>المبلغ</th><th>التاريخ</th></thead><tbody>${db.expenses.map(e => `<tr><td>${e.type}</td><td>${formatCurrency(e.amount)}</td><td>${e.date}</td></tr>`).join('')}</tbody></div><div>الإجمالي: ${formatCurrency(totalExpenses())}</div></div>
     <div class="card-box"><div class="card-header"><h3>💰 الإيرادات</h3><button class="btn btn-success" onclick="addRevenue()">+ إضافة إيراد</button></div>
-    <div style="overflow-x:auto"><table class="data-table"><thead><th>النوع</th><th>المبلغ</th><th>التاريخ</th></thead><tbody>${db.revenues.map(r => `<tr><td>${r.type}</td><td>${formatCurrency(r.amount)}</td><td>${r.date}</td></tr>`).join('')}</tbody>}</div><div>الإجمالي: ${formatCurrency(totalRevenues())}</div></div>`;
+    <div style="overflow-x:auto"><table class="data-table"><thead><th>النوع</th><th>المبلغ</th><th>التاريخ</th></thead><tbody>${db.revenues.map(r => `<tr><td>${r.type}</td><td>${formatCurrency(r.amount)}</td><td>${r.date}</td></tr>`).join('')}</tbody></div><div>الإجمالي: ${formatCurrency(totalRevenues())}</div></div>`;
     document.getElementById('pageContent').innerHTML = html;
 }
 
@@ -691,7 +560,7 @@ function renderAccounting() {
     let html = `<div class="card-box"><div class="card-header"><h3>📚 دفتر الأستاذ - القيود اليومية</h3></div>
     <div style="overflow-x:auto"><table class="data-table"><thead><th>التاريخ</th><th>البيان</th><th>الحساب المدين</th><th>الحساب الدائن</th><th>المبلغ</th></thead><tbody>
     ${entries.map(e => `<tr><td>${e.date}</td><td>${e.description}</td><td>${e.debitAccount}</td><td>${e.creditAccount}</td><td>${formatCurrency(e.amount)}</td></tr>`).join('')}
-    </tbody>}</div></div>`;
+    </tbody></div></div>`;
     document.getElementById('pageContent').innerHTML = html;
 }
 
@@ -701,15 +570,23 @@ function renderTrialBalance() {
     let totalDebit = 0, totalCredit = 0, html = `<div class="card-box"><div class="card-header"><h3>⚖️ ميزان المراجعة</h3></div>
     <div style="overflow-x:auto"><table class="data-table"><thead><th>الحساب</th><th>مدين</th><th>دائن</th></thead><tbody>`;
     for(let [acc,bal] of Object.entries(balances)) { if(bal > 0) { totalDebit += bal; html += `<tr><td>${acc}</td><td>${formatCurrency(bal)}</td><td>---</td></tr>`; } else if(bal < 0) { let abs = -bal; totalCredit += abs; html += `<tr><td>${acc}</td><td>---</td><td>${formatCurrency(abs)}</td></tr>`; } }
-    html += `<tr style="background:var(--primary-dark);font-weight:bold"><td>الإجمالي</td><td>${formatCurrency(totalDebit)}</td><td>${formatCurrency(totalCredit)}</td></tr>
-    </tbody></div>${Math.abs(totalDebit-totalCredit)<1 ? '<div class="profit-positive" style="margin-top:10px;">✓ الميزان متوازن</div>' : '<div class="profit-negative" style="margin-top:10px;">✗ الميزان غير متوازن - راجع القيود</div>'}</div>`;
+    html += `<tr style="background:var(--primary-dark);font-weight:bold"><td>الإجمالي</td><td>${formatCurrency(totalDebit)}</td><td>${formatCurrency(totalCredit)}</td></tr></tbody></div>${Math.abs(totalDebit-totalCredit)<1 ? '<div class="profit-positive" style="margin-top:10px;">✓ الميزان متوازن</div>' : '<div class="profit-negative" style="margin-top:10px;">✗ الميزان غير متوازن</div>'}</div>`;
     document.getElementById('pageContent').innerHTML = html;
 }
 
 function renderReports() {
-    let html = `<div class="card-box"><div class="card-header"><h3>📊 قائمة الدخل (Income Statement)</h3></div>
+    let html = `<div class="card-box"><div class="card-header"><h3>📊 قائمة الدخل</h3></div>
     <div style="padding:10px;"><div class="flex-between"><span>المبيعات:</span><span class="profit-positive">${formatCurrency(totalSales())}</span></div>
     <div class="flex-between"><span>(-) المشتريات:</span><span class="profit-negative">${formatCurrency(totalPurchases())}</span></div>
     <div class="flex-between"><span>(-) المصروفات:</span><span class="profit-negative">${formatCurrency(totalExpenses())}</span></div>
-    <div class="flex-between"><span>(+) الإيرادات الأخرى:</span><span class="profit-positive">${formatCurrency(totalRevenues())}</span></div>
-    <hr><div class="flex-between"><strong
+    <div class="flex-between"><span>(+) الإيرادات:</span><span class="profit-positive">${formatCurrency(totalRevenues())}</span></div><hr><div class="flex-between"><strong>صافي الربح:</strong><strong class="${netProfit() >= 0 ? 'profit-positive' : 'profit-negative'}">${formatCurrency(netProfit())}</strong></div></div></div>
+    <div class="card-box"><div class="card-header"><h3>🥧 التحليل المالي</h3></div><canvas id="profitChart" height="200"></canvas></div>`;
+    document.getElementById('pageContent').innerHTML = html;
+    let ctx = document.getElementById('profitChart')?.getContext('2d');
+    if(ctx) charts.push(new Chart(ctx, { type: 'doughnut', data: { labels: ['المبيعات','المشتريات','المصروفات','الإيرادات'], datasets: [{ data: [totalSales(),totalPurchases(),totalExpenses(),totalRevenues()], backgroundColor: ['#3b82f6','#f59e0b','#ef4444','#10b981'] }] }, options: { responsive: true } }));
+}
+
+function renderCurrencies() {
+    let html = `<div class="card-box"><div class="card-header"><h3>💱 إدارة العملات</h3><button class="btn btn-success" onclick="addCurrency()">+ عملة جديدة</button></div>
+    <div style="overflow-x:auto"><table class="data-table"><thead><th>العملة</th><th>الرمز</th><th>سعر الصرف</th><th></th></thead><tbody>
+    ${currencies.map(c => `<tr><td><strong>${c.name}</strong> ${c.code === currentCurrency ? '<span class="currency-badge">الحالية</span>' : ''}</td><td>${c.symbol}</td><td><input type="number" id="rate_${c.code}" value="${c.rate}" step="0.01" style="width:100px;"></td><td><button class="btn btn-primary btn-sm" onclick="updateCurrencyRate('${c.code}', parseFloat(document.getElementById('
