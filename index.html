@@ -168,11 +168,13 @@ let db = {
     users: JSON.parse(localStorage.getItem('simo_users')) || [
         { id: 1, name: 'المدير العام', username: 'admin', password: 'admin123', role: 'admin' },
         { id: 2, name: 'محمد محاسب', username: 'accountant', password: 'acc123', role: 'accountant' },
-        { id: 3, name: 'سعيد مخزني', username: 'inventory', password: 'inv123', role: 'inventory' }
+        { id: 3, name: 'سعيد مخزني', username: 'inventory', password: 'inv123', role: 'inventory' },
+        { id: 4, name: 'خالد كاشير', username: 'cashier', password: 'cash123', role: 'cashier' }
     ],
     currencies: JSON.parse(localStorage.getItem('simo_currencies')) || [
         { code: 'SAR', name: 'ريال سعودي', symbol: 'ر.س', rate: 1 },
-        { code: 'LYD', name: 'دينار ليبي', symbol: 'ل.د', rate: 0.78 }
+        { code: 'LYD', name: 'دينار ليبي', symbol: 'ل.د', rate: 0.78 },
+        { code: 'USD', name: 'دولار أمريكي', symbol: '$', rate: 3.75 }
     ],
     settings: JSON.parse(localStorage.getItem('simo_settings')) || { nextInvoiceId: 1000, nextPurchaseId: 2000, currentCurrency: 'SAR' }
 };
@@ -213,7 +215,6 @@ function saveAll() {
 
 function todayISO() { let d = new Date(); return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`; }
 
-// ==================== المحاسبة (مدين/دائن) ====================
 function addJournalEntry(description, debitAccount, creditAccount, amount, referenceId = null) {
     db.journalEntries.push({
         id: Date.now(),
@@ -227,7 +228,6 @@ function addJournalEntry(description, debitAccount, creditAccount, amount, refer
     saveAll();
 }
 
-// ==================== الإحصائيات ====================
 function totalSales() { return db.sales.reduce((s,i) => s + (i.total || 0), 0); }
 function totalPurchases() { return db.purchases.reduce((s,i) => s + (i.total || 0), 0); }
 function totalExpenses() { return db.expenses.reduce((s,i) => s + (i.amount || 0), 0); }
@@ -237,7 +237,6 @@ function inventoryValue() { return db.inventory.reduce((s,i) => s + ((i.qty||0) 
 function getLowStockCount() { return db.inventory.filter(i => (i.qty||0) <= 5).length; }
 function destroyCharts() { charts.forEach(c => c.destroy()); charts = []; }
 
-// ==================== صلاحيات ====================
 function hasPermission(roles) {
     if(!currentUser) return false;
     if(currentUser.role === 'admin') return true;
@@ -340,7 +339,6 @@ function deleteProduct(id) {
     }
 }
 
-// ==================== إدارة الموردين ====================
 function addSupplier() {
     let name = prompt('اسم المورد:'); if(!name) return;
     db.suppliers.push({ id: Date.now(), name, phone: prompt('الهاتف:') || '' });
@@ -349,7 +347,6 @@ function addSupplier() {
     renderSuppliers();
 }
 
-// ==================== المشتريات ====================
 function addPurchase() {
     if(db.suppliers.length === 0) { showNotification('أضف مورد أولا', 'error'); return; }
     let supplier = db.suppliers[0];
@@ -369,7 +366,6 @@ function addPurchase() {
     renderPurchases();
 }
 
-// ==================== العملاء ====================
 function addClient() {
     let name = prompt('اسم العميل:'); if(!name) return;
     db.clients.push({ id: Date.now(), name, phone: prompt('الهاتف:') || '' });
@@ -378,7 +374,6 @@ function addClient() {
     renderClients();
 }
 
-// ==================== المبيعات ====================
 function addSale() {
     if(db.inventory.length === 0) { showNotification('لا توجد منتجات', 'error'); return; }
     let product = db.inventory[0];
@@ -390,7 +385,7 @@ function addSale() {
     let newId = db.settings.nextInvoiceId++;
     product.qty -= qty;
     let status = paid >= total ? 'مدفوع' : 'آجل';
-    let sale = { id: newId, clientName: clientName || 'عميل نقدي', productName: product.name, qty, price: product.sellPrice || product.costPrice * 1.3, total, paid, status, dateISO: todayISO(), items: [{ productId: product.id, productName: product.name, qty, price: product.sellPrice || product.costPrice * 1.3, total }] };
+    let sale = { id: newId, clientName: clientName || 'عميل نقدي', productName: product.name, qty, price: product.sellPrice || product.costPrice * 1.3, total, paid, status, dateISO: todayISO() };
     db.sales.push(sale);
     addJournalEntry(`مبيعات #${newId}`, paid >= total ? 'النقدية' : 'العملاء', 'المبيعات', total);
     saveAll();
@@ -398,7 +393,6 @@ function addSale() {
     renderSales();
 }
 
-// ==================== عرض وتعديل الفاتورة ====================
 function viewInvoiceDetails(id) {
     let sale = db.sales.find(s => s.id === id);
     if(!sale) return;
@@ -406,20 +400,20 @@ function viewInvoiceDetails(id) {
     let html = `
         <h2 style="color:var(--primary);margin-bottom:15px;">🧾 فاتورة #${sale.id}</h2>
         <hr>
-        <div><strong>📅 التاريخ:</strong> ${sale.dateISO}</div>
-        <div><strong>👤 العميل:</strong> ${sale.clientName}</div>
-        <div><strong>📦 المنتج:</strong> ${sale.productName}</div>
-        <div><strong>🔢 الكمية:</strong> ${sale.qty}</div>
-        <div><strong>💰 السعر:</strong> ${formatCurrency(sale.price)}</div>
-        <div><strong>💵 الإجمالي:</strong> ${formatCurrency(sale.total)}</div>
-        <div><strong>💳 المدفوع:</strong> ${formatCurrency(sale.paid || 0)}</div>
-        <div><strong>📉 المتبقي:</strong> ${formatCurrency(remaining)}</div>
-        <div><strong>📌 الحالة:</strong> <span class="badge ${sale.status === 'مدفوع' ? 'badge-success' : 'badge-warning'}">${sale.status}</span></div>
+        <div><strong>التاريخ:</strong> ${sale.dateISO}</div>
+        <div><strong>العميل:</strong> ${sale.clientName}</div>
+        <div><strong>المنتج:</strong> ${sale.productName}</div>
+        <div><strong>الكمية:</strong> ${sale.qty}</div>
+        <div><strong>السعر:</strong> ${formatCurrency(sale.price)}</div>
+        <div><strong>الإجمالي:</strong> ${formatCurrency(sale.total)}</div>
+        <div><strong>المدفوع:</strong> ${formatCurrency(sale.paid || 0)}</div>
+        <div><strong>المتبقي:</strong> ${formatCurrency(remaining)}</div>
+        <div><strong>الحالة:</strong> <span class="badge ${sale.status === 'مدفوع' ? 'badge-success' : 'badge-warning'}">${sale.status}</span></div>
         <hr>
         <div class="flex-between" style="margin-top:15px;">
-            <button class="btn btn-warning" onclick="editInvoice(${sale.id})"><i class="fas fa-edit"></i> تعديل الفاتورة</button>
-            <button class="btn btn-danger" onclick="deleteInvoice(${sale.id})"><i class="fas fa-trash"></i> حذف الفاتورة</button>
-            <button class="btn btn-success" onclick="recordPayment(${sale.id})"><i class="fas fa-money-bill-wave"></i> تسجيل دفعة</button>
+            <button class="btn btn-warning" onclick="editInvoice(${sale.id})"><i class="fas fa-edit"></i> تعديل</button>
+            <button class="btn btn-danger" onclick="deleteInvoice(${sale.id})"><i class="fas fa-trash"></i> حذف</button>
+            <button class="btn btn-success" onclick="recordPayment(${sale.id})"><i class="fas fa-money-bill-wave"></i> تسديد</button>
             <button class="btn btn-primary" onclick="printInvoice(${sale.id})"><i class="fas fa-print"></i> طباعة</button>
         </div>
     `;
@@ -440,7 +434,7 @@ function editInvoice(id) {
             <div><label>المدفوع</label><input type="number" id="editPaid" value="${sale.paid || 0}"></div>
         </div>
         <div class="flex-between" style="margin-top:15px;">
-            <button class="btn btn-success" onclick="updateInvoice(${sale.id})"><i class="fas fa-save"></i> حفظ التعديلات</button>
+            <button class="btn btn-success" onclick="updateInvoice(${sale.id})">حفظ</button>
             <button class="btn btn-danger" onclick="closeModal()">إلغاء</button>
         </div>
     `;
@@ -458,7 +452,6 @@ function updateInvoice(id) {
     let newTotal = newQty * newPrice;
     let newStatus = newPaid >= newTotal ? 'مدفوع' : 'آجل';
     
-    // تعديل المخزون (إعادة الكمية القديمة وخصم الجديدة)
     let oldProduct = db.inventory.find(p => p.name === sale.productName);
     let newProduct = db.inventory.find(p => p.name === newProductName);
     
@@ -487,11 +480,9 @@ function deleteInvoice(id) {
     if(confirm('هل أنت متأكد من حذف هذه الفاتورة؟')) {
         let sale = db.sales.find(s => s.id === id);
         if(sale) {
-            // استرجاع الكمية للمخزون
             let product = db.inventory.find(p => p.name === sale.productName);
             if(product) product.qty += sale.qty;
             db.sales = db.sales.filter(s => s.id !== id);
-            // حذف القيد المحاسبي المرتبط
             db.journalEntries = db.journalEntries.filter(j => j.referenceId !== id);
             saveAll();
             showNotification('تم حذف الفاتورة');
@@ -560,11 +551,11 @@ function renderDashboard() {
     let ctx = document.getElementById('monthlyChart')?.getContext('2d');
     if(ctx) charts.push(new Chart(ctx, { type: 'bar', data: { labels: ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'], datasets: [{ label: 'المبيعات', data: monthlyData, backgroundColor: '#3b82f6' }] }, options: { responsive: true } }));
     let recent = [...db.sales].sort((a,b) => (b.dateISO || '').localeCompare(a.dateISO || '')).slice(0,5);
-    document.getElementById('recentSales').innerHTML = recent.map(s => `<tr onclick="viewInvoiceDetails(${s.id})"><td>${s.dateISO}</td><td>${s.clientName}</td><td>${s.productName}</td><td>${formatCurrency(s.total)}</td><td><span class="badge ${s.status === 'مدفوع' ? 'badge-success' : 'badge-warning'}">${s.status}</span></tr></tr>`).join('');
+    document.getElementById('recentSales').innerHTML = recent.map(s => `<tr onclick="viewInvoiceDetails(${s.id})"><td>${s.dateISO}</td><td>${s.clientName}</td><td>${s.productName}</td><td>${formatCurrency(s.total)}</td><td><span class="badge ${s.status === 'مدفوع' ? 'badge-success' : 'badge-warning'}">${s.status}</span><tr></tr>`).join('');
 }
 
 function renderInventory() {
-    let html = `<div class="card-box"><div class="card-header"><h3>📦 المخزون</h3><button class="btn btn-success" onclick="addProduct()">+ منتج جديد</button></div><div style="overflow-x:auto"><table class="data-table"><thead><th>المنتج</th><th>الكمية</th><th>سعر الشراء</th><th>سعر البيع</th><th>القيمة</th><th>الحالة</th><th></th></thead><tbody>${db.inventory.map(p => `<tr><td><strong>${p.name}</strong></td><td>${p.qty}</td><td>${formatCurrency(p.costPrice||0)}</td><td>${formatCurrency(p.sellPrice||0)}</td><td>${formatCurrency((p.qty||0)*(p.costPrice||0))}</td><td><span class="badge ${p.qty<=5?'badge-warning':'badge-success'}">${p.qty<=5?'مخزون منخفض':'متوفر'}</span></td><td><button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('')}</tbody></div></div>`;
+    let html = `<div class="card-box"><div class="card-header"><h3>📦 المخزون</h3><button class="btn btn-success" onclick="addProduct()">+ منتج جديد</button></div><div style="overflow-x:auto"><table class="data-table"><thead><th>المنتج</th><th>الكمية</th><th>سعر الشراء</th><th>سعر البيع</th><th>القيمة</th><th>الحالة</th><th></th></thead><tbody>${db.inventory.map(p => `<td><td><strong>${p.name}</strong></td><td>${p.qty}</td><td>${formatCurrency(p.costPrice||0)}</td><td>${formatCurrency(p.sellPrice||0)}</td><td>${formatCurrency((p.qty||0)*(p.costPrice||0))}</td><td><span class="badge ${p.qty<=5?'badge-warning':'badge-success'}">${p.qty<=5?'مخزون منخفض':'متوفر'}</span></td><td><button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('')}</tbody></div></div>`;
     document.getElementById('pageContent').innerHTML = html;
 }
 
@@ -574,7 +565,7 @@ function renderSuppliers() {
 }
 
 function renderPurchases() {
-    let html = `<div class="card-box"><div class="card-header"><h3>🛒 المشتريات</h3><button class="btn btn-success" onclick="addPurchase()">+ فاتورة شراء</button></div><div style="overflow-x:auto"><table class="data-table"><thead><th>التاريخ</th><th>المورد</th><th>المنتج</th><th>الكمية</th><th>الإجمالي</th><th>الحالة</th></thead><tbody>${db.purchases.map(p => `<tr onclick="viewPurchaseDetails(${p.id})"><td>${p.dateISO}</td><td>${p.supplierName}</td><td>${p.productName}</td><td>${p.qty}</td><td>${formatCurrency(p.total)}</td><td><span class="badge ${p.status==='مدفوع'?'badge-success':'badge-warning'}">${p.status}</span></td></tr>`).join('')}</tbody></div></div>`;
+    let html = `<div class="card-box"><div class="card-header"><h3>🛒 المشتريات</h3><button class="btn btn-success" onclick="addPurchase()">+ فاتورة شراء</button></div><div style="overflow-x:auto"><table class="data-table"><thead><th>التاريخ</th><th>المورد</th><th>المنتج</th><th>الكمية</th><th>الإجمالي</th><th>الحالة</th></thead><tbody>${db.purchases.map(p => `<tr><td>${p.dateISO}</td><td>${p.supplierName}</td><td>${p.productName}</td><td>${p.qty}</td><td>${formatCurrency(p.total)}</td><td><span class="badge ${p.status==='مدفوع'?'badge-success':'badge-warning'}">${p.status}</span></td></tr>`).join('')}</tbody></div></div>`;
     document.getElementById('pageContent').innerHTML = html;
 }
 
@@ -612,7 +603,7 @@ function checkoutPOS() {
     let paid = parseFloat(prompt('المبلغ المدفوع:', total)) || 0;
     let clientName = document.getElementById('posClientName')?.value || 'عميل نقدي';
     let newId = db.settings.nextInvoiceId++;
-    db.sales.push({ id: newId, clientName, productName: cart.map(i => i.name).join(', '), qty: cart.reduce((s,i) => s + i.qty, 0), price: total / cart.reduce((s,i) => s + i.qty, 0), total, paid, status: paid >= total ? 'مدفوع' : 'آجل', dateISO: todayISO(), items: [...cart] });
+    db.sales.push({ id: newId, clientName, productName: cart.map(i => i.name).join(', '), qty: cart.reduce((s,i) => s + i.qty, 0), price: total / cart.reduce((s,i) => s + i.qty, 0), total, paid, status: paid >= total ? 'مدفوع' : 'آجل', dateISO: todayISO() });
     addJournalEntry(`مبيعات #${newId}`, paid >= total ? 'النقدية' : 'العملاء', 'المبيعات', total);
     saveAll(); cart = []; showNotification(`✅ تمت الفاتورة ${formatCurrency(total)}`); renderPOS();
 }
@@ -633,7 +624,7 @@ function addRevenue() { let type = prompt('نوع الإيراد:'); if(!type) r
 
 function renderAccounting() {
     let entries = [...db.journalEntries].reverse();
-    let html = `<div class="card-box"><div class="card-header"><h3>📚 دفتر الأستاذ - القيود اليومية</h3></div><div style="overflow-x:auto"><table class="data-table"><thead><th>التاريخ</th><th>البيان</th><th>مدين</th><th>دائن</th><th>المبلغ</th></thead><tbody>${entries.map(e => `<tr><td>${e.date}</td><td>${e.description}</td><td>${e.debitAccount}</td><td>${e.creditAccount}</td><td>${formatCurrency(e.amount)}</td></tr>`).join('')}</tbody></div></div>`;
+    let html = `<div class="card-box"><div class="card-header"><h3>📚 دفتر الأستاذ</h3></div><div style="overflow-x:auto"><table class="data-table"><thead><th>التاريخ</th><th>البيان</th><th>مدين</th><th>دائن</th><th>المبلغ</th></thead><tbody>${entries.map(e => `<tr><td>${e.date}</td><td>${e.description}</td><td>${e.debitAccount}</td><td>${e.creditAccount}</td><td>${formatCurrency(e.amount)}</td></tr>`).join('')}</tbody></div></div>`;
     document.getElementById('pageContent').innerHTML = html;
 }
 
@@ -691,7 +682,7 @@ function switchPage(pageId) {
     else if(pageId === 'users') renderUsers();
 }
 
-function setViewMode(mode) { if(mode === 'mobile') document.body.classList.add('mobile-view'); else document.body.classList.remove('mobile-view'); localStorage.setItem('viewMode', mode); document.querySelectorAll('.view-btn').forEach(btn => { if(btn.dataset.view === mode) btn.classList.add('active'); else btn.classList.remove('active'); }); }
+function setViewMode(mode) { if(mode === 'mobile') document.body.classList.add('mobile-view'); else document.body.classList.remove('mobile-view'); localStorage.setItem('viewMode', mode); }
 
 function initDemoData() {
     if(db.inventory.length === 0) {
@@ -708,4 +699,21 @@ function initDemoData() {
             { id: 4002, clientName: 'مؤسسة النور', productName: 'طابعة HP', qty: 1, price: 3500, total: 3500, paid: 2000, status: 'آجل', dateISO: todayISO() }
         ];
         saveAll();
-        showNotification('✅ تم تحميل ال
+        showNotification('✅ تم تحميل البيانات التجريبية');
+    }
+}
+
+document.querySelectorAll('.menu-item').forEach(el => { el.addEventListener('click', () => { if(!el.classList.contains('disabled')) switchPage(el.dataset.page); }); });
+document.getElementById('mobileMenuBtn')?.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+let savedView = localStorage.getItem('viewMode') || 'desktop';
+setViewMode(savedView);
+initDemoData();
+
+if(!localStorage.getItem('simo_current_user')) {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+} else {
+    currentUser = JSON.parse(localStorage.getItem('simo_current_user'));
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('userName').innerT
