@@ -60,6 +60,8 @@
         .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text); }
         .currency-badge { background: var(--primary-dark); padding: 2px 8px; border-radius: 20px; font-size: 10px; }
+        .info-card { background: linear-gradient(135deg, var(--primary-dark), var(--info)); border-radius: 20px; padding: 1.5rem; text-align: center; margin-bottom: 1rem; }
+        .owner-img { width: 100px; height: 100px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 3rem; }
         @media print { .sidebar, .top-header, .btn, .menu-mobile-btn { display: none; } .main-content { margin: 0; padding: 0; } }
     </style>
 </head>
@@ -107,6 +109,7 @@
         <div class="menu-item" data-page="currencies" data-role="admin,manager"><i class="fas fa-money-bill-wave"></i> <span>العملات</span></div>
         <div class="menu-item" data-page="ai_analytics" data-role="all"><i class="fas fa-robot"></i> <span>التحليلات الذكية</span></div>
         <div class="menu-item" data-page="users" data-role="admin"><i class="fas fa-users-cog"></i> <span>المستخدمين</span></div>
+        <div class="menu-item" data-page="about" data-role="all"><i class="fas fa-info-circle"></i> <span>معلومات التطبيق</span></div>
         <div class="menu-item" data-page="logout" data-role="all"><i class="fas fa-sign-out-alt"></i> <span>خروج</span></div>
     </div>
     <div class="menu-mobile-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></div>
@@ -133,9 +136,10 @@
     // ==================== 3. المستخدمين والصلاحيات ====================
     let users = JSON.parse(localStorage.getItem('semo_users')) || [
         { id: 1, username: 'admin', password: 'admin123', role: 'admin', name: 'المدير العام' },
-        { id: 2, username: 'accountant', password: 'acc123', role: 'accountant', name: 'محمد محاسب' },
-        { id: 3, username: 'inventory', password: 'inv123', role: 'inventory', name: 'سعيد مخزني' },
-        { id: 4, username: 'cashier', password: 'cash123', role: 'cashier', name: 'خالد كاشير' }
+        { id: 2, username: 'semo', password: 'semo123', role: 'admin', name: 'سموح زاهر - المالك' },
+        { id: 3, username: 'accountant', password: 'acc123', role: 'accountant', name: 'محمد محاسب' },
+        { id: 4, username: 'inventory', password: 'inv123', role: 'inventory', name: 'سعيد مخزني' },
+        { id: 5, username: 'cashier', password: 'cash123', role: 'cashier', name: 'خالد كاشير' }
     ];
     let currentUser = JSON.parse(localStorage.getItem('semo_current_user')) || null;
     
@@ -349,7 +353,7 @@
             <button class="btn btn-primary" onclick="doLogin()" style="width:100%;">دخول</button>
             <hr style="margin:15px 0;">
             <div style="font-size:11px; color:gray; text-align:center;">
-                admin / admin123 | accountant / acc123 | inventory / inv123 | cashier / cash123
+                admin / admin123 | semo / semo123 | accountant / acc123 | inventory / inv123 | cashier / cash123
             </div>
         `);
     }
@@ -480,6 +484,101 @@
         renderSales();
     }
     
+    // ==================== صفحة معلومات التطبيق والمالك ====================
+    function renderAbout() {
+        let totalUsers = users.length;
+        let totalProducts = db.inventory.length;
+        let totalSalesCount = db.sales.length;
+        let totalClients = db.clients.length;
+        let totalSuppliers = db.suppliers.length;
+        let profit = netProfit();
+        
+        let html = `
+            <div class="card-box">
+                <div class="info-card">
+                    <div class="owner-img"><i class="fas fa-user-tie"></i></div>
+                    <h2 style="margin-bottom: 10px;">سموح زاهر</h2>
+                    <h3 style="margin-bottom: 15px; color: var(--primary);">SEMO ZAHER</h3>
+                    <p style="margin-bottom: 8px;"><i class="fas fa-phone"></i> <strong>الهاتف:</strong> <span id="ownerPhone">+218 91 234 5678</span> <button class="btn btn-primary btn-sm" onclick="editOwnerPhone()" style="padding: 2px 8px; font-size: 0.7rem;"><i class="fas fa-edit"></i> تعديل</button></p>
+                    <p style="margin-bottom: 8px;"><i class="fas fa-envelope"></i> <strong>البريد الإلكتروني:</strong> <span id="ownerEmail">semo@zaher.com</span> <button class="btn btn-primary btn-sm" onclick="editOwnerEmail()" style="padding: 2px 8px; font-size: 0.7rem;"><i class="fas fa-edit"></i> تعديل</button></p>
+                    <p><i class="fas fa-globe"></i> <strong>الموقع:</strong> ليبيا / مصر / السعودية</p>
+                </div>
+            </div>
+            <div class="card-box">
+                <div class="card-header"><h3><i class="fas fa-chart-line"></i> إحصائيات التطبيق</h3></div>
+                <div class="grid-2">
+                    <div class="stat-card" style="cursor:default;"><div class="stat-title">👥 عدد المستخدمين</div><div class="stat-value">${totalUsers}</div></div>
+                    <div class="stat-card" style="cursor:default;"><div class="stat-title">📦 عدد المنتجات</div><div class="stat-value">${totalProducts}</div></div>
+                    <div class="stat-card" style="cursor:default;"><div class="stat-title">💰 عدد الفواتير</div><div class="stat-value">${totalSalesCount}</div></div>
+                    <div class="stat-card" style="cursor:default;"><div class="stat-title">👤 عدد العملاء</div><div class="stat-value">${totalClients}</div></div>
+                    <div class="stat-card" style="cursor:default;"><div class="stat-title">🚚 عدد الموردين</div><div class="stat-value">${totalSuppliers}</div></div>
+                    <div class="stat-card" style="cursor:default;"><div class="stat-title">📈 صافي الربح</div><div class="stat-value ${profit >= 0 ? 'profit-positive' : 'profit-negative'}">${formatCurrency(profit)}</div></div>
+                </div>
+            </div>
+            <div class="card-box">
+                <div class="card-header"><h3><i class="fas fa-info-circle"></i> معلومات تقنية</h3></div>
+                <div class="grid-2">
+                    <div><strong>📌 إصدار التطبيق:</strong> v5.0 ULTIMATE</div>
+                    <div><strong>📅 آخر تحديث:</strong> ${todayISO()}</div>
+                    <div><strong>💾 مساحة التخزين:</strong> ${Math.ceil(JSON.stringify(localStorage).length / 1024)} KB</div>
+                    <div><strong>🌐 حالة الاتصال:</strong> <span id="onlineStatus">متصل</span></div>
+                    <div><strong>🔔 الإشعارات:</strong> ${Notification.permission === 'granted' ? 'مفعلة ✅' : 'غير مفعلة ❌'}</div>
+                    <div><strong>💱 العملة الحالية:</strong> ${currencies.find(c => c.code === currentCurrency)?.name || 'ريال'}</div>
+                </div>
+                <hr style="margin: 15px 0;">
+                <div style="text-align: center;">
+                    <p style="color: var(--text-muted);">© 2025 SEMO ERP - جميع الحقوق محفوظة</p>
+                    <p style="color: var(--text-muted); font-size: 0.7rem;">تم التطوير بواسطة <strong style="color: var(--primary);">سموح زاهر (SEMO ZAHER)</strong></p>
+                </div>
+            </div>
+        `;
+        document.getElementById('pageContent').innerHTML = html;
+        updateOnlineStatus();
+    }
+    
+    function updateOnlineStatus() {
+        let statusSpan = document.getElementById('onlineStatus');
+        if(statusSpan) {
+            if(navigator.onLine) statusSpan.innerHTML = '<span class="badge badge-success">متصل</span>';
+            else statusSpan.innerHTML = '<span class="badge badge-warning">غير متصل</span>';
+        }
+    }
+    
+    function editOwnerPhone() {
+        let newPhone = prompt('أدخل رقم الهاتف الجديد:', document.getElementById('ownerPhone')?.innerText || '+218 91 234 5678');
+        if(newPhone && document.getElementById('ownerPhone')) {
+            document.getElementById('ownerPhone').innerText = newPhone;
+            localStorage.setItem('semo_owner_phone', newPhone);
+            showNotification('✅ تم تحديث رقم الهاتف');
+        }
+    }
+    
+    function editOwnerEmail() {
+        let newEmail = prompt('أدخل البريد الإلكتروني الجديد:', document.getElementById('ownerEmail')?.innerText || 'semo@zaher.com');
+        if(newEmail && document.getElementById('ownerEmail')) {
+            document.getElementById('ownerEmail').innerText = newEmail;
+            localStorage.setItem('semo_owner_email', newEmail);
+            showNotification('✅ تم تحديث البريد الإلكتروني');
+        }
+    }
+    
+    // استعادة بيانات المالك المحفوظة
+    function loadOwnerData() {
+        let savedPhone = localStorage.getItem('semo_owner_phone');
+        let savedEmail = localStorage.getItem('semo_owner_email');
+        if(savedPhone) {
+            let phoneSpan = document.getElementById('ownerPhone');
+            if(phoneSpan) phoneSpan.innerText = savedPhone;
+        }
+        if(savedEmail) {
+            let emailSpan = document.getElementById('ownerEmail');
+            if(emailSpan) emailSpan.innerText = savedEmail;
+        }
+    }
+    
+    window.addEventListener('online', () => { updateOnlineStatus(); showNotification('✅ تم الاتصال بالإنترنت'); });
+    window.addEventListener('offline', () => { updateOnlineStatus(); showNotification('⚠️ انقطع الاتصال بالإنترنت', 'warning'); });
+    
     // ==================== العارضات ====================
     function renderDashboard() {
         let monthlyData = Array(12).fill(0);
@@ -521,7 +620,7 @@
     function renderWarehouses() {
         let html = `<div class="card-box"><div class="card-header"><h3>🏭 إدارة المخازن</h3><button class="btn btn-success" onclick="addWarehouse()">+ مخزن جديد</button></div>
         <div style="overflow-x:auto"><table class="data-table"><thead><th>المخزن</th><th>الموقع</th><th>المدير</th><th>عدد المنتجات</th><th>قيمة المخزون</th><th></th></thead><tbody>
-        ${warehouses.map(w => { let prods = db.inventory.filter(p => p.warehouseId === w.id); let val = prods.reduce((s,p) => s + ((p.qty||0)*(p.costPrice||0)),0); return `<tr><td><strong>${w.name}</strong></td><td>${w.location || '—'}</td><td>${w.manager || '—'}</td><td>${prods.length}</td><td>${formatCurrency(val)}</td><td><button class="btn btn-danger" onclick="deleteWarehouse(${w.id})">حذف</button></td></tr>`; }).join('')}
+        ${warehouses.map(w => { let prods = db.inventory.filter(p => p.warehouseId === w.id); let val = prods.reduce((s,p) => s + ((p.qty||0)*(p.costPrice||0)),0); return `</td><td><strong>${w.name}</strong></td><td>${w.location || '—'}</td><td>${w.manager || '—'}</td><td>${prods.length}</td><td>${formatCurrency(val)}</td><td><button class="btn btn-danger" onclick="deleteWarehouse(${w.id})">حذف</button></td></tr>`; }).join('')}
         </tbody>}</div><div class="flex-between" style="margin-top:15px;"><div>إجمالي قيمة المخزون: ${formatCurrency(inventoryValue())}</div><div>عدد المخازن: ${warehouses.length}</div></div></div>`;
         document.getElementById('pageContent').innerHTML = html;
     }
@@ -604,68 +703,4 @@
     
     function renderExpensesRevenues() {
         let html = `<div class="card-box"><h3>💸 المصروفات</h3><button class="btn btn-primary" onclick="addExpense()">+ إضافة</button><div style="overflow-x:auto"><table class="data-table"><thead><th>النوع</th><th>المبلغ</th><th>التاريخ</th></thead><tbody>${db.expenses.map(e => `<tr><td>${e.type}</td><td>${formatCurrency(e.amount)}</td><td>${e.date}</td></tr>`).join('')}</tbody>}</div><div>الإجمالي: ${formatCurrency(totalExpenses())}</div></div>
-        <div class="card-box"><h3>💰 الإيرادات</h3><button class="btn btn-success" onclick="addRevenue()">+ إضافة</button><div style="overflow-x:auto"><table class="data-table"><thead><th>النوع</th><th>المبلغ</th><th>التاريخ</th></thead><tbody>${db.revenues.map(r => `<tr><td>${r.type}</td><td>${formatCurrency(r.amount)}</td><td>${r.date}</td></tr>`).join('')}</tbody>}</div><div>الإجمالي: ${formatCurrency(totalRevenues())}</div></div>`;
-        document.getElementById('pageContent').innerHTML = html;
-    }
-    
-    function renderAccounting() {
-        let entries = [...db.journalEntries].reverse();
-        let html = `<div class="card-box"><h3>📚 دفتر الأستاذ</h3><div style="overflow-x:auto"><table class="data-table"><thead><th>التاريخ</th><th>البيان</th><th>مدين</th><th>دائن</th><th>المبلغ</th></thead><tbody>${entries.map(e => `<tr><td>${e.date}</td><td>${e.description}</td><td>${e.debitAccount}</td><td>${e.creditAccount}</td><td>${formatCurrency(e.amount)}</td></tr>`).join('')}</tbody>}</div></div>`;
-        document.getElementById('pageContent').innerHTML = html;
-    }
-    
-    function renderTrialBalance() {
-        let balances = {};
-        db.journalEntries.forEach(e => { balances[e.debitAccount] = (balances[e.debitAccount]||0) + e.amount; balances[e.creditAccount] = (balances[e.creditAccount]||0) - e.amount; });
-        let totalDebit = 0, totalCredit = 0, html = `<div class="card-box"><h3>⚖️ ميزان المراجعة</h3><div style="overflow-x:auto"><table class="data-table"><thead><th>الحساب</th><th>مدين</th><th>دائن</th></thead><tbody>`;
-        for(let [acc,bal] of Object.entries(balances)) { if(bal > 0) { totalDebit += bal; html += `<tr><td>${acc}</td><td>${formatCurrency(bal)}</td><td>---</td></tr>`; } else if(bal < 0) { let abs = -bal; totalCredit += abs; html += `<tr><td>${acc}</td><td>---</td><td>${formatCurrency(abs)}</td></tr>`; } }
-        html += `<tr style="background:var(--primary-dark);font-weight:bold"><td>الإجمالي</td><td>${formatCurrency(totalDebit)}</td><td>${formatCurrency(totalCredit)}</td></tr></tbody></div>${Math.abs(totalDebit-totalCredit)<1 ? '<div class="profit-positive" style="margin-top:10px;">✓ الميزان متوازن</div>' : '<div class="profit-negative" style="margin-top:10px;">✗ الميزان غير متوازن - راجع القيود</div>'}</div>`;
-        document.getElementById('pageContent').innerHTML = html;
-    }
-    
-    function renderReports() {
-        let html = `<div class="card-box"><h3>📊 قائمة الدخل</h3><div>المبيعات: ${formatCurrency(totalSales())}</div><div>المشتريات: ${formatCurrency(totalPurchases())}</div><div>المصروفات: ${formatCurrency(totalExpenses())}</div><div>الإيرادات: ${formatCurrency(totalRevenues())}</div><hr><div style="font-size:1.3rem;">صافي الربح: ${formatCurrency(netProfit())}</div></div>
-        <div class="card-box"><h3>🥧 التحليل المالي</h3><canvas id="profitChart" height="180"></canvas></div>`;
-        document.getElementById('pageContent').innerHTML = html;
-        let ctx = document.getElementById('profitChart').getContext('2d');
-        charts.push(new Chart(ctx, { type: 'doughnut', data: { labels: ['المبيعات','المشتريات','المصروفات','الإيرادات'], datasets: [{ data: [totalSales(),totalPurchases(),totalExpenses(),totalRevenues()], backgroundColor: ['#3b82f6','#f59e0b','#ef4444','#10b981'] }] }, options: { responsive: true } }));
-    }
-    
-    function renderCurrencies() {
-        let html = `<div class="card-box"><div class="card-header"><h3>💱 إدارة العملات</h3><button class="btn btn-success" onclick="addCurrency()">+ عملة جديدة</button></div>
-        <div style="overflow-x:auto"><table class="data-table"><thead><th>العملة</th><th>الرمز</th><th>سعر الصرف (مقابل الريال)</th><th></th></thead><tbody>
-        ${currencies.map(c => `<tr><td><strong>${c.name}</strong> ${c.code === currentCurrency ? '<span class="currency-badge">الحالية</span>' : ''}</td><td>${c.symbol}</td><td><input type="number" id="rate_${c.code}" value="${c.rate}" step="0.01" style="width:100px;"></td><td><button class="btn btn-primary btn-sm" onclick="updateCurrencyRate('${c.code}', parseFloat(document.getElementById('rate_${c.code}').value))">تحديث</button> <button class="btn ${c.code === currentCurrency ? 'btn-success' : 'btn-warning'} btn-sm" onclick="setCurrentCurrency('${c.code}')">${c.code === currentCurrency ? 'محددة' : 'تعيين'}</button></td></tr>`).join('')}
-        </tbody>}</div></div>`;
-        document.getElementById('pageContent').innerHTML = html;
-    }
-    
-    function renderUsers() {
-        if(currentUser?.role !== 'admin') { document.getElementById('pageContent').innerHTML = '<div class="card-box"><h3>⛔ غير مصرح</h3><p>هذه الصفحة مخصصة للمدير فقط</p></div>'; return; }
-        let html = `<div class="card-box"><div class="card-header"><h3>👥 إدارة المستخدمين والصلاحيات</h3><button class="btn btn-success" onclick="addUser()">+ مستخدم جديد</button></div>
-        <div style="overflow-x:auto"><table class="data-table"><thead><th>الاسم</th><th>اسم المستخدم</th><th>الدور</th><th>الصلاحية</th><th></th></thead><tbody>
-        ${users.map(u => `<tr><td><strong>${u.name}</strong></td><td>${u.username}</td><td><span class="badge badge-info">${u.role}</span></td><td>${u.role === 'admin' ? 'مدير كامل' : u.role === 'accountant' ? 'محاسب' : u.role === 'inventory' ? 'مخزني' : 'كاشير'}</td><td><button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">حذف</button></td></tr>`).join('')}
-        </tbody>}</div><div class="flex-between" style="margin-top:15px;"><div>عدد المستخدمين: ${users.length}</div><div><strong>الصلاحيات المتاحة:</strong> admin (كل شيء), accountant (محاسبة), inventory (مخزون), cashier (كاشير)</div></div></div>`;
-        document.getElementById('pageContent').innerHTML = html;
-    }
-    
-    function renderAIAnalytics() {
-        let insights = [
-            `💰 إجمالي المبيعات: ${formatCurrency(totalSales())}`,
-            `📈 صافي الربح: ${formatCurrency(netProfit())}`,
-            `📦 منتجات منخفضة المخزون: ${getLowStockCount()}`,
-            `🏆 عدد العملاء: ${db.clients.length}`,
-            `🚚 عدد الموردين: ${db.suppliers.length}`,
-            `🏭 عدد المخازن: ${warehouses.length}`,
-            `👥 المستخدمين النشطين: ${users.length}`,
-            `💱 العملة الحالية: ${currencies.find(c => c.code === currentCurrency)?.name || 'ريال'}`,
-            `🔔 الإشعارات: ${Notification.permission === 'granted' ? 'مفعلة ✅' : 'غير مفعلة ❌'}`
-        ];
-        let html = `<div class="card-box"><h3>🤖 تحليلات وتوقعات الذكاء الاصطناعي</h3>${insights.map(i => `<div class="ai-insight">${i}</div>`).join('')}</div>
-        <div class="card-box"><h3>📊 إحصائيات سريعة</h3><div class="grid-2"><div>قيمة المخزون: ${formatCurrency(inventoryValue())}</div><div>المستخدمين: ${users.length}</div><div>المخازن: ${warehouses.length}</div><div>العملات: ${currencies.length}</div></div></div>`;
-        document.getElementById('pageContent').innerHTML = html;
-    }
-    
-    function showSaleDetails(id) {
-        let s = db.sales.find(s => s.id === id);
-        if(!s) return;
-        let rem = (s.total||0) - (s.paid||0
+        <div class="card-box"><h3>💰 الإيرادات</h3><button class="btn btn-success" onclick="addRevenue()">+ إضافة</button><div style="overflow-x:auto"><table class="data-table"><thead><th>النوع</th><th>المبلغ</th><th>التاريخ</th></thead><tbody>${db.revenues.map(r => `<t
