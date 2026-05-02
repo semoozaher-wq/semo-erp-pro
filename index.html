@@ -1,671 +1,769 @@
-const fs = require('fs');
-const html = `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>ERP PRO ULTIMATE - Firebase Edition</title>
+<title>ERP PRO ULTIMATE - النسخة الكاملة</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"><\/script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"><\/script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
-:root{--bg:#f0f4f8;--card:#fff;--primary:#0d9488;--pd:#0f766e;--pl:rgba(13,148,136,.12);--success:#10b981;--danger:#ef4444;--warning:#f59e0b;--info:#3b82f6;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--r:16px;--sh:0 4px 24px rgba(0,0,0,.06);--stripe:rgba(0,0,0,.02)}
-.dark{--bg:#0c1222;--card:#1a2332;--primary:#14b8a6;--pd:#0d9488;--pl:rgba(20,184,166,.1);--success:#34d399;--danger:#f87171;--warning:#fbbf24;--info:#60a5fa;--text:#e2e8f0;--muted:#94a3b8;--border:#2d3a4a;--sh:0 4px 24px rgba(0,0,0,.35);--stripe:rgba(255,255,255,.02)}
+:root{--bg:#f0f4f8;--card:#ffffff;--primary:#0d9488;--primary-dark:#0f766e;--primary-light:#ccfbf1;--success:#10b981;--danger:#ef4444;--warning:#f59e0b;--info:#3b82f6;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--radius:16px;--shadow:0 4px 24px rgba(0,0,0,0.06);--badge-s-bg:#d1fae5;--badge-s-c:#059669;--badge-w-bg:#fef3c7;--badge-w-c:#b45309;--badge-d-bg:#fee2e2;--badge-d-c:#dc2626;--badge-i-bg:#dbeafe;--badge-i-c:#2563eb;--table-stripe:rgba(0,0,0,0.02)}
+.dark{--bg:#0c1222;--card:#1a2332;--primary:#14b8a6;--primary-dark:#0d9488;--primary-light:#042f2e;--success:#34d399;--danger:#f87171;--warning:#fbbf24;--info:#60a5fa;--text:#e2e8f0;--muted:#94a3b8;--border:#2d3a4a;--shadow:0 4px 24px rgba(0,0,0,0.3);--badge-s-bg:#064e3b;--badge-s-c:#6ee7b7;--badge-w-bg:#78350f;--badge-w-c:#fde68a;--badge-d-bg:#7f1d1d;--badge-d-c:#fca5a5;--badge-i-bg:#1e3a5f;--badge-i-c:#93c5fd;--table-stripe:rgba(255,255,255,0.02)}
 body{background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;transition:background .3s,color .3s;overflow-x:hidden}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--muted);border-radius:3px}
-.login-screen{display:flex;justify-content:center;align-items:center;min-height:100vh;background:linear-gradient(160deg,#0a1628,#0d3d38 50%,#134e4a);padding:16px;position:relative;overflow:hidden}
-.login-screen::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(20,184,166,.18),transparent 70%);top:-150px;left:-100px;border-radius:50%;animation:glow1 7s ease-in-out infinite}
-.login-screen::after{content:'';position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(5,150,105,.14),transparent 70%);bottom:-80px;right:-80px;border-radius:50%;animation:glow2 9s ease-in-out infinite}
-@keyframes glow1{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.3);opacity:1}}
-@keyframes glow2{0%,100%{transform:scale(1.1);opacity:.4}50%{transform:scale(.8);opacity:.9}}
-.login-box{background:rgba(255,255,255,.07);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.12);padding:44px 36px;border-radius:28px;width:440px;max-width:100%;text-align:center;position:relative;z-index:1;box-shadow:0 24px 60px rgba(0,0,0,.3)}
-.login-logo{font-size:1.9rem;font-weight:900;background:linear-gradient(135deg,#14b8a6,#34d399,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.5px;margin-bottom:6px}
-.login-sub{color:#94a3b8;font-size:12px;margin-bottom:28px;line-height:1.7}
-.lf{position:relative;margin-bottom:14px}
-.lf i{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#64748b;font-size:14px}
-.lf input{width:100%;padding:13px 44px 13px 16px;border:2px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.06);color:#e2e8f0;font-size:14px;transition:.3s;outline:none;font-family:'Cairo'}
-.lf input:focus{border-color:#14b8a6;background:rgba(20,184,166,.1)}
-.lf input::placeholder{color:#475569}
-.btn-login{background:linear-gradient(135deg,#14b8a6,#0d9488);color:#fff;border:none;padding:14px;border-radius:14px;width:100%;cursor:pointer;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;transition:.3s;margin-top:6px;font-family:'Cairo'}
-.btn-login:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(20,184,166,.35)}
-.login-link{margin-top:16px;color:#14b8a6;cursor:pointer;font-size:13px;transition:.2s}
-.login-link:hover{color:#34d399}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--muted);border-radius:3px}
+.login-screen{display:flex;justify-content:center;align-items:center;min-height:100vh;background:linear-gradient(160deg,#0a1628 0%,#0d3d38 50%,#134e4a 100%);padding:16px;position:relative;overflow:hidden}
+.login-screen::before{content:'';position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(20,184,166,0.15),transparent 70%);top:-100px;left:-100px;border-radius:50%;animation:pulse1 6s ease-in-out infinite}
+.login-screen::after{content:'';position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(5,150,105,0.12),transparent 70%);bottom:-80px;right:-80px;border-radius:50%;animation:pulse2 8s ease-in-out infinite}
+@keyframes pulse1{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.2);opacity:1}}
+@keyframes pulse2{0%,100%{transform:scale(1.1);opacity:.5}50%{transform:scale(.9);opacity:.8}}
+.login-box{background:rgba(255,255,255,.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);padding:40px 32px;border-radius:28px;width:420px;max-width:100%;text-align:center;position:relative;z-index:1}
+.dark .login-box{background:rgba(26,35,50,.9);border-color:rgba(255,255,255,.08)}
+.login-logo{font-size:2rem;font-weight:900;margin-bottom:4px;background:linear-gradient(135deg,#14b8a6,#059669,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px}
+.login-sub{color:#94a3b8;font-size:13px;margin-bottom:24px}
+.login-box .field{position:relative;margin-bottom:14px}
+.login-box .field i{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#64748b;font-size:14px}
+.login-box .field input{width:100%;padding:13px 44px 13px 16px;border:2px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.05);color:#e2e8f0;font-size:14px;transition:.3s;outline:none}
+.login-box .field input:focus{border-color:#14b8a6;background:rgba(20,184,166,.08);box-shadow:0 0 0 3px rgba(20,184,166,.15)}
+.login-box .field input::placeholder{color:#64748b}
+.btn-primary{background:linear-gradient(135deg,#14b8a6,#0d9488);color:#fff;border:none;padding:13px;border-radius:14px;width:100%;cursor:pointer;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;transition:.3s;margin-top:6px}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(20,184,166,.3)}
+.login-link{margin-top:18px;color:#14b8a6;cursor:pointer;font-size:13px;transition:.2s}
+.login-link:hover{color:#34d399;text-decoration:underline}
 .app{display:none}
-.top-bar{background:var(--card);padding:11px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;box-shadow:var(--sh)}
-.logo{font-size:1.05rem;font-weight:900;background:linear-gradient(135deg,var(--primary),#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.top-actions{display:flex;gap:6px;align-items:center}
-.top-actions button{background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;padding:7px;border-radius:9px;transition:.2s}
-.top-actions button:hover{color:var(--primary);background:var(--pl)}
-.user-badge{background:var(--pl);color:var(--primary);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap}
-.sync-indicator{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
-.sync-dot{width:8px;height:8px;border-radius:50%;background:#94a3b8;transition:.3s}
-.sync-dot.online{background:#10b981;animation:pd 2s infinite}
-.sync-dot.offline{background:#ef4444}
-@keyframes pd{0%,100%{opacity:1}50%{opacity:.3}}
-.menu{display:flex;justify-content:center;background:var(--card);padding:6px 8px;gap:2px;flex-wrap:wrap;border-bottom:1px solid var(--border);position:sticky;top:54px;z-index:199}
-.mi{text-align:center;cursor:pointer;padding:6px 9px;border-radius:10px;min-width:50px;transition:.22s;color:var(--muted);font-weight:600}
-.mi:hover{background:var(--pl);color:var(--primary)}
-.mi.active{background:linear-gradient(135deg,var(--primary),var(--pd));color:#fff;box-shadow:0 4px 14px rgba(13,148,136,.3)}
-.mi i{font-size:15px;display:block;margin-bottom:2px}
-.mi span{font-size:9px}
-.content{padding:18px;max-width:1400px;margin:0 auto}
-.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-bottom:20px}
-.sc{background:var(--card);border-radius:var(--r);padding:16px 12px;text-align:center;border:1px solid var(--border);cursor:pointer;transition:.3s;position:relative;overflow:hidden}
-.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),#059669);opacity:0;transition:.3s}
-.sc:hover{transform:translateY(-3px);box-shadow:var(--sh)}.sc:hover::after{opacity:1}
-.sc .si{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 9px;font-size:16px}
-.sc h3{font-size:1.2rem;font-weight:900;margin-bottom:2px}
-.sc span{font-size:10px;color:var(--muted);font-weight:600}
-.card{background:var(--card);border-radius:var(--r);padding:20px;margin-bottom:18px;border:1px solid var(--border);box-shadow:var(--sh)}
-.ct{font-size:.9rem;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:7px}
-.ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.btn{padding:7px 13px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:12px;display:inline-flex;align-items:center;gap:5px;transition:.2s;font-family:'Cairo'}
-.btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
-.btn:active{transform:scale(.97)}
-.bs{background:var(--success);color:#fff}.bd{background:var(--danger);color:#fff}
-.bw{background:var(--warning);color:#fff}.bi{background:var(--info);color:#fff}
-.bp{background:var(--primary);color:#fff}.bsm{padding:5px 10px;font-size:11px;border-radius:8px}
-.bg{background:transparent;color:var(--muted);border:1.5px solid var(--border)}.bg:hover{background:var(--bg);color:var(--text)}
-.bwa{background:#25d366;color:#fff}
+.top-bar{background:var(--card);padding:12px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:var(--shadow);transition:background .3s}
+.logo{font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,var(--primary),#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.top-actions{display:flex;gap:10px;align-items:center}
+.top-actions button{background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;padding:6px;border-radius:8px;transition:.2s}
+.top-actions button:hover{color:var(--primary);background:var(--primary-light)}
+.user-badge{background:var(--primary-light);color:var(--primary);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700}
+.menu{display:flex;justify-content:center;background:var(--card);padding:8px 10px;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--border);position:sticky;top:56px;z-index:99;transition:background .3s}
+.menu-item{text-align:center;cursor:pointer;padding:8px 12px;border-radius:12px;min-width:58px;transition:.25s;color:var(--muted);font-weight:600}
+.menu-item:hover{background:var(--primary-light);color:var(--primary)}
+.menu-item.active{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 4px 12px rgba(13,148,136,.3)}
+.menu-item i{font-size:17px;display:block;margin-bottom:2px}
+.menu-item span{font-size:9.5px;letter-spacing:0}
+.content{padding:20px;max-width:1400px;margin:0 auto}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:20px 16px;text-align:center;border:1px solid var(--border);cursor:pointer;transition:.3s;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),#059669);opacity:0;transition:.3s}
+.stat-card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}.stat-card:hover::after{opacity:1}
+.stat-card .stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:18px}
+.stat-card h3{font-size:1.35rem;font-weight:900;margin-bottom:2px}
+.stat-card span{font-size:11px;color:var(--muted);font-weight:600}
+.card{background:var(--card);border-radius:var(--radius);padding:22px;margin-bottom:20px;border:1px solid var(--border);box-shadow:var(--shadow);transition:background .3s,border .3s}
+.card-title{font-size:1rem;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.btn{padding:7px 16px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:12px;display:inline-flex;align-items:center;gap:5px;transition:.2s;font-family:'Cairo'}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.1)}
+.btn-success{background:var(--success);color:#fff}.btn-danger{background:var(--danger);color:#fff}
+.btn-warning{background:var(--warning);color:#fff}.btn-info{background:var(--info);color:#fff}
+.btn-primary-bg{background:var(--primary);color:#fff}.btn-sm{padding:5px 10px;font-size:11px;border-radius:8px}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-ghost:hover{background:var(--bg);color:var(--text)}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--border)}
-th{background:var(--bg);color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase;white-space:nowrap}
-tbody tr:nth-child(even){background:var(--stripe)}
-tbody tr:hover{background:var(--pl)}
-input,select,textarea{width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:11px;background:var(--card);color:var(--text);font-size:13px;font-family:'Cairo';transition:.2s;outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(13,148,136,.1)}
-label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px}
-.fg{margin-bottom:12px}
-.badge{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;display:inline-block}
-.bs2{background:#d1fae5;color:#059669}.bw2{background:#fef3c7;color:#b45309}
-.bd2{background:#fee2e2;color:#dc2626}.bi2{background:#dbeafe;color:#2563eb}
-.dark .bs2{background:#064e3b;color:#6ee7b7}.dark .bw2{background:#78350f;color:#fde68a}
-.dark .bd2{background:#7f1d1d;color:#fca5a5}.dark .bi2{background:#1e3a5f;color:#93c5fd}
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:500;justify-content:center;align-items:center;padding:14px;animation:fi .18s}
-.mc{background:var(--card);border-radius:20px;max-width:820px;width:100%;max-height:92vh;overflow-y:auto;padding:26px;animation:su .22s;box-shadow:0 28px 70px rgba(0,0,0,.28)}
-@keyframes fi{from{opacity:0}to{opacity:1}}@keyframes su{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-title{font-size:1.1rem;font-weight:800;margin-bottom:18px;display:flex;align-items:center;gap:7px}
-.toast-c{position:fixed;bottom:18px;left:18px;z-index:1000;display:flex;flex-direction:column;gap:7px;max-width:320px}
-.toast{padding:11px 18px;border-radius:11px;color:#fff;font-size:12.5px;font-weight:600;animation:ti .28s;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.22)}
-.t-s{background:linear-gradient(135deg,#059669,#10b981)}.t-e{background:linear-gradient(135deg,#dc2626,#ef4444)}
-.t-i{background:linear-gradient(135deg,#2563eb,#3b82f6)}.t-w{background:linear-gradient(135deg,#d97706,#f59e0b)}
-@keyframes ti{from{transform:translateX(-110%);opacity:0}to{transform:translateX(0);opacity:1}}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.sb{background:var(--pl);padding:11px 15px;border-radius:12px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:16px;font-size:12.5px}
-.sb strong{color:var(--primary)}
-.td{color:var(--danger)}.ts{color:var(--success)}.tm{color:var(--muted)}.tw{color:var(--warning)}
-.tc{text-align:center}.mt2{margin-top:8px}.mt3{margin-top:14px}.mb2{margin-bottom:8px}
-.tbl{overflow-x:auto}
-.alert{background:#fef3c7;border:1px solid #f59e0b;border-radius:11px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;display:flex;align-items:center;gap:9px;color:#92400e}
-.dark .alert{background:#78350f;border-color:#b45309;color:#fde68a}
-.pos-l{display:grid;grid-template-columns:1fr 370px;gap:14px;min-height:480px}
-.pos-p{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:13px;overflow-y:auto;max-height:68vh}
-.pos-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
-.pos-item{background:var(--bg);border:2px solid var(--border);border-radius:12px;padding:12px;text-align:center;cursor:pointer;transition:.22s}
-.pos-item:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--sh)}
-.pos-item.oos{opacity:.35;pointer-events:none}
-.pos-item h4{font-size:11.5px;margin-bottom:2px;line-height:1.3}
-.pos-item .pp{color:var(--primary);font-weight:900;font-size:12px}
-.pos-item .ps{font-size:10px;color:var(--muted)}
-.pos-c{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:13px;display:flex;flex-direction:column;max-height:68vh}
-.pos-ci{flex:1;overflow-y:auto;margin-bottom:10px}
-.pci{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;gap:5px}
-.pci .in{flex:1;font-weight:600;font-size:11.5px}
-.qc{display:flex;align-items:center;gap:4px}
-.qc button{width:20px;height:20px;border-radius:5px;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-weight:900;color:var(--text);display:flex;align-items:center;justify-content:center;font-size:13px}
-.pt{border-top:2px solid var(--border);padding-top:10px}
-.pt .pl{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
-.pt .pl.grand{font-size:1rem;font-weight:900;color:var(--primary)}
-.cc{position:relative;height:260px}.ccl{position:relative;height:320px}
-.es{text-align:center;padding:44px 20px;color:var(--muted)}
-.es i{font-size:40px;margin-bottom:10px;display:block;opacity:.2}
-.tabs{display:flex;gap:3px;border-bottom:2px solid var(--border);margin-bottom:18px;flex-wrap:wrap}
-.tab{padding:8px 14px;border:none;background:none;cursor:pointer;font-family:'Cairo';font-weight:700;font-size:12px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s;border-radius:8px 8px 0 0}
-.tab.active{color:var(--primary);border-bottom-color:var(--primary);background:var(--pl)}
-.il{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px}
-.ir{display:grid;grid-template-columns:2fr 65px 95px 95px 26px;gap:6px;padding:8px 10px;align-items:center;border-bottom:1px solid var(--border);font-size:11.5px}
-.ir:last-child{border-bottom:none}
-.ir.ih{background:var(--bg);font-weight:700;color:var(--muted);font-size:10px}
-.je-r{display:grid;grid-template-columns:1fr 115px 115px 26px;gap:7px;align-items:center;margin-bottom:7px}
-.setup-banner{background:linear-gradient(135deg,#b91c1c,#7f1d1d);color:#fff;padding:10px 18px;font-size:12.5px;display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap}
-.print-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.65);backdrop-filter:blur(10px);z-index:800;overflow-y:auto;padding:20px}
-.pm-inner{background:#fff;border-radius:18px;max-width:820px;width:100%;margin:0 auto;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.35)}
-.pm-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid #e2e8f0;position:sticky;top:0;background:#fff;border-radius:18px 18px 0 0;z-index:1;flex-wrap:wrap;gap:6px}
-.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px;margin-bottom:14px}
-.tpl-card{border:2px solid var(--border);border-radius:11px;padding:10px 7px;text-align:center;cursor:pointer;transition:.2s;font-size:11px;font-weight:700}
-.tpl-card:hover{border-color:var(--primary);transform:translateY(-2px)}
-.tpl-card.sel{border-color:var(--primary);background:var(--pl)}
-.tpl-card .tp{height:60px;border-radius:7px;margin-bottom:5px;display:flex;align-items:center;justify-content:center;font-size:22px}
-/* ═══ 10 INVOICE TEMPLATES ═══ */
-.inv{padding:30px;color:#000;font-family:'Cairo',sans-serif;direction:rtl;background:#fff}
-/* T1 Classic Teal */
-.t1 .inv-head{background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;padding:24px 30px;margin:-30px -30px 20px}
-.t1 table th{background:#0d9488;color:#fff}
-.t1 .itb{background:#f0fdf9;border:2px solid #0d9488;border-radius:12px;padding:16px;margin-top:16px;max-width:300px;margin-right:auto}
-.t1 .gline{color:#0d9488;font-weight:900;font-size:1.1rem}
-/* T2 Modern Navy */
-.t2 .inv-head{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff;padding:24px 30px;margin:-30px -30px 20px}
-.t2 table th{background:#1e3a5f;color:#93c5fd}
-.t2 .itb{background:#eff6ff;border:2px solid #3b82f6;border-radius:12px;padding:16px;margin-top:16px;max-width:300px;margin-right:auto}
-.t2 .gline{color:#2563eb;font-weight:900;font-size:1.1rem}
-/* T3 Simple Black */
-.t3 .inv-head{border-bottom:3px solid #000;padding-bottom:14px;margin-bottom:18px}
-.t3 .inv-head .lgo{font-size:1.5rem;font-weight:900;color:#000}
-.t3 table th{background:#f1f5f9;color:#0f172a;border:1px solid #cbd5e1}
-.t3 table td{border:1px solid #e2e8f0}
-.t3 .itb{border-top:2px solid #000;margin-top:14px;padding-top:12px;max-width:300px;margin-right:auto}
-.t3 .gline{font-weight:900;font-size:1.1rem}
-/* T4 Corporate Purple */
-.t4 .inv-head{background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;padding:24px 30px;margin:-30px -30px 20px}
-.t4 table th{background:#7c3aed;color:#fff}
-.t4 .itb{background:#f5f3ff;border:2px solid #7c3aed;border-radius:12px;padding:16px;margin-top:16px;max-width:300px;margin-right:auto}
-.t4 .gline{color:#6d28d9;font-weight:900;font-size:1.1rem}
-/* T5 Receipt */
-.t5{max-width:340px;margin:0 auto;padding:14px;border:1px dashed #94a3b8;font-size:11.5px}
-.t5 .inv-head{text-align:center;border-bottom:2px dashed #94a3b8;padding-bottom:9px;margin-bottom:9px}
-.t5 .inv-head .lgo{font-size:1.1rem;font-weight:900;color:#0d9488}
-.t5 table th{background:#f8fafc;font-size:10px;padding:4px 7px}
-.t5 table td{font-size:11px;padding:4px 7px}
-.t5 .itb{border-top:2px dashed #94a3b8;margin-top:8px;padding-top:8px;text-align:center}
-.t5 .gline{font-size:1.1rem;font-weight:900;color:#0d9488}
-/* T6 Gold Luxury */
-.t6 .inv-head{background:linear-gradient(135deg,#78350f,#92400e);border-bottom:4px solid #f59e0b;color:#fff;padding:24px 30px;margin:-30px -30px 20px}
-.t6 .inv-head .lgo{color:#fbbf24;font-size:1.5rem;font-weight:900}
-.t6 table th{background:#78350f;color:#fde68a}
-.t6 .itb{background:#fffbeb;border:2px solid #f59e0b;border-radius:12px;padding:16px;margin-top:16px;max-width:300px;margin-right:auto}
-.t6 .gline{color:#b45309;font-weight:900;font-size:1.1rem}
-/* T7 Minimal */
-.t7{padding:44px}
-.t7 .inv-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px}
-.t7 .inv-head .lgo{font-size:2rem;font-weight:900;color:#0f172a;letter-spacing:-1px}
-.t7 table th{border-bottom:2px solid #0f172a;color:#0f172a;font-size:10px;letter-spacing:.5px;background:none}
-.t7 table td{border-bottom:1px solid #f1f5f9}
-.t7 .itb{text-align:left;margin-top:20px}
-.t7 .gline{font-size:1.4rem;font-weight:900;color:#0f172a}
-/* T8 Tech Dark */
-.t8{background:#0f172a;color:#e2e8f0;padding:30px}
-.t8 .inv-head{border-bottom:1px solid #334155;padding-bottom:14px;margin-bottom:14px}
-.t8 .inv-head .lgo{font-size:1.4rem;font-weight:900;color:#14b8a6}
-.t8 table th{background:#1e293b;color:#14b8a6;border:1px solid #334155}
-.t8 table td{border:1px solid #1e293b;color:#e2e8f0}
-.t8 .itb{border-top:1px solid #334155;margin-top:12px;padding-top:10px}
-.t8 .gline{color:#14b8a6;font-weight:900;font-size:1.1rem}
-/* T9 Rose */
-.t9 .inv-head{background:linear-gradient(135deg,#be185d,#db2777);color:#fff;padding:24px 30px;margin:-30px -30px 20px}
-.t9 table th{background:#db2777;color:#fff}
-.t9 .itb{background:#fff1f5;border:2px solid #db2777;border-radius:12px;padding:16px;margin-top:16px;max-width:300px;margin-right:auto}
-.t9 .gline{color:#be185d;font-weight:900;font-size:1.1rem}
-/* T10 Emerald */
-.t10 .inv-head{background:linear-gradient(135deg,#065f46,#059669);color:#fff;padding:24px 30px;margin:-30px -30px 20px}
-.t10 table th{background:#059669;color:#fff}
-.t10 .itb{background:#ecfdf5;border:2px solid #059669;border-radius:12px;padding:16px;margin-top:16px;max-width:300px;margin-right:auto}
-.t10 .gline{color:#065f46;font-weight:900;font-size:1.1rem}
-/* SHARED INV */
-.inv-head .lgo{font-size:1.5rem;font-weight:900}
-.inv-head .lsub{font-size:11px;opacity:.8;margin-top:3px}
-.inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;padding:12px;background:rgba(0,0,0,.03);border-radius:9px}
-.t8 .inv-parties{background:#1e293b}
-.inv-party h4{font-weight:800;font-size:12.5px;margin-bottom:6px}
-.inv-party p{font-size:11.5px;margin-bottom:2px;opacity:.85}
-.itr{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-bottom:1px dashed rgba(0,0,0,.1)}
-.t8 .itr{border-bottom-color:rgba(255,255,255,.1)}
-.inv-footer{margin-top:22px;text-align:center;font-size:11px;opacity:.6;border-top:1px solid rgba(0,0,0,.1);padding-top:10px;line-height:1.9}
-.t8 .inv-footer{border-top-color:rgba(255,255,255,.15)}
-.stamp-row{margin-top:20px;display:flex;gap:40px}
-.stamp-box{width:100px;height:50px;border:1px dashed rgba(0,0,0,.3);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-top:5px;font-size:10px;opacity:.5}
-.t8 .stamp-box{border-color:rgba(255,255,255,.3)}
-@media(max-width:900px){.pos-l{grid-template-columns:1fr}}
-@media(max-width:768px){.g2,.g3,.g4{grid-template-columns:1fr}.sg{grid-template-columns:repeat(2,1fr)}.content{padding:12px}}
-@media(max-width:480px){.sg{grid-template-columns:1fr 1fr;gap:8px}.sc{padding:12px 8px}.sc h3{font-size:1rem}}
-@media print{.top-bar,.menu,.no-print,.pm-bar{display:none!important}body{background:#fff!important}}
+th,td{padding:11px 14px;text-align:right;border-bottom:1px solid var(--border)}
+th{background:var(--bg);color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+tbody tr:nth-child(even){background:var(--table-stripe)}
+tbody tr:hover{background:var(--primary-light)}
+input,select,textarea{width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:12px;background:var(--card);color:var(--text);font-size:13px;font-family:'Cairo';transition:.2s;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.field-group{margin-bottom:14px}
+.badge{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;display:inline-block}
+.badge-success{background:var(--badge-s-bg);color:var(--badge-s-c)}
+.badge-warning{background:var(--badge-w-bg);color:var(--badge-w-c)}
+.badge-danger{background:var(--badge-d-bg);color:var(--badge-d-c)}
+.badge-info{background:var(--badge-i-bg);color:var(--badge-i-c)}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:1000;justify-content:center;align-items:center;padding:16px;animation:fadeIn .2s}
+.modal-content{background:var(--card);border-radius:20px;max-width:750px;width:100%;max-height:88vh;overflow-y:auto;padding:28px;animation:slideUp .25s;box-shadow:0 25px 60px rgba(0,0,0,.25)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-title{font-size:1.2rem;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.toast-container{position:fixed;bottom:20px;left:20px;z-index:2000;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 20px;border-radius:12px;color:#fff;font-size:13px;font-weight:600;animation:toastIn .3s;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.toast-success{background:linear-gradient(135deg,#059669,#10b981)}.toast-error{background:linear-gradient(135deg,#dc2626,#ef4444)}
+.toast-info{background:linear-gradient(135deg,#2563eb,#3b82f6)}
+@keyframes toastIn{from{transform:translateX(-100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.flex-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.flex-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.summary-bar{background:var(--primary-light);padding:14px 18px;border-radius:14px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:20px;font-size:13px}
+.summary-bar strong{color:var(--primary)}
+.text-danger{color:var(--danger)}.text-success{color:var(--success)}.text-muted{color:var(--muted)}
+.text-center{text-align:center}.text-left{text-align:left}.mt-2{margin-top:8px}.mt-3{margin-top:16px}
+.gap-2{gap:8px}.d-flex{display:flex}.align-center{align-items:center}.justify-between{justify-content:space-between}
+.pos-layout{display:grid;grid-template-columns:1fr 380px;gap:16px;min-height:500px}
+.pos-products{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:16px;overflow-y:auto;max-height:65vh}
+.pos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.pos-product{background:var(--bg);border:2px solid var(--border);border-radius:14px;padding:14px;text-align:center;cursor:pointer;transition:.2s}
+.pos-product:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--shadow)}
+.pos-product.out-of-stock{opacity:.4;pointer-events:none}
+.pos-product h4{font-size:13px;margin-bottom:4px}.pos-product .price{color:var(--primary);font-weight:800;font-size:14px}
+.pos-product .stock{font-size:10px;color:var(--muted)}
+.pos-cart{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:16px;display:flex;flex-direction:column}
+.pos-cart-items{flex:1;overflow-y:auto;margin-bottom:12px}
+.pos-cart-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+.pos-cart-item .qty-controls{display:flex;align-items:center;gap:6px}
+.pos-cart-item .qty-controls button{width:24px;height:24px;border-radius:6px;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:center}
+.pos-totals{border-top:2px solid var(--border);padding-top:12px}
+.pos-totals .line{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.pos-totals .line.grand{font-size:1.1rem;font-weight:900;color:var(--primary)}
+.chart-container{position:relative;height:280px}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state i{font-size:48px;margin-bottom:12px;opacity:.3}
+.trial-total td{font-weight:900;background:var(--primary-light)!important;font-size:14px}
+.tbl-wrap{overflow-x:auto}
+.search-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.search-bar input{max-width:280px}
+.alert-bar{background:#fef3c7;border:1px solid #f59e0b;border-radius:12px;padding:10px 16px;margin-bottom:14px;font-size:13px;display:flex;align-items:center;gap:10px;color:#92400e}
+.dark .alert-bar{background:#78350f;border-color:#b45309;color:#fde68a}
+.invoice-print{max-width:700px;margin:0 auto;padding:30px;background:#fff;color:#000}
+.invoice-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #0d9488}
+.invoice-logo{font-size:1.5rem;font-weight:900;color:#0d9488}
+.invoice-title{font-size:1.8rem;font-weight:900;color:#0d9488;text-align:left}
+.invoice-table th{background:#0d9488;color:#fff}
+.invoice-total{text-align:left;margin-top:16px;font-size:1.1rem;font-weight:700}
+.invoice-footer{margin-top:24px;padding-top:12px;border-top:1px solid #ddd;text-align:center;color:#64748b;font-size:12px}
+@media print{.top-bar,.menu,.no-print{display:none!important}body{background:#fff;color:#000}.card{box-shadow:none;border:1px solid #ddd}.content{padding:0}}
+@media(max-width:768px){
+.pos-layout{grid-template-columns:1fr}.pos-products{max-height:35vh}
+.flex-2,.flex-3{grid-template-columns:1fr}
+.stats-grid{grid-template-columns:repeat(2,1fr)}
+.top-bar{padding:10px 14px}.logo{font-size:1rem}
+.menu{gap:2px;padding:6px}.menu-item{padding:6px 8px;min-width:48px}.menu-item span{font-size:8.5px}
+.content{padding:14px}
+}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr 1fr;gap:10px}.stat-card{padding:14px 10px}.stat-card h3{font-size:1.1rem}}
 </style>
 </head>
 <body>
-<!-- SETUP BANNER -->
-<div id="setupBanner" class="setup-banner" style="display:none">
-  <span><i class="fas fa-exclamation-triangle"></i> &nbsp;استبدل <strong>YOUR_API_KEY_HERE</strong> في الكود بـ Firebase API Key الحقيقي</span>
-  <button onclick="this.parentElement.style.display='none'" style="background:none;border:1px solid rgba(255,255,255,.6);color:#fff;padding:3px 10px;border-radius:6px;cursor:pointer;font-size:11.5px;font-family:Cairo">إغلاق</button>
-</div>
-<!-- LOGIN -->
+
 <div id="loginScreen" class="login-screen">
-  <div class="login-box" id="loginDiv">
-    <div class="login-logo">⚡ ERP PRO ULTIMATE</div>
-    <div class="login-sub">نظام محاسبي متكامل &bull; قيد مزدوج &bull; Firebase Sync &bull; 10 قوالب فواتير</div>
-    <div class="lf"><i class="fas fa-user"></i><input type="text" id="lu" placeholder="اسم المستخدم" value="admin"></div>
-    <div class="lf"><i class="fas fa-lock"></i><input type="password" id="lp" placeholder="كلمة المرور" value="admin123"></div>
-    <button class="btn-login" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</button>
-    <div class="login-link" onclick="showReg()">إنشاء حساب جديد</div>
-  </div>
-  <div class="login-box" id="regDiv" style="display:none">
-    <div class="login-logo">إنشاء حساب</div>
-    <div class="lf"><i class="fas fa-id-badge"></i><input type="text" id="rn" placeholder="الاسم الكامل"></div>
-    <div class="lf"><i class="fas fa-user"></i><input type="text" id="ru" placeholder="اسم المستخدم"></div>
-    <div class="lf"><i class="fas fa-lock"></i><input type="password" id="rp" placeholder="كلمة المرور"></div>
-    <button class="btn-login" onclick="doRegister()"><i class="fas fa-user-plus"></i> إنشاء الحساب</button>
-    <div class="login-link" onclick="showLogin()">تسجيل الدخول</div>
-  </div>
+<div class="login-box" id="loginDiv">
+    <div class="login-logo">ERP PRO ULTIMATE</div>
+    <div class="login-sub">نظام محاسبي متكامل &bull; القيد المزدوج</div>
+    <div class="field"><i class="fas fa-user"></i><input type="text" id="loginUser" placeholder="اسم المستخدم" value="admin"></div>
+    <div class="field"><i class="fas fa-lock"></i><input type="password" id="loginPass" placeholder="كلمة المرور" value="admin123"></div>
+    <button class="btn-primary" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</button>
+    <div class="login-link" onclick="toggleAuthForm('register')">ليس لديك حساب؟ إنشاء حساب جديد</div>
 </div>
-<!-- APP -->
+<div class="login-box" id="registerDiv" style="display:none">
+    <div class="login-logo">إنشاء حساب</div>
+    <div class="login-sub">أدخل بياناتك للتسجيل في النظام</div>
+    <div class="field"><i class="fas fa-id-badge"></i><input type="text" id="regName" placeholder="الاسم الكامل"></div>
+    <div class="field"><i class="fas fa-user"></i><input type="text" id="regUser" placeholder="اسم المستخدم"></div>
+    <div class="field"><i class="fas fa-lock"></i><input type="password" id="regPass" placeholder="كلمة المرور"></div>
+    <button class="btn-primary" onclick="doRegister()"><i class="fas fa-user-plus"></i> إنشاء الحساب</button>
+    <div class="login-link" onclick="toggleAuthForm('login')">لديك حساب بالفعل؟ تسجيل الدخول</div>
+</div>
+</div>
+
 <div id="app" class="app">
-  <header class="top-bar">
+<header class="top-bar">
     <div class="logo" id="topLogo">ERP PRO ULTIMATE</div>
     <div class="top-actions">
-      <span class="user-badge" id="userBadge"></span>
-      <span class="sync-indicator"><span class="sync-dot" id="syncDot"></span><span id="syncTxt" style="font-size:10.5px">جاري الاتصال</span></span>
-      <button onclick="toggleDark()" title="الوضع الليلي"><i class="fas fa-moon" id="darkIcon"></i></button>
-      <button onclick="showNotif()" title="التنبيهات" style="position:relative"><i class="fas fa-bell"></i><span id="nb" style="position:absolute;top:-2px;right:-2px;background:#ef4444;color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;display:none;align-items:center;justify-content:center;font-weight:700"></span></button>
-      <button onclick="logout()" title="خروج" style="color:var(--danger)"><i class="fas fa-sign-out-alt"></i></button>
+        <span class="user-badge" id="userBadge"></span>
+        <button onclick="toggleDark()" title="الوضع الليلي"><i class="fas fa-moon" id="darkIcon"></i></button>
+        <button onclick="showNotifications()" title="التنبيهات" style="position:relative">
+            <i class="fas fa-bell"></i>
+            <span id="notifBadge" style="position:absolute;top:-2px;right:-2px;background:#ef4444;color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;display:none;align-items:center;justify-content:center;font-weight:700"></span>
+        </button>
+        <button onclick="logout()" title="خروج" style="color:var(--danger)"><i class="fas fa-sign-out-alt"></i></button>
     </div>
-  </header>
-  <nav class="menu" id="menuBar"></nav>
-  <main class="content" id="pageContent"></main>
+</header>
+<nav class="menu" id="menuBar"></nav>
+<main class="content" id="pageContent"></main>
 </div>
-<!-- MODAL -->
-<div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="mc" id="modalBody"></div></div>
-<!-- PRINT MODAL -->
-<div id="printModal" class="print-modal" onclick="if(event.target===this)closePM()">
-  <div class="pm-inner">
-    <div class="pm-bar no-print">
-      <strong style="font-size:13px;color:#0f172a"><i class="fas fa-eye"></i> معاينة الفاتورة</strong>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-        <button onclick="changeTpl(-1)" class="btn bg bsm"><i class="fas fa-chevron-right"></i></button>
-        <span id="tplName" style="font-size:11.5px;color:#64748b;min-width:140px;text-align:center"></span>
-        <button onclick="changeTpl(1)" class="btn bg bsm"><i class="fas fa-chevron-left"></i></button>
-        <button onclick="doPrint()" class="btn bp bsm"><i class="fas fa-print"></i> طباعة</button>
-        <button onclick="shareWA()" class="btn bwa bsm"><i class="fab fa-whatsapp"></i></button>
-        <button onclick="copyInvText()" class="btn bg bsm"><i class="fas fa-copy"></i></button>
-        <button onclick="closePM()" class="btn bg bsm"><i class="fas fa-times"></i></button>
-      </div>
-    </div>
-    <div id="printContent"></div>
-  </div>
+
+<div id="modal" class="modal" onclick="if(event.target===this)closeModal()">
+<div class="modal-content" id="modalBody"></div>
 </div>
-<div class="toast-c" id="toastBox"></div>
+
+<div class="toast-container" id="toastBox"></div>
+
 <script>
-/* ════════════════════════════════════════
-   FIREBASE
-════════════════════════════════════════ */
-const firebaseConfig = {
-  apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
-  authDomain: "my-pos-system-11dee.firebaseapp.com",
-  databaseURL: "https://my-pos-system-11dee-default-rtdb.firebaseio.com",
-  projectId: "my-pos-system-11dee",
-  storageBucket: "my-pos-system-11dee.firebasestorage.app",
-  messagingSenderId: "565195477080",
-  appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d"
-};
-let fbDB=null, fbConnected=false, fbTimer=null, fbEnabled=false;
-try {
-  if(firebaseConfig.apiKey==='YOUR_API_KEY_HERE') throw new Error('placeholder');
-  firebase.initializeApp(firebaseConfig);
-  fbDB = firebase.database();
-  fbEnabled = true;
-  fbDB.ref('.info/connected').on('value', s=>{
-    fbConnected=s.val()===true;
-    updateSyncUI();
-  });
-} catch(e) {
-  fbDB=null; fbEnabled=false;
-  if(firebaseConfig.apiKey==='YOUR_API_KEY_HERE') document.getElementById('setupBanner').style.display='flex';
-}
-function updateSyncUI(){
-  const d=$('syncDot'),t=$('syncTxt');if(!d)return;
-  d.className='sync-dot '+(fbConnected?'online':'offline');
-  if(t)t.textContent=fbConnected?'متصل بـ Firebase':fbEnabled?'Firebase غير متصل':'وضع محلي';
-}
-/* ════════════════════════════════════════
-   CONSTANTS
-════════════════════════════════════════ */
+/* ========== 1. الثوابت ========== */
 const PAGES=[
-  {id:'dashboard',icon:'fa-th-large',label:'الرئيسية'},
-  {id:'inventory',icon:'fa-boxes-stacked',label:'المخزون'},
-  {id:'suppliers',icon:'fa-truck-field',label:'الموردين'},
-  {id:'purchases',icon:'fa-cart-shopping',label:'المشتريات'},
-  {id:'quotes',icon:'fa-file-lines',label:'عروض أسعار'},
-  {id:'sales',icon:'fa-file-invoice-dollar',label:'المبيعات'},
-  {id:'returns',icon:'fa-rotate-left',label:'المرتجعات'},
-  {id:'clients',icon:'fa-user-group',label:'العملاء'},
-  {id:'pos',icon:'fa-cash-register',label:'نقطة البيع'},
-  {id:'expenses',icon:'fa-money-bill-trend-up',label:'المصروفات'},
-  {id:'accounting',icon:'fa-scale-balanced',label:'المحاسبة'},
-  {id:'reports',icon:'fa-chart-bar',label:'التقارير'},
-  {id:'settings',icon:'fa-gear',label:'الإعدادات'},
-  {id:'backup',icon:'fa-cloud-arrow-down',label:'النسخ الاحتياطي'}
+    {id:'dashboard',icon:'fa-th-large',label:'الرئيسية'},
+    {id:'inventory',icon:'fa-boxes-stacked',label:'المخزون'},
+    {id:'suppliers',icon:'fa-truck-field',label:'الموردين'},
+    {id:'purchases',icon:'fa-cart-shopping',label:'المشتريات'},
+    {id:'sales',icon:'fa-file-invoice-dollar',label:'المبيعات'},
+    {id:'clients',icon:'fa-user-group',label:'العملاء'},
+    {id:'pos',icon:'fa-cash-register',label:'نقطة البيع'},
+    {id:'expenses',icon:'fa-money-bill-trend-up',label:'المصروفات'},
+    {id:'accounting',icon:'fa-scale-balanced',label:'المحاسبة'},
+    {id:'reports',icon:'fa-chart-bar',label:'التقارير'},
+    {id:'settings',icon:'fa-gear',label:'الإعدادات'},
+    {id:'backup',icon:'fa-cloud-arrow-down',label:'النسخ الاحتياطي'}
 ];
-const CURRENCIES=['LYD','SAR','USD','EGP','AED','TND','KWD','BHD','OMR','QAR','MAD','DZD','EUR','GBP'];
-const RATES={SAR:1,LYD:.78,USD:3.75,EGP:.048,AED:1.02,TND:.97,KWD:12.2,BHD:9.95,OMR:9.73,QAR:1.03,MAD:.375,DZD:.028,EUR:4.1,GBP:4.75};
-const EXPENSE_CATS=['إيجار','رواتب وأجور','كهرباء ومياه','إنترنت واتصالات','صيانة وإصلاح','نقل وشحن','تسويق وإعلان','مستلزمات مكتبية','ضريبة ورسوم','تأمين','وقود','طعام وضيافة','أخرى'];
-const COA=[
-  {code:'1100',name:'الصندوق (النقدية)',type:'asset'},{code:'1200',name:'البنك',type:'asset'},
-  {code:'1300',name:'ذمم مدينة (عملاء)',type:'asset'},{code:'1400',name:'المخزون',type:'asset'},
-  {code:'1500',name:'أصول ثابتة',type:'asset'},{code:'2100',name:'ذمم دائنة (موردين)',type:'liability'},
-  {code:'2200',name:'ضريبة القيمة المضافة',type:'liability'},{code:'2300',name:'قروض',type:'liability'},
-  {code:'3100',name:'رأس المال',type:'equity'},{code:'3200',name:'أرباح محتجزة',type:'equity'},
-  {code:'4100',name:'إيرادات المبيعات',type:'revenue'},{code:'4200',name:'إيرادات أخرى',type:'revenue'},
-  {code:'5100',name:'تكلفة البضاعة المباعة',type:'expense'},{code:'5200',name:'مصروفات تشغيلية',type:'expense'},
-  {code:'5300',name:'مصروفات إدارية',type:'expense'},{code:'5400',name:'مصروفات تسويقية',type:'expense'}
+const RATES={SAR:1,LYD:0.78,USD:3.75,EGP:0.48,AED:1.02,TND:0.97};
+const CHART_OF_ACCOUNTS=[
+    {code:'1000',name:'الأصول',type:'asset',parent:null},
+    {code:'1100',name:'الصندوق (النقدية)',type:'asset',parent:'1000'},
+    {code:'1200',name:'البنك',type:'asset',parent:'1000'},
+    {code:'1300',name:'ذمم مدينة (عملاء)',type:'asset',parent:'1000'},
+    {code:'1400',name:'المخزون',type:'asset',parent:'1000'},
+    {code:'2000',name:'الخصوم',type:'liability',parent:null},
+    {code:'2100',name:'ذمم دائنة (موردين)',type:'liability',parent:'2000'},
+    {code:'2200',name:'ضريبة القيمة المضافة',type:'liability',parent:'2000'},
+    {code:'3000',name:'حقوق الملكية',type:'equity',parent:null},
+    {code:'3100',name:'رأس المال',type:'equity',parent:'3000'},
+    {code:'3200',name:'أرباح (خسائر) المرحلة',type:'equity',parent:'3000'},
+    {code:'4000',name:'الإيرادات',type:'revenue',parent:null},
+    {code:'4100',name:'إيرادات المبيعات',type:'revenue',parent:'4000'},
+    {code:'4200',name:'إيرادات أخرى',type:'revenue',parent:'4000'},
+    {code:'5000',name:'المصروفات',type:'expense',parent:null},
+    {code:'5100',name:'تكلفة البضاعة المباعة',type:'expense',parent:'5000'},
+    {code:'5200',name:'مصروفات تشغيلية',type:'expense',parent:'5000'},
+    {code:'5300',name:'مصروفات إدارية',type:'expense',parent:'5000'}
 ];
+const EXPENSE_CATS=['إيجار','رواتب وأجور','كهرباء ومياه','إنترنت واتصالات','صيانة','نقل وشحن','تسويق وإعلان','مستلزمات مكتبية','ضريبة ورسوم','أخرى'];
 const THEME_COLORS=[
-  {n:'أخضر مائي',p:'#0d9488',d:'#0f766e'},{n:'أزرق',p:'#2563eb',d:'#1d4ed8'},
-  {n:'بنفسجي',p:'#7c3aed',d:'#6d28d9'},{n:'وردي',p:'#db2777',d:'#be185d'},
-  {n:'برتقالي',p:'#ea580c',d:'#c2410c'},{n:'رمادي',p:'#475569',d:'#334155'},
-  {n:'أحمر',p:'#dc2626',d:'#b91c1c'},{n:'ذهبي',p:'#b45309',d:'#92400e'}
+    {name:'أخضر مائي',primary:'#0d9488',dark:'#0f766e'},
+    {name:'أزرق',primary:'#2563eb',dark:'#1d4ed8'},
+    {name:'بنفسجي',primary:'#7c3aed',dark:'#6d28d9'},
+    {name:'وردي',primary:'#db2777',dark:'#be185d'},
+    {name:'برتقالي',primary:'#ea580c',dark:'#c2410c'},
+    {name:'رمادي',primary:'#475569',dark:'#334155'}
 ];
-const TPLS=[
-  {id:1,name:'كلاسيك (أخضر مائي)',cls:'t1',icon:'🟢',hbg:'linear-gradient(135deg,#0d9488,#0f766e)'},
-  {id:2,name:'حديث (أزرق داكن)',cls:'t2',icon:'🔵',hbg:'linear-gradient(135deg,#0f172a,#1e3a5f)'},
-  {id:3,name:'بسيط (أبيض وأسود)',cls:'t3',icon:'⬛',hbg:'#000'},
-  {id:4,name:'مؤسسي (بنفسجي)',cls:'t4',icon:'🟣',hbg:'linear-gradient(135deg,#6d28d9,#7c3aed)'},
-  {id:5,name:'إيصال نقطة البيع',cls:'t5',icon:'🧾',hbg:'#94a3b8'},
-  {id:6,name:'فاخر (ذهبي)',cls:'t6',icon:'🥇',hbg:'linear-gradient(135deg,#78350f,#b45309)'},
-  {id:7,name:'مينيمال (نظيف)',cls:'t7',icon:'📄',hbg:'#e2e8f0'},
-  {id:8,name:'تقني (داكن)',cls:'t8',icon:'💻',hbg:'#0f172a'},
-  {id:9,name:'وردي احترافي',cls:'t9',icon:'🌸',hbg:'linear-gradient(135deg,#be185d,#db2777)'},
-  {id:10,name:'زمردي فاخر',cls:'t10',icon:'💚',hbg:'linear-gradient(135deg,#065f46,#059669)'}
-];
-/* ════════════════════════════════════════
-   STATE
-════════════════════════════════════════ */
-let CU=null, currency='LYD', isDark=localStorage.getItem('erpDark')==='true',
-    page='dashboard', posCart=[], logs=[], charts=[], saleItems=[], quotesItems=[], jeLines=[],
-    companyInfo={name:'شركتي',phone:'',address:'',taxNo:'',email:'',website:'',branch:'الرئيسي'},
-    themeColor='#0d9488', themeDark='#0f766e', lowStock=5, taxRate=15,
-    activeTpl=1, lastPD=null, lastPT='sale', accTab='trial', rptTab='sales';
+
+/* ========== 2. الحالة ========== */
+let currentUser=null,currency=localStorage.getItem('erp_currency')||'LYD',isDark=localStorage.getItem('erp_dark')==='true',activePage='dashboard',posCart=[],logs=[],charts=[],companyInfo={name:'شركتي',phone:'',address:'',taxNo:'',branch:'الرئيسي'};
+let themeColor=localStorage.getItem('erp_theme')||'#0d9488';
+let themeDark=localStorage.getItem('erp_theme_dark')||'#0f766e';
+let lowStockThreshold=parseInt(localStorage.getItem('erp_low_stock')||'5');
+
+/* ========== 3. قاعدة البيانات ========== */
 let db={
-  inventory:[
-    {id:101,name:'مكتب خشبي فاخر',cat:'أثاث',qty:20,buy:1500,sell:2500,barcode:''},
-    {id:102,name:'كرسي دوار مريح',cat:'أثاث',qty:35,buy:500,sell:900,barcode:''},
-    {id:103,name:'طابعة HP LaserJet',cat:'إلكترونيات',qty:12,buy:2200,sell:3500,barcode:''},
-    {id:104,name:'لابتوب Dell Inspiron',cat:'إلكترونيات',qty:8,buy:3500,sell:5500,barcode:''},
-    {id:105,name:'شاشة 27 بوصة',cat:'إلكترونيات',qty:15,buy:1200,sell:2000,barcode:''},
-    {id:106,name:'خزانة ملفات معدنية',cat:'أثاث',qty:10,buy:800,sell:1400,barcode:''}
-  ],
-  suppliers:[
-    {id:201,name:'شركة العالمية للتوريدات',phone:'0555555555',address:'الرياض',cat:'أثاث',balance:0},
-    {id:202,name:'مصنع التقنية المتقدمة',phone:'0566666666',address:'جدة',cat:'إلكترونيات',balance:5000},
-    {id:203,name:'مؤسسة النور للتجارة',phone:'0577777777',address:'الدمام',cat:'متعدد',balance:0}
-  ],
-  clients:[
-    {id:301,name:'شركة الأهرام للتجارة',phone:'0512345678',address:'الرياض',balance:0},
-    {id:302,name:'مؤسسة النور المتحدة',phone:'0587654321',address:'جدة',balance:2025},
-    {id:303,name:'مكتبة الفجر',phone:'0551122334',address:'الدمام',balance:0},
-    {id:304,name:'شركة البناء الحديث',phone:'0599887766',address:'مكة',balance:0}
-  ],
-  purchases:[
-    {id:1001,supId:201,supName:'شركة العالمية للتوريدات',prodName:'مكتب خشبي فاخر',prodId:101,qty:10,price:1500,total:15000,paid:15000,status:'مدفوع',date:'2025-05-18',notes:''},
-    {id:1002,supId:202,supName:'مصنع التقنية المتقدمة',prodName:'طابعة HP LaserJet',prodId:103,qty:5,price:2200,total:11000,paid:6000,status:'آجل',date:'2025-05-19',notes:''},
-    {id:1003,supId:202,supName:'مصنع التقنية المتقدمة',prodName:'شاشة 27 بوصة',prodId:105,qty:8,price:1200,total:9600,paid:9600,status:'مدفوع',date:'2025-05-22',notes:''}
-  ],
-  sales:[
-    {id:2001,clientId:301,clientName:'شركة الأهرام للتجارة',items:[{pid:101,name:'مكتب خشبي فاخر',qty:2,price:2500,total:5000}],sub:5000,discount:0,tax:750,grand:5750,paid:5750,status:'مدفوع',date:'2025-05-20',notes:''},
-    {id:2002,clientId:302,clientName:'مؤسسة النور المتحدة',items:[{pid:103,name:'طابعة HP LaserJet',qty:1,price:3500,total:3500}],sub:3500,discount:0,tax:525,grand:4025,paid:2000,status:'آجل',date:'2025-05-21',notes:''},
-    {id:2003,clientId:303,clientName:'مكتبة الفجر',items:[{pid:102,name:'كرسي دوار مريح',qty:5,price:900,total:4500},{pid:106,name:'خزانة ملفات معدنية',qty:2,price:1400,total:2800}],sub:7300,discount:0,tax:1095,grand:8395,paid:8395,status:'مدفوع',date:'2025-05-23',notes:''}
-  ],
-  quotes:[],returns:[],
-  expenses:[
-    {id:501,cat:'إيجار',amount:5000,note:'إيجار المكتب',date:'2025-05-25',payMethod:'نقدي'},
-    {id:502,cat:'رواتب وأجور',amount:15000,note:'رواتب مايو',date:'2025-05-25',payMethod:'بنك'},
-    {id:503,cat:'كهرباء ومياه',amount:1200,note:'فاتورة الكهرباء',date:'2025-05-26',payMethod:'نقدي'}
-  ],
-  users:[{id:1,name:'المدير العام',username:'admin',password:'admin123',role:'admin'}],
-  journal:[],
-  nids:{inv:200,sup:300,cli:400,pur:2100,sale:3100,exp:600,jnl:1000,pos:4000,qte:5000,ret:6000}
+    inventory:[
+        {id:1,name:'مكتب خشبي فاخر',cat:'أثاث',qty:20,buy:1500,sell:2500},
+        {id:2,name:'كرسي دوار مريح',cat:'أثاث',qty:35,buy:500,sell:900},
+        {id:3,name:'طابعة HP LaserJet Pro',cat:'إلكترونيات',qty:12,buy:2200,sell:3500},
+        {id:4,name:'لابتوب Dell Inspiron',cat:'إلكترونيات',qty:8,buy:3500,sell:5500},
+        {id:5,name:'شاشة عرض 27 بوصة',cat:'إلكترونيات',qty:15,buy:1200,sell:2000},
+        {id:6,name:'خزانة ملفات معدنية',cat:'أثاث',qty:10,buy:800,sell:1400}
+    ],
+    suppliers:[
+        {id:1,name:'شركة العالمية للتوريدات',phone:'0555555555',address:'الرياض - حي العليا',cat:'أثاث'},
+        {id:2,name:'مصنع التقنية المتقدمة',phone:'0566666666',address:'جدة - حي الصناعية',cat:'إلكترونيات'},
+        {id:3,name:'مؤسسة النور للتجارة',phone:'0577777777',address:'الدمام',cat:'متعدد'}
+    ],
+    clients:[
+        {id:1,name:'شركة الأهرام للتجارة',phone:'0512345678',address:'الرياض',balance:0},
+        {id:2,name:'مؤسسة النور المتحدة',phone:'0587654321',address:'جدة',balance:2025},
+        {id:3,name:'مكتبة الفجر',phone:'0551122334',address:'الدمام',balance:0},
+        {id:4,name:'شركة البناء الحديث',phone:'0599887766',address:'مكة',balance:0}
+    ],
+    purchases:[
+        {id:1001,supId:1,supName:'شركة العالمية للتوريدات',prodName:'مكتب خشبي فاخر',qty:10,price:1500,total:15000,paid:15000,status:'مدفوع',date:'2025-05-18'},
+        {id:1002,supId:2,supName:'مصنع التقنية المتقدمة',prodName:'طابعة HP LaserJet Pro',qty:5,price:2200,total:11000,paid:6000,status:'آجل',date:'2025-05-19'},
+        {id:1003,supId:2,supName:'مصنع التقنية المتقدمة',prodName:'شاشة عرض 27 بوصة',qty:8,price:1200,total:9600,paid:9600,status:'مدفوع',date:'2025-05-22'}
+    ],
+    sales:[
+        {id:2001,clientId:1,clientName:'شركة الأهرام للتجارة',items:[{pid:1,name:'مكتب خشبي فاخر',qty:2,price:2500,total:5000}],sub:5000,tax:750,grand:5750,paid:5750,status:'مدفوع',date:'2025-05-20'},
+        {id:2002,clientId:2,clientName:'مؤسسة النور المتحدة',items:[{pid:3,name:'طابعة HP LaserJet Pro',qty:1,price:3500,total:3500}],sub:3500,tax:525,grand:4025,paid:2000,status:'آجل',date:'2025-05-21'},
+        {id:2003,clientId:3,clientName:'مكتبة الفجر',items:[{pid:2,name:'كرسي دوار مريح',qty:5,price:900,total:4500},{pid:6,name:'خزانة ملفات معدنية',qty:2,price:1400,total:2800}],sub:7300,tax:1095,grand:8395,paid:8395,status:'مدفوع',date:'2025-05-23'}
+    ],
+    expenses:[
+        {id:1,cat:'إيجار',amount:5000,note:'إيجار المكتب - يونيو',date:'2025-05-25'},
+        {id:2,cat:'رواتب وأجور',amount:15000,note:'رواتب الموظفين - مايو',date:'2025-05-25'},
+        {id:3,cat:'كهرباء ومياه',amount:1200,note:'فاتورة الكهرباء',date:'2025-05-26'}
+    ],
+    users:[{id:1,name:'المدير العام',username:'admin',password:'admin123',role:'admin'}],
+    journal:[],
+    nextIds:{inv:100,sup:100,cli:100,pur:2000,sale:3000,exp:100,jnl:1000}
 };
-/* ════════════════════════════════════════
-   UTILS
-════════════════════════════════════════ */
+
+/* ========== 4. أدوات مساعدة ========== */
 const $=id=>document.getElementById(id);
-const fmt=n=>{if(isNaN(n)||n==null)n=0;let r=RATES[currency]||1;return(n*r).toLocaleString('ar',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+currency};
-const f2=n=>parseFloat(isNaN(n)?0:n).toFixed(2);
+const fmt=n=>{let r=RATES[currency]||1;return(n*r).toLocaleString('ar',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+currency};
 const today=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const nid=k=>{db.nids[k]=(db.nids[k]||1000)+1;return db.nids[k]};
-const isAdmin=()=>CU&&CU.role==='admin';
-const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const nextId=key=>{db.nextIds[key]=(db.nextIds[key]||1000)+1;return db.nextIds[key]};
+const isAdmin=()=>currentUser&&currentUser.role==='admin';
+
 function toast(msg,type='info'){
-  let el=document.createElement('div');
-  el.className='toast t-'+(type==='success'?'s':type==='error'?'e':type==='warning'?'w':'i');
-  el.innerHTML='<i class="fas '+(type==='success'?'fa-check-circle':type==='error'?'fa-times-circle':type==='warning'?'fa-triangle-exclamation':'fa-info-circle')+'"></i> '+msg;
-  $('toastBox').appendChild(el);
-  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .4s';setTimeout(()=>el.remove(),400)},3200);
+    let el=document.createElement('div');
+    el.className='toast toast-'+type;
+    let icons={success:'fa-check-circle',error:'fa-times-circle',info:'fa-info-circle'};
+    el.innerHTML=`<i class="fas ${icons[type]||icons.info}"></i> ${msg}`;
+    $('toastBox').appendChild(el);
+    setTimeout(()=>el.remove(),3000);
 }
-function openModal(html){$('modalBody').innerHTML=html;$('modal').style.display='flex';$('modal').scrollTop=0}
+function openModal(html){$('modalBody').innerHTML=html;$('modal').style.display='flex'}
 function closeModal(){$('modal').style.display='none'}
 function destroyCharts(){charts.forEach(c=>{try{c.destroy()}catch(e){}});charts=[]}
+
 function applyTheme(){
-  document.documentElement.style.setProperty('--primary',themeColor);
-  document.documentElement.style.setProperty('--pd',themeDark);
-  let r=parseInt(themeColor.slice(1,3),16),g=parseInt(themeColor.slice(3,5),16),b=parseInt(themeColor.slice(5,7),16);
-  document.documentElement.style.setProperty('--pl',\`rgba(\${r},\${g},\${b},0.11)\`);
+    document.documentElement.style.setProperty('--primary',themeColor);
+    document.documentElement.style.setProperty('--primary-dark',themeDark);
+    let r=parseInt(themeColor.slice(1,3),16),g=parseInt(themeColor.slice(3,5),16),b=parseInt(themeColor.slice(5,7),16);
+    document.documentElement.style.setProperty('--primary-light',`rgba(${r},${g},${b},0.12)`);
 }
-/* ════════════════════════════════════════
-   SAVE / LOAD
-════════════════════════════════════════ */
+
 function save(){
-  const p={db,logs,companyInfo,currency,themeColor,themeDark,lowStock,taxRate};
-  try{localStorage.setItem('erpData',JSON.stringify(p));}catch(e){}
-  if(fbDB&&fbConnected){
-    clearTimeout(fbTimer);
-    fbTimer=setTimeout(()=>fbDB.ref('erp').set(p).catch(e=>console.warn('FB:',e)),1500);
-  }
+    try{
+        let d=JSON.stringify({db,logs,companyInfo,currency,themeColor,themeDark,lowStockThreshold});
+        if(typeof CryptoJS!=='undefined'){
+            let enc=CryptoJS.AES.encrypt(d,'erp_pro_ultimate_key_2025').toString();
+            localStorage.setItem('erp_data',enc);
+        } else {
+            localStorage.setItem('erp_data_plain',d);
+        }
+    }catch(e){console.warn('Save error',e);}
 }
-function load(cb){
-  if(fbDB){
-    fbDB.ref('erp').once('value').then(s=>{const d=s.val();if(d)applyLoaded(d);else loadLocal();if(cb)cb();})
-      .catch(()=>{loadLocal();if(cb)cb();});
-    fbDB.ref('erp').on('value',s=>{const d=s.val();if(d&&CU){applyLoaded(d);if(page)navigate(page,true);}});
-  } else {loadLocal();if(cb)cb();}
+function load(){
+    try{
+        let enc=localStorage.getItem('erp_data');
+        if(enc&&typeof CryptoJS!=='undefined'){
+            let bytes=CryptoJS.AES.decrypt(enc,'erp_pro_ultimate_key_2025');
+            let dec=bytes.toString(CryptoJS.enc.Utf8);
+            if(dec){
+                let obj=JSON.parse(dec);
+                if(obj.db)db=obj.db;
+                if(obj.logs)logs=obj.logs;
+                if(obj.companyInfo)companyInfo=obj.companyInfo;
+                if(obj.currency)currency=obj.currency;
+                if(obj.themeColor){themeColor=obj.themeColor;themeDark=obj.themeDark||'#0f766e';}
+                if(obj.lowStockThreshold)lowStockThreshold=obj.lowStockThreshold;
+            }
+        } else {
+            let plain=localStorage.getItem('erp_data_plain');
+            if(plain){
+                let obj=JSON.parse(plain);
+                if(obj.db)db=obj.db;if(obj.logs)logs=obj.logs;
+                if(obj.companyInfo)companyInfo=obj.companyInfo;if(obj.currency)currency=obj.currency;
+                if(obj.themeColor){themeColor=obj.themeColor;themeDark=obj.themeDark||'#0f766e';}
+                if(obj.lowStockThreshold)lowStockThreshold=obj.lowStockThreshold;
+            }
+        }
+    }catch(e){console.warn('Load error',e);}
 }
-function loadLocal(){try{const r=localStorage.getItem('erpData');if(r)applyLoaded(JSON.parse(r));}catch(e){}}
-function applyLoaded(o){
-  if(o.db){db={...db,...o.db};db.nids={...{inv:200,sup:300,cli:400,pur:2100,sale:3100,exp:600,jnl:1000,pos:4000,qte:5000,ret:6000},...(o.db.nids||{})}}
-  if(o.logs)logs=o.logs;if(o.companyInfo)companyInfo={...companyInfo,...o.companyInfo};
-  if(o.currency)currency=o.currency;if(o.themeColor){themeColor=o.themeColor;themeDark=o.themeDark||'#0f766e';}
-  if(o.lowStock!=null)lowStock=o.lowStock;if(o.taxRate!=null)taxRate=o.taxRate;
-  if(!db.quotes)db.quotes=[];if(!db.returns)db.returns=[];
+function addLog(action,detail){
+    if(!currentUser)return;
+    logs.unshift({user:currentUser.name,action,detail,time:new Date().toISOString()});
+    if(logs.length>300)logs.length=300;
+    save();
 }
-function addLog(a,d){if(!CU)return;logs.unshift({user:CU.name,action:a,detail:d,time:new Date().toISOString()});if(logs.length>500)logs.length=500;save();}
-/* ════════════════════════════════════════
-   ACCOUNTING (Double-Entry – Fixed)
-════════════════════════════════════════ */
-function je(desc,date,lines){
-  let td=lines.reduce((s,l)=>s+(l.d||0),0),tc=lines.reduce((s,l)=>s+(l.c||0),0);
-  if(Math.abs(td-tc)>0.01)console.warn('Unbalanced JE',desc,td,tc);
-  db.journal.push({id:nid('jnl'),date:date||today(),desc,lines});
+function getLowStockItems(){return db.inventory.filter(x=>x.qty<=lowStockThreshold);}
+function updateNotifBadge(){
+    let n=getLowStockItems().length;
+    let el=$('notifBadge');
+    if(!el)return;
+    if(n>0){el.style.display='flex';el.textContent=n;}
+    else el.style.display='none';
+}
+function showNotifications(){
+    let low=getLowStockItems();
+    if(low.length===0){toast('لا توجد تنبيهات حالياً','info');return;}
+    openModal(`<div class="modal-title"><i class="fas fa-bell" style="color:var(--warning)"></i> تنبيهات المخزون المنخفض</div>
+    <div class="tbl-wrap"><table>
+        <thead><tr><th>الصنف</th><th>الكمية المتبقية</th><th>الحد الأدنى</th></tr></thead>
+        <tbody>${low.map(p=>`<tr><td><strong>${p.name}</strong></td><td class="text-danger"><strong>${p.qty}</strong></td><td>${lowStockThreshold}</td></tr>`).join('')}</tbody>
+    </table></div>
+    <button class="btn btn-ghost mt-3" onclick="closeModal()">إغلاق</button>`);
+}
+
+/* ========== 5. المحاسبة المزدوجة ========== */
+function je(description,date,lines){
+    let td=lines.reduce((s,l)=>s+l.debit,0);
+    let tc=lines.reduce((s,l)=>s+l.credit,0);
+    if(Math.abs(td-tc)>0.01)console.warn('قيد غير متوازن:',description);
+    db.journal.push({id:nextId('jnl'),date:date||today(),description,lines});
 }
 function jeSale(s){
-  let cost=s.items.reduce((sum,it)=>{let p=db.inventory.find(x=>x.id===it.pid);return sum+(p?p.buy*it.qty:0);},0);
-  let acc=s.status==='مدفوع'?'1100':'1300';
-  let lines=[{acc,d:s.grand,c:0},{acc:'4100',d:0,c:s.sub-(s.discount||0)},{acc:'2200',d:0,c:s.tax}];
-  if((s.discount||0)>0)lines.push({acc:'4100',d:s.discount,c:0});
-  if(cost>0){lines.push({acc:'5100',d:cost,c:0});lines.push({acc:'1400',d:0,c:cost});}
-  je(\`فاتورة بيع #\${s.id} - \${s.clientName}\`,s.date,lines);
+    let costTotal=s.items.reduce((sum,it)=>{let p=db.inventory.find(x=>x.id===it.pid);return sum+(p?p.buy*it.qty:0);},0);
+    let cashAcc=s.status==='مدفوع'?'1100':'1300';
+    je(`فاتورة بيع #${s.id} - ${s.clientName}`,s.date,[
+        {acc:cashAcc,debit:s.grand,credit:0},{acc:'4100',debit:0,credit:s.sub},
+        {acc:'2200',debit:0,credit:s.tax},{acc:'5100',debit:costTotal,credit:0},{acc:'1400',debit:0,credit:costTotal}
+    ]);
 }
-function jePur(p){
-  let acc=p.status==='مدفوع'?'1100':'2100';
-  je(\`فاتورة شراء #\${p.id} - \${p.prodName}\`,p.date,[{acc:'1400',d:p.total,c:0},{acc,d:0,c:p.total}]);
+function jePurchase(p){
+    let payAcc=p.status==='مدفوع'?'1100':'2100';
+    je(`فاتورة شراء #${p.id} - ${p.prodName}`,p.date,[
+        {acc:'1400',debit:p.total,credit:0},{acc:payAcc,debit:0,credit:p.total}
+    ]);
 }
-function jeExp(e){
-  let acc=e.payMethod==='بنك'?'1200':'1100';
-  je(\`\${e.cat}: \${e.note}\`,e.date,[{acc:'5200',d:e.amount,c:0},{acc,d:0,c:e.amount}]);
+function jeExpense(e){
+    je(`${e.cat}: ${e.note}`,e.date,[
+        {acc:'5200',debit:e.amount,credit:0},{acc:'1100',debit:0,credit:e.amount}
+    ]);
 }
-function jePaySale(sid,amt){je(\`سداد فاتورة بيع #\${sid}\`,today(),[{acc:'1100',d:amt,c:0},{acc:'1300',d:0,c:amt}]);}
-function jePayPur(pid,amt){je(\`سداد فاتورة شراء #\${pid}\`,today(),[{acc:'2100',d:amt,c:0},{acc:'1100',d:0,c:amt}]);}
-function jeReturn(r){
-  je(\`مرتجع #\${r.id}\`,r.date,[{acc:'4100',d:r.total,c:0},{acc:'1300',d:0,c:r.total},{acc:'1400',d:r.cost||0,c:0},{acc:'5100',d:0,c:r.cost||0}]);
-}
-function accBal(code){
-  let b=0;db.journal.forEach(e=>e.lines.forEach(l=>{if(l.acc===code)b+=(l.d||0)-(l.c||0)}));return b;
+function accBalance(code){
+    let bal=0;
+    db.journal.forEach(e=>e.lines.forEach(l=>{if(l.acc===code)bal+=l.debit-l.credit}));
+    return bal;
 }
 function trialBalance(){
-  let rows=[];
-  COA.forEach(a=>{let b=accBal(a.code);if(Math.abs(b)>.001)rows.push({...a,debit:b>0?b:0,credit:b<0?-b:0});});
-  return rows;
+    let rows=[];
+    CHART_OF_ACCOUNTS.filter(a=>a.parent).forEach(a=>{
+        let bal=accBalance(a.code);
+        if(Math.abs(bal)>0.01)rows.push({code:a.code,name:a.name,debit:bal>0?bal:0,credit:bal<0?-bal:0});
+    });
+    return rows;
 }
-function incomeSt(){
-  let rev=accBal('4100')+accBal('4200'),cogs=accBal('5100'),opx=accBal('5200')+accBal('5300')+accBal('5400');
-  return{rev,cogs,gross:rev-cogs,opx,net:rev-cogs-opx};
+function incomeStatement(){
+    let revenue=accBalance('4100')+accBalance('4200');
+    let cogs=accBalance('5100');
+    let opExp=accBalance('5200')+accBalance('5300');
+    let gross=revenue-cogs;
+    let net=gross-opExp;
+    return{revenue,cogs,gross,opExp,net};
 }
-function balSheet(){
-  let cash=accBal('1100'),bank=accBal('1200'),rec=accBal('1300'),inv=accBal('1400'),fix=accBal('1500');
-  let pay=accBal('2100'),vat=accBal('2200'),loans=accBal('2300');
-  let cap=accBal('3100'),ret=accBal('3200'),is_=incomeSt();
-  return{cash,bank,rec,inv,fix,assets:cash+bank+rec+inv+fix,pay,vat,loans,liab:pay+vat+loans,cap,ret,netProfit:is_.net,equity:cap+ret+is_.net};
+function balanceSheet(){
+    let assets=accBalance('1100')+accBalance('1200')+accBalance('1300')+accBalance('1400');
+    let liabilities=accBalance('2100')+accBalance('2200');
+    let equity=accBalance('3100')+accBalance('3200');
+    let is_=incomeStatement();
+    equity+=is_.net;
+    return{assets,liabilities,equity,totalLiabEq:liabilities+equity};
 }
-/* ════════════════════════════════════════
-   AUTH
-════════════════════════════════════════ */
-function showLogin(){$('loginDiv').style.display='block';$('regDiv').style.display='none'}
-function showReg(){$('loginDiv').style.display='none';$('regDiv').style.display='block'}
+
+/* ========== 6. المصادقة ========== */
+function toggleAuthForm(type){
+    $('loginDiv').style.display=type==='login'?'block':'none';
+    $('registerDiv').style.display=type==='register'?'block':'none';
+}
 function doLogin(){
-  let u=($('lu').value||'').trim(),p=$('lp').value;
-  let f=db.users.find(x=>x.username===u&&x.password===p);
-  if(!f){toast('بيانات الدخول غير صحيحة','error');return}
-  CU=f;$('loginScreen').style.display='none';$('app').style.display='block';
-  $('userBadge').textContent=f.name;
-  if(isDark){document.body.classList.add('dark');$('darkIcon').className='fas fa-sun';}
-  applyTheme();$('topLogo').textContent=companyInfo.name||'ERP PRO ULTIMATE';
-  addLog('تسجيل دخول',f.username);buildMenu();navigate('dashboard');updateNB();
-  if(!fbEnabled){let d=$('syncDot'),t=$('syncTxt');if(d)d.className='sync-dot offline';if(t)t.textContent='وضع محلي';}
-  toast(\`مرحباً \${f.name}\`,'success');
+    let u=$('loginUser').value.trim(),p=$('loginPass').value;
+    let found=db.users.find(x=>x.username===u&&x.password===p);
+    if(!found){toast('اسم المستخدم أو كلمة المرور غير صحيحة','error');return}
+    currentUser=found;
+    $('loginScreen').style.display='none';
+    $('app').style.display='block';
+    $('userBadge').textContent=found.name;
+    if(isDark){document.body.classList.add('dark');$('darkIcon').className='fas fa-sun';}
+    applyTheme();
+    $('topLogo').textContent=companyInfo.name||'ERP PRO ULTIMATE';
+    addLog('تسجيل دخول',`المستخدم: ${found.username}`);
+    buildMenu();navigate('dashboard');
+    updateNotifBadge();
+    toast(`مرحباً ${found.name}`,'success');
 }
 function doRegister(){
-  let n=($('rn').value||'').trim(),u=($('ru').value||'').trim(),p=$('rp').value;
-  if(!n||!u||!p){toast('جميع الحقول مطلوبة','error');return}
-  if(p.length<4){toast('كلمة المرور قصيرة جداً (4 أحرف على الأقل)','error');return}
-  if(db.users.find(x=>x.username===u)){toast('اسم المستخدم موجود بالفعل','error');return}
-  db.users.push({id:Date.now(),name:n,username:u,password:p,role:'user'});
-  save();toast('تم إنشاء الحساب','success');showLogin();
+    let name=$('regName').value.trim(),user=$('regUser').value.trim(),pass=$('regPass').value;
+    if(!name||!user||!pass){toast('جميع الحقول مطلوبة','error');return}
+    if(pass.length<4){toast('كلمة المرور قصيرة جداً','error');return}
+    if(db.users.find(x=>x.username===user)){toast('اسم المستخدم مستخدم بالفعل','error');return}
+    db.users.push({id:nextId('usr'),name,username:user,password:pass,role:'user'});
+    save();toast('تم إنشاء الحساب بنجاح','success');
+    toggleAuthForm('login');$('loginUser').value=user;$('loginPass').value='';
 }
-function logout(){addLog('تسجيل خروج','');CU=null;$('loginScreen').style.display='flex';$('app').style.display='none';destroyCharts();posCart=[];saleItems=[];quotesItems=[];jeLines=[];}
-function toggleDark(){isDark=!isDark;localStorage.setItem('erpDark',isDark);document.body.classList.toggle('dark',isDark);$('darkIcon').className=isDark?'fas fa-sun':'fas fa-moon';}
-/* ════════════════════════════════════════
-   NAVIGATION
-════════════════════════════════════════ */
+function logout(){
+    addLog('تسجيل خروج','');currentUser=null;
+    $('loginScreen').style.display='flex';$('app').style.display='none';
+    destroyCharts();
+}
+function toggleDark(){
+    isDark=!isDark;localStorage.setItem('erp_dark',isDark);
+    document.body.classList.toggle('dark',isDark);
+    $('darkIcon').className=isDark?'fas fa-sun':'fas fa-moon';
+}
+
+/* ========== 7. التنقل ========== */
 function buildMenu(){
-  $('menuBar').innerHTML=PAGES.map(p=>
-    \`<div class="mi\${page===p.id?' active':''}" onclick="navigate('\${p.id}')"><i class="fas \${p.icon}"></i><span>\${p.label}</span></div>\`
-  ).join('');
+    $('menuBar').innerHTML=PAGES.map(p=>
+        `<div class="menu-item${activePage===p.id?' active':''}" onclick="navigate('${p.id}')">
+            <i class="fas ${p.icon}"></i><span>${p.label}</span>
+        </div>`
+    ).join('');
 }
-function navigate(pg,silent=false){
-  page=pg;if(!silent)destroyCharts();buildMenu();
-  const R={dashboard:rDash,inventory:rInv,suppliers:rSup,purchases:rPur,quotes:rQuotes,sales:rSales,returns:rReturns,clients:rCli,pos:rPOS,expenses:rExp,accounting:rAcc,reports:rRep,settings:rSettings,backup:rBackup};
-  if(R[pg])R[pg]();
-  if(!silent)window.scrollTo({top:0,behavior:'smooth'});
+function navigate(page){
+    activePage=page;destroyCharts();buildMenu();
+    let renderer={
+        dashboard:renderDashboard,inventory:renderInventory,suppliers:renderSuppliers,
+        purchases:renderPurchases,sales:renderSales,clients:renderClients,
+        pos:renderPOS,expenses:renderExpenses,accounting:renderAccounting,
+        reports:renderReports,settings:renderSettings,backup:renderBackup
+    };
+    if(renderer[page])renderer[page]();
+    window.scrollTo({top:0,behavior:'smooth'});
 }
-function getLow(){return db.inventory.filter(x=>x.qty<=lowStock);}
-function updateNB(){let n=getLow().length,el=$('nb');if(!el)return;if(n>0){el.style.display='flex';el.textContent=n;}else el.style.display='none';}
-function showNotif(){
-  let low=getLow();if(!low.length){toast('لا توجد تنبيهات','info');return;}
-  openModal(\`<div class="modal-title"><i class="fas fa-bell" style="color:var(--warning)"></i> تنبيهات المخزون المنخفض</div>
-  <div class="tbl"><table><thead><tr><th>الصنف</th><th>الفئة</th><th>الكمية</th></tr></thead>
-  <tbody>\${low.map(p=>\`<tr><td><strong>\${esc(p.name)}</strong></td><td>\${esc(p.cat)}</td><td class="td"><strong>\${p.qty}</strong></td></tr>\`).join('')}</tbody></table></div>
-  <div class="g2 mt3"><button class="btn bp" onclick="navigate('inventory');closeModal()"><i class="fas fa-boxes-stacked"></i> المخزون</button><button class="btn bg" onclick="closeModal()">إغلاق</button></div>\`);
+
+/* ========== 8. الرئيسية ========== */
+function renderDashboard(){
+    let totalSales=db.sales.reduce((s,x)=>s+x.grand,0);
+    let totalPurchases=db.purchases.reduce((s,x)=>s+x.total,0);
+    let totalExpenses=db.expenses.reduce((s,x)=>s+x.amount,0);
+    let totalReceivable=db.sales.filter(x=>x.status==='آجل').reduce((s,x)=>s+(x.grand-x.paid),0);
+    let totalPayable=db.purchases.filter(x=>x.status==='آجل').reduce((s,x)=>s+(x.total-x.paid),0);
+    let grossProfit=db.sales.reduce((s,sale)=>{
+        return s+sale.items.reduce((ss,it)=>{
+            let p=db.inventory.find(x=>x.id===it.pid);
+            return ss+(it.price-(p?p.buy:0))*it.qty;
+        },0);
+    },0);
+    let netProfit=grossProfit-totalExpenses;
+    let lowStock=getLowStockItems().length;
+    let lowAlert=lowStock>0?`<div class="alert-bar no-print"><i class="fas fa-triangle-exclamation"></i> تنبيه: ${lowStock} صنف/أصناف تحت حد المخزون الأدنى. <span style="cursor:pointer;text-decoration:underline;font-weight:700" onclick="showNotifications()">عرض التفاصيل</span></div>`:'';
+    $('pageContent').innerHTML=`
+    ${lowAlert}
+    <div class="stats-grid">
+        <div class="stat-card" onclick="navigate('sales')">
+            <div class="stat-icon" style="background:#d1fae5;color:#059669"><i class="fas fa-arrow-trend-up"></i></div>
+            <h3>${fmt(totalSales)}</h3><span>إجمالي المبيعات</span>
+        </div>
+        <div class="stat-card" onclick="navigate('purchases')">
+            <div class="stat-icon" style="background:#dbeafe;color:#2563eb"><i class="fas fa-cart-shopping"></i></div>
+            <h3>${fmt(totalPurchases)}</h3><span>إجمالي المشتريات</span>
+        </div>
+        <div class="stat-card" onclick="navigate('expenses')">
+            <div class="stat-icon" style="background:#fee2e2;color:#dc2626"><i class="fas fa-money-bill"></i></div>
+            <h3>${fmt(totalExpenses)}</h3><span>إجمالي المصروفات</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:${netProfit>=0?'#d1fae5':'#fee2e2'};color:${netProfit>=0?'#059669':'#dc2626'}"><i class="fas fa-chart-line"></i></div>
+            <h3 class="${netProfit>=0?'text-success':'text-danger'}">${fmt(netProfit)}</h3><span>صافي الربح</span>
+        </div>
+        <div class="stat-card" onclick="navigate('clients')">
+            <div class="stat-icon" style="background:#fef3c7;color:#b45309"><i class="fas fa-hand-holding-dollar"></i></div>
+            <h3>${fmt(totalReceivable)}</h3><span>مستحقات العملاء</span>
+        </div>
+        <div class="stat-card" onclick="navigate('suppliers')">
+            <div class="stat-icon" style="background:#fce7f3;color:#9d174d"><i class="fas fa-truck"></i></div>
+            <h3>${fmt(totalPayable)}</h3><span>مستحقات الموردين</span>
+        </div>
+        <div class="stat-card" onclick="navigate('inventory')">
+            <div class="stat-icon" style="background:#e0e7ff;color:#4338ca"><i class="fas fa-boxes-stacked"></i></div>
+            <h3>${db.inventory.length}</h3><span>أصناف المخزون</span>
+        </div>
+        <div class="stat-card" onclick="showNotifications()">
+            <div class="stat-icon" style="background:${lowStock?'#fee2e2':'#d1fae5'};color:${lowStock?'#dc2626':'#059669'}"><i class="fas fa-triangle-exclamation"></i></div>
+            <h3>${lowStock}</h3><span>أصناف منخفضة المخزون</span>
+        </div>
+    </div>
+    <div class="flex-2">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-chart-bar" style="color:var(--primary)"></i> مبيعات آخر الفواتير</div>
+            <div class="chart-container"><canvas id="salesChart"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-chart-pie" style="color:var(--warning)"></i> توزيع المصروفات</div>
+            <div class="chart-container"><canvas id="expChart"></canvas></div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title"><i class="fas fa-clock-rotate-left" style="color:var(--info)"></i> آخر العمليات</div>
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>المستخدم</th><th>العملية</th><th>التفاصيل</th><th>الوقت</th></tr></thead>
+            <tbody>${logs.slice(0,10).map(l=>`<tr><td>${l.user}</td><td>${l.action}</td><td>${l.detail}</td><td style="direction:ltr;font-size:11px">${new Date(l.time).toLocaleString('ar')}</td></tr>`).join('')||'<tr><td colspan="4" class="text-center text-muted">لا توجد سجلات</td></tr>'}</tbody>
+        </table></div>
+    </div>`;
+    let salesLabels=db.sales.slice(-6).map(s=>`#${s.id}`);
+    let salesData=db.sales.slice(-6).map(s=>s.grand);
+    let ctx1=document.getElementById('salesChart').getContext('2d');
+    charts.push(new Chart(ctx1,{type:'bar',data:{labels:salesLabels,datasets:[{label:'قيمة الفاتورة',data:salesData,backgroundColor:'rgba(13,148,136,.7)',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{family:'Cairo'}}},x:{ticks:{font:{family:'Cairo'}}}}}}));
+    let expMap={};
+    db.expenses.forEach(e=>{expMap[e.cat]=(expMap[e.cat]||0)+e.amount});
+    let ctx2=document.getElementById('expChart').getContext('2d');
+    charts.push(new Chart(ctx2,{type:'doughnut',data:{labels:Object.keys(expMap),datasets:[{data:Object.values(expMap),backgroundColor:['#0d9488','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#ec4899','#10b981','#f97316']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Cairo'},padding:8}}}}}));
 }
-/* ════════════════════════════════════════
-   10-TEMPLATE INVOICE ENGINE (Fixed)
-════════════════════════════════════════ */
-function showPrint(type,data){lastPT=type;lastPD=data;$('printModal').style.display='flex';renderPM();}
-function closePM(){$('printModal').style.display='none';}
-function changeTpl(d){activeTpl+=d;if(activeTpl<1)activeTpl=TPLS.length;if(activeTpl>TPLS.length)activeTpl=1;renderPM();}
-function renderPM(){
-  let tpl=TPLS.find(t=>t.id===activeTpl)||TPLS[0];
-  $('tplName').textContent=\`\${activeTpl}/10: \${tpl.name}\`;
-  let html='';
-  if(lastPT==='sale'||lastPT==='quote')html=buildSaleInv(lastPD,tpl);
-  else if(lastPT==='purchase')html=buildPurInv(lastPD,tpl);
-  else if(lastPT==='receipt')html=buildReceipt(lastPD,tpl);
-  else if(lastPT==='return')html=buildReturnDoc(lastPD,tpl);
-  else if(lastPT==='report')html=lastPD;
-  $('printContent').innerHTML=html;
+
+/* ========== 9. المخزون ========== */
+function renderInventory(){
+    let low=getLowStockItems();
+    let alert=low.length?`<div class="alert-bar"><i class="fas fa-triangle-exclamation"></i> ${low.length} صنف تحت الحد الأدنى: ${low.map(x=>x.name).join(' | ')}</div>`:'';
+    $('pageContent').innerHTML=`
+    ${alert}
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title" style="margin:0"><i class="fas fa-boxes-stacked" style="color:var(--primary)"></i> إدارة المخزون</div>
+            <button class="btn btn-primary-bg" onclick="modalAddInventory()"><i class="fas fa-plus"></i> إضافة صنف</button>
+        </div>
+        <div class="search-bar">
+            <input id="invSearch" placeholder="🔍 بحث بالاسم أو الفئة..." oninput="filterInventory()" style="max-width:280px">
+            <select id="invCatFilter" onchange="filterInventory()" style="max-width:160px">
+                <option value="">كل الفئات</option>
+                ${[...new Set(db.inventory.map(x=>x.cat))].map(c=>`<option>${c}</option>`).join('')}
+            </select>
+        </div>
+        <div class="tbl-wrap"><table id="invTable">
+            <thead><tr><th>#</th><th>اسم الصنف</th><th>الفئة</th><th>الكمية</th><th>سعر الشراء</th><th>سعر البيع</th><th>هامش الربح</th><th>الإجراءات</th></tr></thead>
+            <tbody id="invBody"></tbody>
+        </table></div>
+    </div>`;
+    renderInvBody(db.inventory);
 }
-function doPrint(){
-  let html=$('printContent').innerHTML;
-  let w=window.open('','_blank','width=860,height=760');
-  w.document.write(\`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-  <style>*{font-family:'Cairo',sans-serif;box-sizing:border-box;direction:rtl}body{margin:0;padding:0;background:#fff}
-  table{width:100%;border-collapse:collapse}th,td{padding:8px 11px;text-align:right}
-  .t8{background:#0f172a;color:#e2e8f0}.t8 table td,.t8 table th{border:1px solid #334155}
-  .t5{max-width:340px;margin:0 auto;border:1px dashed #94a3b8;padding:14px}
-  @page{margin:10mm}
-  </style></head><body>\${html}</body></html>\`);
-  w.document.close();w.focus();setTimeout(()=>w.print(),700);
+function renderInvBody(items){
+    $('invBody').innerHTML=items.map(p=>{
+        let margin=p.sell>0?((p.sell-p.buy)/p.sell*100).toFixed(1):0;
+        let lowClass=p.qty<=lowStockThreshold?'text-danger':'';
+        return`<tr>
+            <td>${p.id}</td><td><strong>${p.name}</strong></td><td>${p.cat}</td>
+            <td class="${lowClass}"><strong>${p.qty}</strong>${p.qty<=lowStockThreshold?'<span class="badge badge-danger" style="margin-right:4px">منخفض</span>':''}</td>
+            <td>${fmt(p.buy)}</td><td>${fmt(p.sell)}</td>
+            <td><span class="badge badge-success">${margin}%</span></td>
+            <td>
+              <button class="btn btn-info btn-sm" onclick="modalEditInventory(${p.id})"><i class="fas fa-edit"></i></button>
+              ${isAdmin()?`<button class="btn btn-danger btn-sm" onclick="deleteInventory(${p.id})"><i class="fas fa-trash"></i></button>`:''}
+            </td>
+        </tr>`;
+    }).join('')||'<tr><td colspan="8" class="text-center text-muted">لا توجد أصناف</td></tr>';
 }
-function buildInvText(data,typeLabel){
-  let r=RATES[currency]||1;
-  let lines=[\`📄 \${typeLabel} #\${data.id}\`,\`📅 \${data.date}\`,\`🏢 \${companyInfo.name}\`,\`━━━━━━━━━━━━━━━━━━━━\`];
-  if(data.items)data.items.forEach(it=>lines.push(\`• \${it.name} × \${it.qty} = \${f2(it.total*r)} \${currency}\`));
-  lines.push('━━━━━━━━━━━━━━━━━━━━');
-  if(data.sub!=null)lines.push(\`المجموع: \${f2(data.sub*r)} \${currency}\`);
-  if(data.discount)lines.push(\`الخصم: - \${f2(data.discount*r)} \${currency}\`);
-  if(data.tax)lines.push(\`الضريبة (\${taxRate}%): \${f2(data.tax*r)} \${currency}\`);
-  if(data.grand!=null)lines.push(\`💰 الإجمالي: \${f2(data.grand*r)} \${currency}\`);
-  lines.push('━━━━━━━━━━━━━━━━━━━━');
-  lines.push(\`✅ \${companyInfo.name}\`);
-  if(companyInfo.phone)lines.push(\`📞 \${companyInfo.phone}\`);
-  return lines.join('\\n');
+function filterInventory(){
+    let q=($('invSearch')?$('invSearch').value:'').toLowerCase();
+    let cat=($('invCatFilter')?$('invCatFilter').value:'');
+    renderInvBody(db.inventory.filter(p=>{
+        let matchQ=p.name.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q);
+        let matchC=!cat||p.cat===cat;
+        return matchQ&&matchC;
+    }));
 }
-function shareWA(){if(!lastPD){toast('لا توجد بيانات','warning');return;}let L={sale:'فاتورة بيع',purchase:'فاتورة شراء',quote:'عرض أسعار',receipt:'إيصال',return:'مرتجع'};window.open('https://wa.me/?text='+encodeURIComponent(buildInvText(lastPD,L[lastPT]||'مستند')),'_blank');}
-function copyInvText(){if(!lastPD){toast('لا توجد بيانات','warning');return;}let L={sale:'فاتورة بيع',purchase:'فاتورة شراء',quote:'عرض أسعار',receipt:'إيصال',return:'مرتجع'};navigator.clipboard.writeText(buildInvText(lastPD,L[lastPT]||'مستند')).then(()=>toast('تم النسخ','success')).catch(()=>toast('فشل النسخ','error'));}
-// ─── Invoice HTML Builders ───
-function invHeadHTML(tpl,co){
-  let cls=tpl.cls;
-  let base=\`<div class="lgo">\${esc(co.name)}</div><div class="lsub">\${esc(co.address)}\${co.phone?' | '+esc(co.phone):''}
-  \${co.taxNo?'<br>الرقم الضريبي: '+esc(co.taxNo):''}</div>\`;
-  if(cls==='t7')return\`<div class="inv-head"><div class="lgo">\${esc(co.name)}</div><div style="text-align:left;font-size:11px;color:#64748b">\${esc(co.address)}<br>\${esc(co.phone)}</div></div>\`;
-  if(cls==='t8')return\`<div class="inv-head"><div class="lgo">\${esc(co.name)}</div><div style="font-size:10px;opacity:.7;margin-top:3px">▶ \${esc(co.phone)} | \${esc(co.address)}</div></div>\`;
-  if(cls==='t5')return\`<div class="inv-head"><div class="lgo">\${esc(co.name)}</div><div style="font-size:10px;color:#64748b">\${esc(co.phone)}</div></div>\`;
-  return\`<div class="inv-head">\${base}</div>\`;
+function modalAddInventory(){
+    openModal(`<div class="modal-title"><i class="fas fa-plus-circle" style="color:var(--primary)"></i> إضافة صنف جديد</div>
+    <div class="flex-2">
+        <div class="field-group"><label>اسم الصنف</label><input id="iName" placeholder="اسم المنتج"></div>
+        <div class="field-group"><label>الفئة</label><input id="iCat" placeholder="مثال: إلكترونيات"></div>
+    </div>
+    <div class="flex-3">
+        <div class="field-group"><label>الكمية</label><input id="iQty" type="number" min="0" value="0"></div>
+        <div class="field-group"><label>سعر الشراء</label><input id="iBuy" type="number" min="0" value="0"></div>
+        <div class="field-group"><label>سعر البيع</label><input id="iSell" type="number" min="0" value="0"></div>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary-bg" onclick="addInventory()"><i class="fas fa-save"></i> حفظ</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+    </div>`);
 }
-function invPartiesHTML(cli,s){
-  return\`<div class="inv-parties"><div class="inv-party"><h4>\${s.isQuote?'عرض أسعار لـ':'فاتورة إلى'}</h4>
-  <p><strong>\${esc(cli.name)}</strong></p>\${cli.phone?\`<p>📞 \${esc(cli.phone)}</p>\`:''}\${cli.address?\`<p>📍 \${esc(cli.address)}</p>\`:''}
-  </div><div class="inv-party"><h4>معلومات المستند</h4>
-  <p>رقم: <strong>#\${s.id}</strong></p><p>📅 \${s.date}</p>
-  <p>الحالة: <strong>\${s.status||'—'}</strong></p>\${s.validUntil?\`<p>صالح حتى: \${s.validUntil}</p>\`:''}
-  </div></div>\`;
+function addInventory(){
+    let name=$('iName').value.trim(),cat=$('iCat').value.trim(),qty=+$('iQty').value,buy=+$('iBuy').value,sell=+$('iSell').value;
+    if(!name){toast('اسم الصنف مطلوب','error');return}
+    let newItem={id:nextId('inv'),name,cat,qty,buy,sell};
+    db.inventory.push(newItem);
+    save();addLog('إضافة صنف',name);closeModal();renderInventory();updateNotifBadge();toast('تم إضافة الصنف','success');
 }
-function invTableHTML(items){
-  let r=RATES[currency]||1;
-  return\`<table><thead><tr><th>الصنف / الخدمة</th><th style="text-align:center">الكمية</th><th style="text-align:left">سعر الوحدة</th><th style="text-align:left">الإجمالي</th></tr></thead>
-  <tbody>\${items.map(it=>\`<tr><td>\${esc(it.name)}</td><td style="text-align:center">\${it.qty}</td>
-  <td style="text-align:left">\${f2(it.price*r)} \${currency}</td>
-  <td style="text-align:left;font-weight:700">\${f2(it.total*r)} \${currency}</td></tr>\`).join('')}</tbody></table>\`;
+function modalEditInventory(id){
+    let p=db.inventory.find(x=>x.id===id);if(!p)return;
+    openModal(`<div class="modal-title"><i class="fas fa-edit" style="color:var(--info)"></i> تعديل الصنف</div>
+    <div class="flex-2">
+        <div class="field-group"><label>اسم الصنف</label><input id="iName" value="${p.name}"></div>
+        <div class="field-group"><label>الفئة</label><input id="iCat" value="${p.cat}"></div>
+    </div>
+    <div class="flex-3">
+        <div class="field-group"><label>الكمية</label><input id="iQty" type="number" value="${p.qty}"></div>
+        <div class="field-group"><label>سعر الشراء</label><input id="iBuy" type="number" value="${p.buy}"></div>
+        <div class="field-group"><label>سعر البيع</label><input id="iSell" type="number" value="${p.sell}"></div>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary-bg" onclick="editInventory(${id})"><i class="fas fa-save"></i> حفظ</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+    </div>`);
 }
-function invTotalsHTML(s){
-  let r=RATES[currency]||1;
-  let rows=\`<div class="itr"><span>المجموع الجزئي</span><span>\${f2(s.sub*r)} \${currency}</span></div>\`;
-  if((s.discount||0)>0)rows+=\`<div class="itr"><span>الخصم</span><span>- \${f2(s.discount*r)} \${currency}</span></div>\`;
-  rows+=\`<div class="itr"><span>ضريبة القيمة المضافة (\${taxRate}%)</span><span>\${f2(s.tax*r)} \${currency}</span></div>\`;
-  rows+=\`<div class="gline itr" style="border:none;margin-top:6px"><span>الإجمالي النهائي</span><span>\${f2(s.grand*r)} \${currency}</span></div>\`;
-  if(s.paid!=null&&s.grand-s.paid>0.01)rows+=\`<div class="itr" style="color:#ef4444"><span>المتبقي</span><span>\${f2((s.grand-s.paid)*r)} \${currency}</span></div>\`;
-  return\`<div class="itb">\${rows}</div>\`;
+function editInventory(id){
+    let p=db.inventory.find(x=>x.id===id);if(!p)return;
+    p.name=$('iName').value.trim();p.cat=$('iCat').value.trim();
+    p.qty=+$('iQty').value;p.buy=+$('iBuy').value;p.sell=+$('iSell').value;
+    save();addLog('تعديل صنف',p.name);closeModal();renderInventory();updateNotifBadge();toast('تم التعديل','success');
 }
-function invStampHTML(){return\`<div class="stamp-row"><div><p style="font-size:11.5px;margin-bottom:3px">التوقيع المُصدِر</p><div class="stamp-box">توقيع</div></div><div><p style="font-size:11.5px;margin-bottom:3px">الختم الرسمي</p><div class="stamp-box">ختم</div></div></div>\`;}
-function invFooterHTML(){return\`<div class="inv-footer">شكراً لتعاملكم معنا &bull; \${esc(companyInfo.name)}\${companyInfo.phone?' &bull; '+esc(companyInfo.phone):''}\${companyInfo.website?' &bull; '+esc(companyInfo.website):''}<br>نظام ERP PRO ULTIMATE</div>\`;}
-function buildSaleInv(s,tpl){
-  let cli=db.clients.find(x=>x.id===s.clientId)||{name:s.clientName,phone:'',address:''};
-  let title=s.isQuote?'عرض أسعار':'فاتورة ضريبية';
-  return\`<div class="inv \${tpl.cls}">
-  \${invHeadHTML(tpl,companyInfo)}
-  <div style="text-align:center;font-size:1.4rem;font-weight:900;padding:12px 0">\${title}</div>
-  \${invPartiesHTML(cli,s)}
-  \${invTableHTML(s.items)}
-  \${invTotalsHTML(s)}
-  \${s.notes?\`<p style="margin-top:12px;font-size:12px;opacity:.7"><strong>ملاحظات:</strong> \${esc(s.notes)}</p>\`:''}
-  \${invStampHTML()}
-  \${invFooterHTML()}
-  </div>\`;
+function deleteInventory(id){
+    if(!confirm('هل أنت متأكد من حذف هذا الصنف؟'))return;
+    let idx=db.inventory.findIndex(x=>x.id===id);
+    if(idx>-1){let n=db.inventory[idx].name;db.inventory.splice(idx,1);save();addLog('حذف صنف',n);renderInventory();updateNotifBadge();toast('تم الحذف','success');}
 }
-function buildPurInv(p,tpl){
-  let r=RATES[currency]||1;
-  return\`<div class="inv \${tpl.cls}">
-  \${invHeadHTML(tpl,companyInfo)}
-  <div style="text-align:center;font-size:1.4rem;font-weight:900;padding:12px 0">فاتورة شراء</div>
-  <div class="inv-parties"><div class="inv-party"><h4>المورد</h4><p><strong>\${esc(p.supName)}</strong></p></div>
-  <div class="inv-party"><h4>معلومات الفاتورة</h4><p><strong>#\${p.id}</strong></p><p>📅 \${p.date}</p><p>الحالة: <strong>\${p.status}</strong></p></d
+
+/* ========== 10. الموردين ========== */
+function renderSuppliers(){
+    $('pageContent').innerHTML=`
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title" style="margin:0"><i class="fas fa-truck-field" style="color:var(--primary)"></i> إدارة الموردين</div>
+            <button class="btn btn-primary-bg" onclick="modalAddSupplier()"><i class="fas fa-plus"></i> إضافة مورد</button>
+        </div>
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>#</th><th>اسم المورد</th><th>الفئة</th><th>الهاتف</th><th>العنوان</th><th>الإجراءات</th></tr></thead>
+            <tbody>${db.suppliers.map(s=>`<tr>
+                <td>${s.id}</td><td><strong>${s.name}</strong></td><td>${s.cat}</td>
+                <td style="direction:ltr">${s.phone}</td><td>${s.address}</td>
+                <td>
+                  <button class="btn btn-info btn-sm" onclick="modalEditSupplier(${s.id})"><i class="fas fa-edit"></i></button>
+                  ${isAdmin()?`<button class="btn btn-danger btn-sm" onclick="deleteSupplier(${s.id})"><i class="fas fa-trash"></i></button>`:''}
+                </td>
+            </tr>`).join('')||'<tr><td colspan="6" class="text-center text-muted">لا يوجد موردين</td></tr>'}
+            </tbody>
+        </table></div>
+    </div>`;
+}
+function modalAddSupplier(){
+    openModal(`<div class="modal-title"><i class="fas fa-plus-circle" style="color:var(--primary)"></i> إضافة مورد جديد</div>
+    <div class="flex-2">
+        <div class="field-group"><label>اسم المورد</label><input id="sName" placeholder="اسم الشركة أو المورد"></div>
+        <div class="field-group"><label>الفئة</label><input id="sCat" placeholder="مثال: إلكترونيات"></div>
+    </div>
+    <div class="flex-2">
+        <div class="field-group"><label>الهاتف</label><input id="sPhone" placeholder="05XXXXXXXX" style="direction:ltr"></div>
+        <div class="field-group"><label>العنوان</label><input id="sAddr" placeholder="المدينة - الحي"></div>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary-bg" onclick="addSupplier()"><i class="fas fa-save"></i> حفظ</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+    </div>`);
+}
+function addSupplier(){
+    let name=$('sName').value.trim();
+    if(!name){toast('اسم المورد مطلوب','error');return}
+    db.suppliers.push({id:nextId('sup'),name,cat:$('sCat').value.trim(),phone:$('sPhone').value.trim(),address:$('sAddr').value.trim()});
+    save();addLog('إضافة مورد',name);closeModal();renderSuppliers();toast('تم إضافة المورد','success');
+}
+function modalEditSupplier(id){
+    let s=db.suppliers.find(x=>x.id===id);if(!s)return;
+    openModal(`<div class="modal-title"><i class="fas fa-edit" style="color:var(--info)"></i> تعديل المورد</div>
+    <div class="flex-2">
+        <div class="field-group"><label>اسم المورد</label><input id="sName" value="${s.name}"></div>
+        <div class="field-group"><label>الفئة</label><input id="sCat" value="${s.cat}"></div>
+    </div>
+    <div class="flex-2">
+        <div class="field-group"><label>الهاتف</label><input id="sPhone" value="${s.phone}" style="direction:ltr"></div>
+        <div class="field-group"><label>العنوان</label><input id="sAddr" value="${s.address}"></div>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary-bg" onclick="editSupplier(${id})"><i class="fas fa-save"></i> حفظ</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+    </div>`);
+}
+function editSupplier(id){
+    let s=db.suppliers.find(x=>x.id===id);if(!s)return;
+    s.name=$('sName').value.trim();s.cat=$('sCat').value.trim();
+    s.phone=$('sPhone').value.trim();s.address=$('sAddr').value.trim();
+    save();addLog('تعديل مورد',s.name);closeModal();renderSuppliers();toast('تم التعديل','success');
+}
+function deleteSupplier(id){
+    if(!confirm('حذف المورد؟'))return;
+    let idx=db.suppliers.findIndex(x=>x.id===id);
+    if(idx>-1){let n=db.suppliers[idx].name;db.suppliers.splice(idx,1);save();addLog('حذف مورد',n);renderSuppliers();toast('تم الحذف','success');}
+}
+
+/* ========== 11. المشتريات ========== */
+function renderPurchases(){
+    let total=db.purchases.reduce((s,x)=>s+x.total,0);
+    let paid=db.purchases.reduce((s,x)=>s+x.paid,0);
+    $('pageContent').innerHTML=`
+    <div class="summary-bar">
+        <span>إجمالي المشتريات: <strong>${fmt(total)}</strong></span>
+        <span>المدفوع: <strong>${fmt(paid)}</strong></span>
+        <span class="text-danger">المتبقي: <strong>${fmt(total-paid)}</strong></span>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title" style="margin:0"><i class="fas fa-cart-shopping" style="color:var(--primary)"></i> فواتير الشراء</div>
+            <button class="btn btn-primary-bg" onclick="modalAddPurchase()"><i class="fas fa-plus"></i> فاتورة شراء جديدة</button>
+        </div>
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>#</th><th>المورد</th><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th>المدفوع</th><th>الحالة</th><th>التاريخ</th><th>إجراء</th></tr></thead>
+            <tbody>${db.purchases.map(p=>`<tr>
+                <td>${p.id}</td><td>${p.supName}</td><td>${p.prodName}</td>
+                <td>${p.qty}</td><td>${fmt(p.price)}</td><td><strong>${fmt(p.total)}</strong></td>
+                <td>${fmt(p.paid)}</td>
+                <td><span class="badge ${p.status==='مدفوع'?'badge-success':'badge-warning'}">${p.status}</span></td>
+                <td>${p.date}</td>
+                <td>
+                  ${p.status==='آجل'?`<button class="btn btn-success btn-sm" onclick="payPurchase(${p.id})"><i class="fas fa-check"></i> سداد</button>`:''}
+                  ${isAdmin()?`<button class="btn btn-danger btn-sm" onclick="deletePurchase(${p.id})"><i class="fas fa-trash"></i></button>`:''}
+                </td>
+            </tr>`).join('')||'<tr><td colspan="10" class="text-center text-muted">لا توجد فواتير</td></tr>'}
+            </tbody>
+        </table></div>
+    </div>`;
+}
+function modalAddPurchase()
