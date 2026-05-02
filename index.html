@@ -116,20 +116,8 @@ label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bot
 .tbl-wrap{overflow-x:auto}
 .search-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .search-bar input{max-width:280px}
-/* ---- ألوان مخصصة ---- */
-.color-swatch{width:32px;height:32px;border-radius:8px;cursor:pointer;border:3px solid transparent;transition:.2s;display:inline-block}
-.color-swatch.selected{border-color:var(--text);transform:scale(1.15)}
-/* ---- تقرير PDF ---- */
-@media print{
-  .top-bar,.menu,.no-print{display:none!important}
-  body{background:#fff;color:#000}
-  .card{box-shadow:none;border:1px solid #ddd}
-  .content{padding:0}
-}
-/* ---- تنبيهات مخزون ---- */
 .alert-bar{background:#fef3c7;border:1px solid #f59e0b;border-radius:12px;padding:10px 16px;margin-bottom:14px;font-size:13px;display:flex;align-items:center;gap:10px;color:#92400e}
 .dark .alert-bar{background:#78350f;border-color:#b45309;color:#fde68a}
-/* ---- فاتورة احترافية ---- */
 .invoice-print{max-width:700px;margin:0 auto;padding:30px;background:#fff;color:#000}
 .invoice-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #0d9488}
 .invoice-logo{font-size:1.5rem;font-weight:900;color:#0d9488}
@@ -137,7 +125,7 @@ label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bot
 .invoice-table th{background:#0d9488;color:#fff}
 .invoice-total{text-align:left;margin-top:16px;font-size:1.1rem;font-weight:700}
 .invoice-footer{margin-top:24px;padding-top:12px;border-top:1px solid #ddd;text-align:center;color:#64748b;font-size:12px}
-
+@media print{.top-bar,.menu,.no-print{display:none!important}body{background:#fff;color:#000}.card{box-shadow:none;border:1px solid #ddd}.content{padding:0}}
 @media(max-width:768px){
 .pos-layout{grid-template-columns:1fr}.pos-products{max-height:35vh}
 .flex-2,.flex-3{grid-template-columns:1fr}
@@ -358,7 +346,6 @@ function addLog(action,detail){
     if(logs.length>300)logs.length=300;
     save();
 }
-
 function getLowStockItems(){return db.inventory.filter(x=>x.qty<=lowStockThreshold);}
 function updateNotifBadge(){
     let n=getLowStockItems().length;
@@ -510,9 +497,7 @@ function renderDashboard(){
     },0);
     let netProfit=grossProfit-totalExpenses;
     let lowStock=getLowStockItems().length;
-
     let lowAlert=lowStock>0?`<div class="alert-bar no-print"><i class="fas fa-triangle-exclamation"></i> تنبيه: ${lowStock} صنف/أصناف تحت حد المخزون الأدنى. <span style="cursor:pointer;text-decoration:underline;font-weight:700" onclick="showNotifications()">عرض التفاصيل</span></div>`:'';
-
     $('pageContent').innerHTML=`
     ${lowAlert}
     <div class="stats-grid">
@@ -566,7 +551,6 @@ function renderDashboard(){
             <tbody>${logs.slice(0,10).map(l=>`<tr><td>${l.user}</td><td>${l.action}</td><td>${l.detail}</td><td style="direction:ltr;font-size:11px">${new Date(l.time).toLocaleString('ar')}</td></tr>`).join('')||'<tr><td colspan="4" class="text-center text-muted">لا توجد سجلات</td></tr>'}</tbody>
         </table></div>
     </div>`;
-
     let salesLabels=db.sales.slice(-6).map(s=>`#${s.id}`);
     let salesData=db.sales.slice(-6).map(s=>s.grand);
     let ctx1=document.getElementById('salesChart').getContext('2d');
@@ -773,5 +757,872 @@ function renderPurchases(){
                 <td>${fmt(p.paid)}</td>
                 <td><span class="badge ${p.status==='مدفوع'?'badge-success':'badge-warning'}">${p.status}</span></td>
                 <td>${p.date}</td>
-                <td>${p.status==='آجل'?`<button class="btn btn-success btn-sm" onclick="payPurchase(${p.id})"><i class="fas fa-check"></i> سداد</button>`:''}</td>
-            </tr>`).join('')||'<tr><t
+                <td>
+                  ${p.status==='آجل'?`<button class="btn btn-success btn-sm" onclick="payPurchase(${p.id})"><i class="fas fa-check"></i> سداد</button>`:''}
+                  ${isAdmin()?`<button class="btn btn-danger btn-sm" onclick="deletePurchase(${p.id})"><i class="fas fa-trash"></i></button>`:''}
+                </td>
+            </tr>`).join('')||'<tr><td colspan="10" class="text-center text-muted">لا توجد فواتير</td></tr>'}
+            </tbody>
+        </table></div>
+    </div>`;
+}
+function modalAddPurchase(){
+    openModal(`<div class="modal-title"><i class="fas fa-cart-shopping" style="color:var(--primary)"></i> فاتورة شراء جديدة</div>
+    <div class="flex-2">
+        <div class="field-group"><label>المورد</label>
+        <select id="pSup">
+            <option value="">-- اختر المورد --</option>
+            ${db.suppliers.map(s=>`<option value="${s.id}" data-name="${s.name}">${s.name}</option>`).join('')}
+        </select></div>
+        <div class="field-group"><label>الصنف</label>
+        <select id="pProd" onchange="fillPurchasePrice()">
+            <option value="">-- اختر الصنف --</option>
+            ${db.inventory.map(p=>`<option value="${p.id}" data-buy="${p.buy}" data-name="${p.name}">${p.name}</option>`).join('')}
+        </select></div>
+    </div>
+    <div class="flex-3">
+        <div class="field-group"><label>الكمية</label><input id="pQty" type="number" min="1" value="1" oninput="calcPurchaseTotal()"></div>
+        <div class="field-group"><label>سعر الوحدة</label><input id="pPrice" type="number" min="0" value="0" oninput="calcPurchaseTotal()"></div>
+        <div class="field-group"><label>الإجمالي</label><input id="pTotal" type="number" readonly style="background:var(--bg)"></div>
+    </div>
+    <div class="flex-2">
+        <div class="field-group"><label>المبلغ المدفوع</label><input id="pPaid" type="number" min="0" value="0"></div>
+        <div class="field-group"><label>التاريخ</label><input id="pDate" type="date" value="${today()}"></div>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary-bg" onclick="addPurchase()"><i class="fas fa-save"></i> حفظ الفاتورة</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+    </div>`);
+}
+function fillPurchasePrice(){
+    let sel=$('pProd');
+    if(!sel)return;
+    let opt=sel.options[sel.selectedIndex];
+    if(opt&&opt.dataset.buy){
+        $('pPrice').value=opt.dataset.buy;
+        calcPurchaseTotal();
+    }
+}
+function calcPurchaseTotal(){
+    let qty=+($('pQty')?$('pQty').value:0);
+    let price=+($('pPrice')?$('pPrice').value:0);
+    if($('pTotal'))$('pTotal').value=(qty*price).toFixed(2);
+}
+function addPurchase(){
+    let supSel=$('pSup');
+    let prodSel=$('pProd');
+    if(!supSel||!supSel.value){toast('اختر المورد','error');return}
+    if(!prodSel||!prodSel.value){toast('اختر الصنف','error');return}
+    let qty=+$('pQty').value;
+    let price=+$('pPrice').value;
+    if(qty<=0){toast('الكمية يجب أن تكون أكبر من صفر','error');return}
+    let total=qty*price;
+    let paid=+$('pPaid').value;
+    if(paid>total){toast('المبلغ المدفوع أكبر من الإجمالي','error');return}
+    let supId=+supSel.value;
+    let supName=supSel.options[supSel.selectedIndex].dataset.name||'';
+    let prodId=+prodSel.value;
+    let prodName=prodSel.options[prodSel.selectedIndex].dataset.name||'';
+    let status=paid>=total?'مدفوع':'آجل';
+    let newPur={id:nextId('pur'),supId,supName,prodName,qty,price,total,paid,status,date:$('pDate').value};
+    db.purchases.push(newPur);
+    let prod=db.inventory.find(x=>x.id===prodId);
+    if(prod)prod.qty+=qty;
+    jePurchase(newPur);
+    save();addLog('فاتورة شراء',`${prodName} - ${fmt(total)}`);
+    closeModal();renderPurchases();updateNotifBadge();toast('تم حفظ فاتورة الشراء','success');
+}
+function payPurchase(id){
+    let p=db.purchases.find(x=>x.id===id);if(!p)return;
+    let remaining=p.total-p.paid;
+    if(remaining<=0){toast('الفاتورة مسددة بالكامل','info');return}
+    let amount=prompt(`المبلغ المتبقي: ${fmt(remaining)}\nأدخل مبلغ السداد:`);
+    if(!amount)return;
+    amount=+amount;
+    if(isNaN(amount)||amount<=0){toast('مبلغ غير صالح','error');return}
+    if(amount>remaining)amount=remaining;
+    p.paid+=amount;
+    if(p.paid>=p.total){p.paid=p.total;p.status='مدفوع';}
+    je(`سداد جزئي/كامل - فاتورة شراء #${p.id}`,today(),[
+        {acc:'2100',debit:amount,credit:0},{acc:'1100',debit:0,credit:amount}
+    ]);
+    save();addLog('سداد مشتريات',`فاتورة #${p.id} - ${fmt(amount)}`);
+    renderPurchases();toast('تم تسجيل السداد','success');
+}
+function deletePurchase(id){
+    if(!confirm('حذف هذه الفاتورة؟'))return;
+    let idx=db.purchases.findIndex(x=>x.id===id);
+    if(idx>-1){db.purchases.splice(idx,1);save();addLog('حذف فاتورة شراء',`#${id}`);renderPurchases();toast('تم الحذف','success');}
+}
+
+/* ========== 12. المبيعات ========== */
+function renderSales(){
+    let total=db.sales.reduce((s,x)=>s+x.grand,0);
+    let paid=db.sales.reduce((s,x)=>s+x.paid,0);
+    $('pageContent').innerHTML=`
+    <div class="summary-bar">
+        <span>إجمالي المبيعات: <strong>${fmt(total)}</strong></span>
+        <span>المحصل: <strong>${fmt(paid)}</strong></span>
+        <span class="text-danger">المتبقي: <strong>${fmt(total-paid)}</strong></span>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title" style="margin:0"><i class="fas fa-file-invoice-dollar" style="color:var(--primary)"></i> فواتير المبيعات</div>
+            <button class="btn btn-primary-bg" onclick="modalAddSale()"><i class="fas fa-plus"></i> فاتورة بيع جديدة</button>
+        </div>
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>#</th><th>العميل</th><th>الأصناف</th><th>الإجمالي</th><th>الضريبة</th><th>الإجمالي مع ض</th><th>المدفوع</th><th>الحالة</th><th>التاريخ</th><th>إجراء</th></tr></thead>
+            <tbody>${db.sales.map(s=>`<tr>
+                <td>${s.id}</td><td>${s.clientName}</td>
+                <td>${s.items.map(i=>i.name+'('+i.qty+')').join(', ')}</td>
+                <td>${fmt(s.sub)}</td><td>${fmt(s.tax)}</td>
+                <td><strong>${fmt(s.grand)}</strong></td><td>${fmt(s.paid)}</td>
+                <td><span class="badge ${s.status==='مدفوع'?'badge-success':'badge-warning'}">${s.status}</span></td>
+                <td>${s.date}</td>
+                <td class="d-flex gap-2" style="flex-wrap:wrap">
+                  <button class="btn btn-info btn-sm" onclick="printInvoice(${s.id})"><i class="fas fa-print"></i></button>
+                  ${s.status==='آجل'?`<button class="btn btn-success btn-sm" onclick="paySale(${s.id})"><i class="fas fa-check"></i> تحصيل</button>`:''}
+                  ${isAdmin()?`<button class="btn btn-danger btn-sm" onclick="deleteSale(${s.id})"><i class="fas fa-trash"></i></button>`:''}
+                </td>
+            </tr>`).join('')||'<tr><td colspan="10" class="text-center text-muted">لا توجد فواتير</td></tr>'}
+            </tbody>
+        </table></div>
+    </div>`;
+}
+
+let saleItems=[];
+function modalAddSale(){
+    saleItems=[];
+    openModal(`<div class="modal-title"><i class="fas fa-file-invoice-dollar" style="color:var(--primary)"></i> فاتورة بيع جديدة</div>
+    <div class="flex-2">
+        <div class="field-group"><label>العميل</label>
+        <select id="sClient">
+            <option value="">-- اختر العميل --</option>
+            ${db.clients.map(c=>`<option value="${c.id}" data-name="${c.name}">${c.name}</option>`).join('')}
+        </select></div>
+        <div class="field-group"><label>التاريخ</label><input id="sDate" type="date" value="${today()}"></div>
+    </div>
+    <div class="flex-2">
+        <div class="field-group"><label>طريقة الدفع</label>
+        <select id="sPayMethod">
+            <option value="مدفوع">نقداً (مدفوع)</option>
+            <option value="آجل">آجل</option>
+        </select></div>
+        <div class="field-group"><label>نسبة الضريبة %</label><input id="sTaxRate" type="number" value="15" min="0" max="100"></div>
+    </div>
+    <div class="card" style="margin-bottom:12px;padding:14px">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+            <select id="saProd" style="flex:1;min-width:160px">
+                <option value="">-- اختر الصنف --</option>
+                ${db.inventory.filter(p=>p.qty>0).map(p=>`<option value="${p.id}" data-sell="${p.sell}" data-name="${p.name}" data-qty="${p.qty}">${p.name} (متوفر: ${p.qty})</option>`).join('')}
+            </select>
+            <input id="saQty" type="number" min="1" value="1" style="width:80px">
+            <input id="saPrice" type="number" min="0" placeholder="السعر" style="width:100px">
+            <button class="btn btn-primary-bg btn-sm" onclick="addSaleItem()"><i class="fas fa-plus"></i> أضف</button>
+        </div>
+        <div id="saleItemsTable"></div>
+    </div>
+    <div id="saleSummary" style="font-size:14px;font-weight:700;margin-bottom:10px"></div>
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary-bg" onclick="saveSale()"><i class="fas fa-save"></i> حفظ الفاتورة</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+    </div>`);
+    document.getElementById('saProd').addEventListener('change',function(){
+        let opt=this.options[this.selectedIndex];
+        if(opt&&opt.dataset.sell)document.getElementById('saPrice').value=opt.dataset.sell;
+    });
+    renderSaleItems();
+}
+function addSaleItem(){
+    let prodSel=$('saProd');if(!prodSel||!prodSel.value){toast('اختر الصنف','error');return}
+    let prodId=+prodSel.value;
+    let opt=prodSel.options[prodSel.selectedIndex];
+    let name=opt.dataset.name||'';
+    let maxQty=+opt.dataset.qty||0;
+    let qty=+$('saQty').value;
+    let price=+$('saPrice').value;
+    if(qty<=0){toast('الكمية غير صالحة','error');return}
+    if(price<0){toast('السعر غير صالح','error');return}
+    let existing=saleItems.find(x=>x.pid===prodId);
+    let usedQty=existing?existing.qty:0;
+    if(qty+usedQty>maxQty){toast(`الكمية المتاحة: ${maxQty-usedQty}`,'error');return}
+    if(existing){existing.qty+=qty;existing.total=existing.qty*existing.price;}
+    else saleItems.push({pid:prodId,name,qty,price,total:qty*price});
+    renderSaleItems();
+}
+function renderSaleItems(){
+    let el=$('saleItemsTable');if(!el)return;
+    if(saleItems.length===0){el.innerHTML='<p class="text-muted text-center" style="font-size:12px">لم تضف أصنافاً بعد</p>';$('saleSummary').innerHTML='';return;}
+    el.innerHTML=`<table><thead><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th></th></tr></thead>
+    <tbody>${saleItems.map((it,i)=>`<tr><td>${it.name}</td><td>${it.qty}</td><td>${fmt(it.price)}</td><td>${fmt(it.total)}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="removeSaleItem(${i})"><i class="fas fa-times"></i></button></td></tr>`).join('')}</tbody></table>`;
+    let sub=saleItems.reduce((s,x)=>s+x.total,0);
+    let taxRate=+($('sTaxRate')?$('sTaxRate').value:15);
+    let tax=sub*taxRate/100;
+    let grand=sub+tax;
+    $('saleSummary').innerHTML=`<span>المجموع: <strong>${fmt(sub)}</strong> | ضريبة (${taxRate}%): <strong>${fmt(tax)}</strong> | <span style="color:var(--primary)">الإجمالي: <strong>${fmt(grand)}</strong></span></span>`;
+}
+function removeSaleItem(i){saleItems.splice(i,1);renderSaleItems();}
+function saveSale(){
+    let clientSel=$('sClient');
+    if(!clientSel||!clientSel.value){toast('اختر العميل','error');return}
+    if(saleItems.length===0){toast('أضف صنفاً واحداً على الأقل','error');return}
+    let clientId=+clientSel.value;
+    let clientName=clientSel.options[clientSel.selectedIndex].dataset.name||'';
+    let sub=saleItems.reduce((s,x)=>s+x.total,0);
+    let taxRate=+$('sTaxRate').value||15;
+    let tax=sub*taxRate/100;
+    let grand=sub+tax;
+    let status=$('sPayMethod').value||'مدفوع';
+    let paid=status==='مدفوع'?grand:0;
+    let newSale={id:nextId('sale'),clientId,clientName,items:[...saleItems],sub,tax,grand,paid,status,date:$('sDate').value};
+    saleItems.forEach(it=>{
+        let prod=db.inventory.find(x=>x.id===it.pid);
+        if(prod)prod.qty-=it.qty;
+    });
+    let client=db.clients.find(x=>x.id===clientId);
+    if(client&&status==='آجل')client.balance=(client.balance||0)+(grand-paid);
+    db.sales.push(newSale);
+    jeSale(newSale);
+    save();addLog('فاتورة بيع',`${clientName} - ${fmt(grand)}`);
+    closeModal();renderSales();updateNotifBadge();toast('تم حفظ فاتورة البيع','success');
+}
+function paySale(id){
+    let s=db.sales.find(x=>x.id===id);if(!s)return;
+    let remaining=s.grand-s.paid;
+    if(remaining<=0){toast('الفاتورة محصلة بالكامل','info');return}
+    let amount=prompt(`المبلغ المتبقي: ${fmt(remaining)}\nأدخل مبلغ التحصيل:`);
+    if(!amount)return;
+    amount=+amount;
+    if(isNaN(amount)||amount<=0){toast('مبلغ غير صالح','error');return}
+    if(amount>remaining)amount=remaining;
+    s.paid+=amount;
+    if(s.paid>=s.grand){s.paid=s.grand;s.status='مدفوع';}
+    let client=db.clients.find(x=>x.id===s.clientId);
+    if(client)client.balance=Math.max(0,(client.balance||0)-amount);
+    je(`تحصيل جزئي/كامل - فاتورة بيع #${s.id}`,today(),[
+        {acc:'1100',debit:amount,credit:0},{acc:'1300',debit:0,credit:amount}
+    ]);
+    save();addLog('تحصيل مبيعات',`فاتورة #${s.id} - ${fmt(amount)}`);
+    renderSales();toast('تم تسجيل التحصيل','success');
+}
+function deleteSale(id){
+    if(!confirm('حذف هذه الفاتورة؟'))return;
+    let idx=db.sales.findIndex(x=>x.id===id);
+    if(idx>-1){db.sales.splice(idx,1);save();addLog('حذف فاتورة بيع',`#${id}`);renderSales();toast('تم الحذف','success');}
+}
+function printInvoice(id){
+    let s=db.sales.find(x=>x.id===id);if(!s)return;
+    let w=window.open('','_blank','width=800,height=600');
+    w.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
+    <title>فاتورة #${s.id}</title>
+    <style>body{font-family:Arial,sans-serif;direction:rtl;color:#000;background:#fff}
+    .invoice-print{max-width:700px;margin:0 auto;padding:30px}
+    .invoice-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #0d9488}
+    .invoice-logo{font-size:1.5rem;font-weight:900;color:#0d9488}
+    table{width:100%;border-collapse:collapse;margin-top:16px}
+    th,td{padding:10px;border:1px solid #ddd;text-align:right}
+    th{background:#0d9488;color:#fff}
+    .invoice-total{text-align:left;margin-top:16px}
+    .invoice-footer{margin-top:24px;padding-top:12px;border-top:1px solid #ddd;text-align:center;color:#64748b;font-size:12px}
+    </style></head><body>
+    <div class="invoice-print">
+        <div class="invoice-header">
+            <div><div class="invoice-logo">${companyInfo.name||'ERP PRO'}</div>
+            <div style="font-size:12px;color:#555;margin-top:4px">${companyInfo.address||''}</div>
+            <div style="font-size:12px;color:#555">${companyInfo.phone||''}</div>
+            ${companyInfo.taxNo?`<div style="font-size:12px;color:#555">الرقم الضريبي: ${companyInfo.taxNo}</div>`:''}
+            </div>
+            <div style="text-align:left">
+                <div style="font-size:1.8rem;font-weight:900;color:#0d9488">فاتورة ضريبية</div>
+                <div style="font-size:13px;color:#555">رقم الفاتورة: <strong>#${s.id}</strong></div>
+                <div style="font-size:13px;color:#555">التاريخ: <strong>${s.date}</strong></div>
+            </div>
+        </div>
+        <div style="margin-bottom:16px;font-size:13px">
+            <strong>العميل:</strong> ${s.clientName}
+        </div>
+        <table>
+            <thead><tr><th>#</th><th>الصنف</th><th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي</th></tr></thead>
+            <tbody>
+            ${s.items.map((it,i)=>`<tr><td>${i+1}</td><td>${it.name}</td><td>${it.qty}</td><td>${it.price.toFixed(2)}</td><td>${it.total.toFixed(2)}</td></tr>`).join('')}
+            </tbody>
+        </table>
+        <div class="invoice-total">
+            <p>المجموع: <strong>${s.sub.toFixed(2)}</strong></p>
+            <p>الضريبة: <strong>${s.tax.toFixed(2)}</strong></p>
+            <p style="font-size:1.2rem;color:#0d9488">الإجمالي: <strong>${s.grand.toFixed(2)}</strong></p>
+            <p>الحالة: <strong>${s.status}</strong></p>
+        </div>
+        <div class="invoice-footer">شكراً لتعاملكم معنا &bull; ${companyInfo.name||'ERP PRO ULTIMATE'}</div>
+    </div>
+    <script>window.onload=()=>window.print()<\/script>
+    </body></html>`);
+    w.document.close();
+}
+
+/* ========== 13. العملاء ========== */
+function renderClients(){
+    $('pageContent').innerHTML=`
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title" style="margin:0"><i class="fas fa-user-group" style="color:var(--primary)"></i> إدارة العملاء</div>
+            <button class="btn btn-primary-bg" onclick="modalAddClient()"><i class="fas fa-plus"></i> إضافة عميل</button>
+        </div>
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>#</th><th>اسم العميل</th><th>الهاتف</th><th>العنوان</th><th>الرصيد المستحق</th><th>الإجراءات</th></tr></thead>
+            <tbody>${db.clients.map(c=>`<tr>
+                <td>${c.id}</td><td><strong>${c.name}</strong></td>
+                <td style="direction:ltr">${c.phone}</td><td>${c.address}</td>
+                <td class="${(c.balance||0)>0?'text-danger':'text-success'}"><strong>${fmt(c.balance||0)}</strong></td>
+                <td>
+                  <button class="btn btn-info btn-sm" onclick="modalEditClient(${c.id})"><i class="fas fa-edit"></i></button>
+                  ${isAdmin()?`<button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})"><i class="fas fa-trash"></i></button>`:''}
+                </td>
+            </tr>`).join('')||'<tr><td colspan="6" class="text-center text-muted">لا يوجد عملاء</td></tr>'}
+            </tbody>
+        </table></div>
+    </div>`;
+}
+function modalAddClient(){
+    openModal(`<div class="modal-title"><i class="fas fa-user-plus" style="color:var(--primary)"></i> إضافة عميل جديد</div>
+    <div class="flex-2">
+        <div class="field-group"><label>اسم العميل</label><input id="cName" placeholder="الاسم الكامل / اسم الشركة"></div>
+        <div class="field-group"><label>الهاتف</label><input id="cPhone" placeholder="05XXXXXXXX" style="direction:ltr"></div>
+    </div>
+    <div class="field-group"><label>العنوان</label><input id="cAddr" placeholder="المدينة - الحي"></div>
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary-bg" onclick="addClient()"><i class="fas fa-save"></i> حفظ</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+    </div>`);
+}
+function addClient(){
+    let name=$('cName').value.trim();
+    if(!name){toast('اسم العميل مطلوب','error');return}
+    db.clients.push({id:nextId('cli'),name,phone:$('cPhone').value.trim(),address:$('cAddr').value.trim(),balance:0});
+    save();addLog('إضافة عميل',name);closeModal();renderClients();toast('تم إضافة العميل','success');
+}
+function modalEditClient(id){
+    let c=db.clients.find(x=>x.id===id);if(!c)return;
+    openModal(`<div class="modal-title"><i class="fas fa-edit" style="color:var(--info)"></i> تعديل العميل</div>
+    <div class="flex-2">
+        <div class="field-group"><label>اسم العميل</label><input id="cName" value="${c.name}"></div>
+        <div class="field-group"><label>الهاتف</label><input id="cPhone" value="${c.phone}" style="direction:ltr"></div>
+    </div>
+    <div class="field-group"><label>العنوان</label><input id="cAddr" value="${c.address}"></div>
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary-bg" onclick="editClient(${id})"><i class="fas fa-save"></i> حفظ</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+    </div>`);
+}
+function editClient(id){
+    let c=db.clients.find(x=>x.id===id);if(!c)return;
+    c.name=$('cName').value.trim();c.phone=$('cPhone').value.trim();c.address=$('cAddr').value.trim();
+    save();addLog('تعديل عميل',c.name);closeModal();renderClients();toast('تم التعديل','success');
+}
+function deleteClient(id){
+    if(!confirm('حذف العميل؟'))return;
+    let idx=db.clients.findIndex(x=>x.id===id);
+    if(idx>-1){let n=db.clients[idx].name;db.clients.splice(idx,1);save();addLog('حذف عميل',n);renderClients();toast('تم الحذف','success');}
+}
+
+/* ========== 14. نقطة البيع ========== */
+function renderPOS(){
+    posCart=[];
+    $('pageContent').innerHTML=`
+    <div class="pos-layout">
+        <div class="pos-products">
+            <div class="card-title"><i class="fas fa-store" style="color:var(--primary)"></i> المنتجات</div>
+            <input placeholder="🔍 بحث..." oninput="filterPOSProducts(this.value)" style="margin-bottom:12px">
+            <div class="pos-grid" id="posGrid"></div>
+        </div>
+        <div class="pos-cart">
+            <div class="card-title"><i class="fas fa-shopping-cart" style="color:var(--primary)"></i> سلة المشتريات</div>
+            <div class="field-group">
+                <label>العميل</label>
+                <select id="posClient">
+                    <option value="0">عميل نقدي</option>
+                    ${db.clients.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
+                </select>
+            </div>
+            <div class="pos-cart-items" id="posCartItems"><p class="text-muted text-center" style="font-size:12px;margin-top:20px">لم تضف أصنافاً بعد</p></div>
+            <div class="pos-totals" id="posTotals">
+                <div class="line"><span>المجموع</span><span id="posSubtotal">0.00</span></div>
+                <div class="line"><span>الضريبة 15%</span><span id="posTax">0.00</span></div>
+                <div class="line grand"><span>الإجمالي</span><span id="posGrand">0.00</span></div>
+            </div>
+            <div class="field-group mt-2">
+                <label>طريقة الدفع</label>
+                <select id="posPayMethod">
+                    <option value="مدفوع">نقداً</option>
+                    <option value="آجل">آجل</option>
+                </select>
+            </div>
+            <button class="btn btn-primary-bg" style="width:100%;margin-top:8px;padding:12px" onclick="checkoutPOS()"><i class="fas fa-cash-register"></i> إتمام البيع</button>
+            <button class="btn btn-ghost" style="width:100%;margin-top:6px" onclick="clearCart()"><i class="fas fa-trash"></i> إلغاء السلة</button>
+        </div>
+    </div>`;
+    renderPOSGrid(db.inventory);
+}
+function renderPOSGrid(items){
+    let el=$('posGrid');if(!el)return;
+    el.innerHTML=items.map(p=>`
+    <div class="pos-product ${p.qty<=0?'out-of-stock':''}" onclick="addToCart(${p.id})">
+        <div style="font-size:24px;margin-bottom:6px">🛍️</div>
+        <h4>${p.name}</h4>
+        <div class="price">${fmt(p.sell)}</div>
+        <div class="stock">متوفر: ${p.qty}</div>
+    </div>`).join('');
+}
+function filterPOSProducts(q){
+    renderPOSGrid(db.inventory.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())));
+}
+function addToCart(pid){
+    let prod=db.inventory.find(x=>x.id===pid);if(!prod||prod.qty<=0)return;
+    let existing=posCart.find(x=>x.pid===pid);
+    if(existing){
+        if(existing.qty>=prod.qty){toast('لا توجد كمية كافية','error');return}
+        existing.qty++;existing.total=existing.qty*existing.price;
+    } else {
+        posCart.push({pid,name:prod.name,qty:1,price:prod.sell,total:prod.sell});
+    }
+    renderCart();
+}
+function renderCart(){
+    let el=$('posCartItems');if(!el)return;
+    if(posCart.length===0){el.innerHTML='<p class="text-muted text-center" style="font-size:12px;margin-top:20px">لم تضف أصنافاً بعد</p>';updatePOSTotals();return;}
+    el.innerHTML=posCart.map((it,i)=>`
+    <div class="pos-cart-item">
+        <div style="flex:1"><strong style="font-size:11px">${it.name}</strong><br><span style="color:var(--primary);font-size:11px">${fmt(it.price)}</span></div>
+        <div class="qty-controls">
+            <button onclick="changeCartQty(${i},-1)">-</button>
+            <span>${it.qty}</span>
+            <button onclick="changeCartQty(${i},1)">+</button>
+        </div>
+        <div style="min-width:60px;text-align:left;font-weight:700;font-size:12px">${fmt(it.total)}</div>
+        <button class="btn btn-danger btn-sm" style="padding:3px 6px;margin-right:4px" onclick="removeFromCart(${i})"><i class="fas fa-times"></i></button>
+    </div>`).join('');
+    updatePOSTotals();
+}
+function changeCartQty(i,delta){
+    let item=posCart[i];if(!item)return;
+    let prod=db.inventory.find(x=>x.id===item.pid);
+    item.qty+=delta;
+    if(item.qty<=0){posCart.splice(i,1);}
+    else{
+        if(prod&&item.qty>prod.qty){item.qty=prod.qty;toast('وصلت للحد الأقصى المتاح','info');}
+        item.total=item.qty*item.price;
+    }
+    renderCart();
+}
+function removeFromCart(i){posCart.splice(i,1);renderCart();}
+function clearCart(){posCart=[];renderCart();}
+function updatePOSTotals(){
+    let sub=posCart.reduce((s,x)=>s+x.total,0);
+    let tax=sub*0.15;
+    let grand=sub+tax;
+    let st=$('posSubtotal'),tx=$('posTax'),gr=$('posGrand');
+    if(st)st.textContent=fmt(sub);
+    if(tx)tx.textContent=fmt(tax);
+    if(gr)gr.textContent=fmt(grand);
+}
+function checkoutPOS(){
+    if(posCart.length===0){toast('السلة فارغة','error');return}
+    let clientId=+$('posClient').value||0;
+    let clientName=clientId>0?(db.clients.find(x=>x.id===clientId)||{name:'عميل نقدي'}).name:'عميل نقدي';
+    let sub=posCart.reduce((s,x)=>s+x.total,0);
+    let tax=sub*0.15;
+    let grand=sub+tax;
+    let status=$('posPayMethod').value||'مدفوع';
+    let paid=status==='مدفوع'?grand:0;
+    let newSale={id:nextId('sale'),clientId,clientName,items:posCart.map(x=>({pid:x.pid,name:x.name,qty:x.qty,price:x.price,total:x.total})),sub,tax,grand,paid,status,date:today()};
+    posCart.forEach(it=>{
+        let prod=db.inventory.find(x=>x.id===it.pid);
+        if(prod)prod.qty-=it.qty;
+    });
+    if(clientId>0&&status==='آجل'){
+        let client=db.clients.find(x=>x.id===clientId);
+        if(client)client.balance=(client.balance||0)+(grand-paid);
+    }
+    db.sales.push(newSale);
+    jeSale(newSale);
+    save();addLog('نقطة البيع',`${clientName} - ${fmt(grand)}`);
+    posCart=[];
+    renderPOS();
+    updateNotifBadge();
+    toast(`تم البيع بنجاح! الإجمالي: ${fmt(grand)}`,'success');
+}
+
+/* ========== 15. المصروفات ========== */
+function renderExpenses(){
+    let total=db.expenses.reduce((s,x)=>s+x.amount,0);
+    let catMap={};
+    db.expenses.forEach(e=>{catMap[e.cat]=(catMap[e.cat]||0)+e.amount});
+    $('pageContent').innerHTML=`
+    <div class="summary-bar">
+        <span>إجمالي المصروفات: <strong>${fmt(total)}</strong></span>
+        <span>عدد العمليات: <strong>${db.expenses.length}</strong></span>
+    </div>
+    <div class="flex-2">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title" style="margin:0"><i class="fas fa-money-bill" style="color:var(--primary)"></i> المصروفات</div>
+                <button class="btn btn-primary-bg" onclick="modalAddExpense()"><i class="fas fa-plus"></i> إضافة مصروف</button>
+            </div>
+            <div class="tbl-wrap"><table>
+                <thead><tr><th>الفئة</th><th>المبلغ</th><th>الملاحظة</th><th>التاريخ</th><th></th></tr></thead>
+                <tbody>${db.expenses.map(e=>`<tr>
+                    <td><span class="badge badge-warning">${e.cat}</span></td>
+                    <td><strong>${fmt(e.amount)}</strong></td>
+                    <td>${e.note}</td><td>${e.date}</td>
+                    <td>${isAdmin()?`<button class="btn btn-danger btn-sm" onclick="deleteExpense(${e.id})"><i class="fas fa-trash"></i></button>`:''}</td>
+                </tr>`).join('')||'<tr><td colspan="5" class="text-center text-muted">لا توجد مصروفات</td></tr>'}
+                </tbody>
+            </table></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-chart-pie" style="color:var(--warning)"></i> توزيع المصروفات حسب الفئة</div>
+            <div class="tbl-wrap"><table>
+                <thead><tr><th>الفئة</th><th>الإجمالي</th><th>النسبة</th></tr></thead>
+                <tbody>${Object.entries(catMap).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>`<tr>
+                    <td>${cat}</td><td><strong>${fmt(amt)}</strong></td>
+                    <td><span class="badge badge-info">${total>0?(amt/total*100).toFixed(1):0}%</span></td>
+                </tr>`).join('')}</tbody>
+            </table></div>
+        </div>
+    </div>`;
+}
+function modalAddExpense(){
+    openModal(`<div class="modal-title"><i class="fas fa-plus-circle" style="color:var(--primary)"></i> إضافة مصروف جديد</div>
+    <div class="flex-2">
+        <div class="field-group"><label>الفئة</label>
+        <select id="eCat">
+            ${EXPENSE_CATS.map(c=>`<option>${c}</option>`).join('')}
+        </select></div>
+        <div class="field-group"><label>المبلغ</label><input id="eAmount" type="number" min="0" placeholder="0.00"></div>
+    </div>
+    <div class="flex-2">
+        <div class="field-group"><label>الملاحظة</label><input id="eNote" placeholder="وصف المصروف"></div>
+        <div class="field-group"><label>التاريخ</label><input id="eDate" type="date" value="${today()}"></div>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary-bg" onclick="addExpense()"><i class="fas fa-save"></i> حفظ</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+    </div>`);
+}
+function addExpense(){
+    let cat=$('eCat').value;
+    let amount=+$('eAmount').value;
+    let note=$('eNote').value.trim();
+    let date=$('eDate').value;
+    if(!amount||amount<=0){toast('المبلغ غير صالح','error');return}
+    let newExp={id:nextId('exp'),cat,amount,note,date};
+    db.expenses.push(newExp);
+    jeExpense(newExp);
+    save();addLog('مصروف',`${cat}: ${fmt(amount)}`);
+    closeModal();renderExpenses();toast('تم إضافة المصروف','success');
+}
+function deleteExpense(id){
+    if(!confirm('حذف هذا المصروف؟'))return;
+    let idx=db.expenses.findIndex(x=>x.id===id);
+    if(idx>-1){db.expenses.splice(idx,1);save();addLog('حذف مصروف',`#${id}`);renderExpenses();toast('تم الحذف','success');}
+}
+
+/* ========== 16. المحاسبة ========== */
+function renderAccounting(){
+    let tb=trialBalance();
+    let totalDr=tb.reduce((s,x)=>s+x.debit,0);
+    let totalCr=tb.reduce((s,x)=>s+x.credit,0);
+    let is_=incomeStatement();
+    let bs=balanceSheet();
+    $('pageContent').innerHTML=`
+    <div class="flex-2">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-scale-balanced" style="color:var(--primary)"></i> ميزان المراجعة</div>
+            <div class="tbl-wrap"><table>
+                <thead><tr><th>الكود</th><th>الحساب</th><th>مدين</th><th>دائن</th></tr></thead>
+                <tbody>
+                ${tb.map(r=>`<tr><td>${r.code}</td><td>${r.name}</td><td class="text-success">${r.debit>0?fmt(r.debit):'-'}</td><td class="text-danger">${r.credit>0?fmt(r.credit):'-'}</td></tr>`).join('')||'<tr><td colspan="4" class="text-center text-muted">لا توجد قيود</td></tr>'}
+                </tbody>
+                <tfoot><tr class="trial-total"><td colspan="2">الإجمالي</td><td>${fmt(totalDr)}</td><td>${fmt(totalCr)}</td></tr></tfoot>
+            </table></div>
+        </div>
+        <div>
+            <div class="card">
+                <div class="card-title"><i class="fas fa-chart-line" style="color:var(--success)"></i> قائمة الدخل</div>
+                <table>
+                    <tr><td>إيرادات المبيعات</td><td class="text-success"><strong>${fmt(is_.revenue)}</strong></td></tr>
+                    <tr><td>تكلفة البضاعة المباعة</td><td class="text-danger">(${fmt(is_.cogs)})</td></tr>
+                    <tr style="border-top:2px solid var(--border)"><td><strong>مجمل الربح</strong></td><td class="${is_.gross>=0?'text-success':'text-danger'}"><strong>${fmt(is_.gross)}</strong></td></tr>
+                    <tr><td>المصروفات التشغيلية</td><td class="text-danger">(${fmt(is_.opExp)})</td></tr>
+                    <tr style="border-top:2px solid var(--border)"><td><strong>صافي الربح (الخسارة)</strong></td><td class="${is_.net>=0?'text-success':'text-danger'}"><strong>${fmt(is_.net)}</strong></td></tr>
+                </table>
+            </div>
+            <div class="card">
+                <div class="card-title"><i class="fas fa-building-columns" style="color:var(--info)"></i> الميزانية العمومية</div>
+                <table>
+                    <tr><td><strong>الأصول</strong></td><td class="text-success"><strong>${fmt(bs.assets)}</strong></td></tr>
+                    <tr><td>الخصوم</td><td>${fmt(bs.liabilities)}</td></tr>
+                    <tr><td>حقوق الملكية</td><td>${fmt(bs.equity)}</td></tr>
+                    <tr style="border-top:2px solid var(--border)"><td><strong>الخصوم + حقوق الملكية</strong></td><td class="${Math.abs(bs.assets-bs.totalLiabEq)<1?'text-success':'text-danger'}"><strong>${fmt(bs.totalLiabEq)}</strong></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title"><i class="fas fa-list-ul" style="color:var(--warning)"></i> دفتر اليومية (آخر القيود)</div>
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>#</th><th>التاريخ</th><th>الوصف</th><th>الحساب</th><th>مدين</th><th>دائن</th></tr></thead>
+            <tbody>
+            ${db.journal.slice(-20).reverse().map(j=>
+                j.lines.map((l,i)=>`<tr>
+                    ${i===0?`<td rowspan="${j.lines.length}">${j.id}</td><td rowspan="${j.lines.length}">${j.date}</td><td rowspan="${j.lines.length}" style="font-size:11px">${j.description}</td>`:''}
+                    <td>${(CHART_OF_ACCOUNTS.find(a=>a.code===l.acc)||{name:l.acc}).name}</td>
+                    <td class="text-success">${l.debit>0?fmt(l.debit):'-'}</td>
+                    <td class="text-danger">${l.credit>0?fmt(l.credit):'-'}</td>
+                </tr>`).join('')
+            ).join('')||'<tr><td colspan="6" class="text-center text-muted">لا توجد قيود</td></tr>'}
+            </tbody>
+        </table></div>
+    </div>`;
+}
+
+/* ========== 17. التقارير ========== */
+function renderReports(){
+    let totalSales=db.sales.reduce((s,x)=>s+x.grand,0);
+    let totalPurchases=db.purchases.reduce((s,x)=>s+x.total,0);
+    let totalExpenses=db.expenses.reduce((s,x)=>s+x.amount,0);
+    let grossProfit=db.sales.reduce((s,sale)=>{
+        return s+sale.items.reduce((ss,it)=>{
+            let p=db.inventory.find(x=>x.id===it.pid);
+            return ss+(it.price-(p?p.buy:0))*it.qty;
+        },0);
+    },0);
+    let netProfit=grossProfit-totalExpenses;
+    let inventoryValue=db.inventory.reduce((s,x)=>s+(x.qty*x.buy),0);
+    let inventoryRetail=db.inventory.reduce((s,x)=>s+(x.qty*x.sell),0);
+    $('pageContent').innerHTML=`
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#d1fae5;color:#059669"><i class="fas fa-arrow-trend-up"></i></div>
+            <h3>${fmt(totalSales)}</h3><span>إجمالي المبيعات</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#dbeafe;color:#2563eb"><i class="fas fa-cart-shopping"></i></div>
+            <h3>${fmt(totalPurchases)}</h3><span>إجمالي المشتريات</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#fee2e2;color:#dc2626"><i class="fas fa-money-bill"></i></div>
+            <h3>${fmt(totalExpenses)}</h3><span>إجمالي المصروفات</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:${netProfit>=0?'#d1fae5':'#fee2e2'};color:${netProfit>=0?'#059669':'#dc2626'}"><i class="fas fa-chart-line"></i></div>
+            <h3 class="${netProfit>=0?'text-success':'text-danger'}">${fmt(netProfit)}</h3><span>صافي الربح</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#e0e7ff;color:#4338ca"><i class="fas fa-warehouse"></i></div>
+            <h3>${fmt(inventoryValue)}</h3><span>قيمة المخزون (شراء)</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#fef3c7;color:#b45309"><i class="fas fa-tag"></i></div>
+            <h3>${fmt(inventoryRetail)}</h3><span>قيمة المخزون (بيع)</span>
+        </div>
+    </div>
+    <div class="flex-2">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-trophy" style="color:var(--warning)"></i> أكثر المنتجات مبيعاً</div>
+            <div class="tbl-wrap"><table>
+                <thead><tr><th>الصنف</th><th>الكمية المباعة</th><th>الإيرادات</th></tr></thead>
+                <tbody>${getTopProducts().map(p=>`<tr><td>${p.name}</td><td>${p.qty}</td><td>${fmt(p.revenue)}</td></tr>`).join('')||'<tr><td colspan="3" class="text-center text-muted">لا بيانات</td></tr>'}</tbody>
+            </table></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-user-star" style="color:var(--info)"></i> أفضل العملاء</div>
+            <div class="tbl-wrap"><table>
+                <thead><tr><th>العميل</th><th>المبيعات</th><th>عدد الفواتير</th></tr></thead>
+                <tbody>${getTopClients().map(c=>`<tr><td>${c.name}</td><td>${fmt(c.total)}</td><td>${c.count}</td></tr>`).join('')||'<tr><td colspan="3" class="text-center text-muted">لا بيانات</td></tr>'}</tbody>
+            </table></div>
+        </div>
+    </div>
+    <div class="card no-print">
+        <div class="card-title"><i class="fas fa-print"></i> طباعة / تصدير</div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary-bg" onclick="window.print()"><i class="fas fa-print"></i> طباعة التقرير</button>
+        </div>
+    </div>`;
+}
+function getTopProducts(){
+    let map={};
+    db.sales.forEach(s=>s.items.forEach(it=>{
+        if(!map[it.pid])map[it.pid]={name:it.name,qty:0,revenue:0};
+        map[it.pid].qty+=it.qty;
+        map[it.pid].revenue+=it.total;
+    }));
+    return Object.values(map).sort((a,b)=>b.revenue-a.revenue).slice(0,5);
+}
+function getTopClients(){
+    let map={};
+    db.sales.forEach(s=>{
+        if(!map[s.clientId])map[s.clientId]={name:s.clientName,total:0,count:0};
+        map[s.clientId].total+=s.grand;
+        map[s.clientId].count++;
+    });
+    return Object.values(map).sort((a,b)=>b.total-a.total).slice(0,5);
+}
+
+/* ========== 18. الإعدادات ========== */
+function renderSettings(){
+    $('pageContent').innerHTML=`
+    <div class="flex-2">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-building" style="color:var(--primary)"></i> معلومات الشركة</div>
+            <div class="field-group"><label>اسم الشركة</label><input id="cfName" value="${companyInfo.name||''}"></div>
+            <div class="field-group"><label>رقم الهاتف</label><input id="cfPhone" value="${companyInfo.phone||''}" style="direction:ltr"></div>
+            <div class="field-group"><label>العنوان</label><input id="cfAddr" value="${companyInfo.address||''}"></div>
+            <div class="field-group"><label>الرقم الضريبي</label><input id="cfTax" value="${companyInfo.taxNo||''}"></div>
+            <div class="field-group"><label>اسم الفرع</label><input id="cfBranch" value="${companyInfo.branch||'الرئيسي'}"></div>
+            <button class="btn btn-primary-bg mt-2" onclick="saveCompanyInfo()"><i class="fas fa-save"></i> حفظ معلومات الشركة</button>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-palette" style="color:var(--primary)"></i> الإعدادات العامة</div>
+            <div class="field-group">
+                <label>العملة</label>
+                <select id="cfCurrency" onchange="changeCurrency(this.value)">
+                    ${Object.keys(RATES).map(r=>`<option ${currency===r?'selected':''}>${r}</option>`).join('')}
+                </select>
+            </div>
+            <div class="field-group">
+                <label>حد المخزون المنخفض</label>
+                <input id="cfLowStock" type="number" min="1" value="${lowStockThreshold}">
+            </div>
+            <div class="field-group">
+                <label>لون النظام</label>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+                    ${THEME_COLORS.map(tc=>`<div class="color-swatch${themeColor===tc.primary?' selected':''}" style="background:${tc.primary}" title="${tc.name}" onclick="changeTheme('${tc.primary}','${tc.dark}')"></div>`).join('')}
+                </div>
+            </div>
+            <button class="btn btn-primary-bg mt-2" onclick="saveGeneralSettings()"><i class="fas fa-save"></i> حفظ الإعدادات</button>
+        </div>
+    </div>
+    ${isAdmin()?`
+    <div class="card">
+        <div class="card-title"><i class="fas fa-users-gear" style="color:var(--primary)"></i> إدارة المستخدمين</div>
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>#</th><th>الاسم</th><th>اسم المستخدم</th><th>الدور</th><th></th></tr></thead>
+            <tbody>${db.users.map(u=>`<tr>
+                <td>${u.id}</td><td>${u.name}</td><td>${u.username}</td>
+                <td><span class="badge ${u.role==='admin'?'badge-danger':'badge-info'}">${u.role==='admin'?'مدير':'مستخدم'}</span></td>
+                <td>${u.id!==currentUser.id?`<button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>`:''}</td>
+            </tr>`).join('')}</tbody>
+        </table></div>
+    </div>`:''}`;
+}
+function saveCompanyInfo(){
+    companyInfo.name=$('cfName').value.trim();
+    companyInfo.phone=$('cfPhone').value.trim();
+    companyInfo.address=$('cfAddr').value.trim();
+    companyInfo.taxNo=$('cfTax').value.trim();
+    companyInfo.branch=$('cfBranch').value.trim();
+    $('topLogo').textContent=companyInfo.name||'ERP PRO ULTIMATE';
+    save();addLog('تعديل إعدادات الشركة','');toast('تم حفظ معلومات الشركة','success');
+}
+function saveGeneralSettings(){
+    lowStockThreshold=+$('cfLowStock').value||5;
+    localStorage.setItem('erp_low_stock',lowStockThreshold);
+    save();updateNotifBadge();toast('تم حفظ الإعدادات','success');
+}
+function changeCurrency(c){currency=c;localStorage.setItem('erp_currency',c);save();renderSettings();toast('تم تغيير العملة','success');}
+function changeTheme(primary,dark){
+    themeColor=primary;themeDark=dark;
+    localStorage.setItem('erp_theme',primary);localStorage.setItem('erp_theme_dark',dark);
+    applyTheme();renderSettings();toast('تم تغيير اللون','success');
+}
+function deleteUser(id){
+    if(!confirm('حذف هذا المستخدم؟'))return;
+    let idx=db.users.findIndex(x=>x.id===id);
+    if(idx>-1){db.users.splice(idx,1);save();renderSettings();toast('تم حذف المستخدم','success');}
+}
+
+/* ========== 19. النسخ الاحتياطي ========== */
+function renderBackup(){
+    $('pageContent').innerHTML=`
+    <div class="flex-2">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-cloud-arrow-down" style="color:var(--primary)"></i> تصدير البيانات</div>
+            <p class="text-muted" style="font-size:13px;margin-bottom:16px">قم بتنزيل نسخة احتياطية كاملة من بيانات النظام بصيغة JSON</p>
+            <button class="btn btn-primary-bg" onclick="exportData()"><i class="fas fa-download"></i> تنزيل النسخة الاحتياطية</button>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-cloud-arrow-up" style="color:var(--success)"></i> استيراد البيانات</div>
+            <p class="text-muted" style="font-size:13px;margin-bottom:16px">استعادة البيانات من ملف نسخة احتياطية سابقة</p>
+            <input type="file" id="importFile" accept=".json" onchange="importData(event)" style="margin-bottom:10px">
+            <p class="text-danger" style="font-size:11px;margin-top:8px"><i class="fas fa-triangle-exclamation"></i> تحذير: سيؤدي الاستيراد إلى استبدال البيانات الحالية</p>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title"><i class="fas fa-trash-can" style="color:var(--danger)"></i> إعادة تعيين النظام</div>
+        <p class="text-muted" style="font-size:13px;margin-bottom:16px">حذف جميع البيانات وإعادة النظام إلى الإعدادات الافتراضية</p>
+        <button class="btn btn-danger" onclick="resetSystem()"><i class="fas fa-rotate-left"></i> إعادة تعيين النظام</button>
+    </div>
+    <div class="card">
+        <div class="card-title"><i class="fas fa-list-check" style="color:var(--info)"></i> سجل النشاطات</div>
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>المستخدم</th><th>العملية</th><th>التفاصيل</th><th>الوقت</th></tr></thead>
+            <tbody>${logs.map(l=>`<tr><td>${l.user}</td><td>${l.action}</td><td>${l.detail}</td><td style="direction:ltr;font-size:11px">${new Date(l.time).toLocaleString('ar')}</td></tr>`).join('')||'<tr><td colspan="4" class="text-center text-muted">لا توجد سجلات</td></tr>'}</tbody>
+        </table></div>
+    </div>`;
+}
+function exportData(){
+    try{
+        let data={db,logs,companyInfo,currency,themeColor,themeDark,lowStockThreshold,exportDate:new Date().toISOString(),version:'ERP_PRO_ULTIMATE_v1'};
+        let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+        let url=URL.createObjectURL(blob);
+        let a=document.createElement('a');
+        a.href=url;a.download=`erp_backup_${today()}.json`;
+        document.body.appendChild(a);a.click();
+        document.body.removeChild(a);URL.revokeObjectURL(url);
+        addLog('تصدير البيانات','نسخة احتياطية');
+        toast('تم تصدير البيانات بنجاح','success');
+    }catch(e){toast('خطأ في التصدير','error');console.error(e);}
+}
+function importData(event){
+    let file=event.target.files[0];
+    if(!file)return;
+    if(!confirm('هذا سيستبدل جميع البيانات الحالية. هل أنت متأكد؟'))return;
+    let reader=new FileReader();
+    reader.onload=function(e){
+        try{
+            let obj=JSON.parse(e.target.result);
+            if(obj.db)db=obj.db;
+            if(obj.logs)logs=obj.logs;
+            if(obj.companyInfo)companyInfo=obj.companyInfo;
+            if(obj.currency)currency=obj.currency;
+            if(obj.themeColor){themeColor=obj.themeColor;themeDark=obj.themeDark||'#0f766e';}
+            if(obj.lowStockThreshold)lowStockThreshold=obj.lowStockThreshold;
+            save();applyTheme();
+            $('topLogo').textContent=companyInfo.name||'ERP PRO ULTIMATE';
+            updateNotifBadge();
+            addLog('استيراد البيانات','من ملف نسخة احتياطية');
+            toast('تم استيراد البيانات بنجاح','success');
+            navigate('dashboard');
+        }catch(err){toast('ملف غير صالح أو تالف','error');console.error(err);}
+    };
+    reader.readAsText(file);
+}
+function resetSystem(){
+    if(!confirm('هذا سيحذف جميع البيانات! اكتب "تأكيد" للمتابعة'))return;
+    let confirm2=prompt('اكتب كلمة "تأكيد" للمتابعة:');
+    if(confirm2!=='تأكيد'){toast('تم الإلغاء','info');return}
+    localStorage.removeItem('erp_data');
+    localStorage.removeItem('erp_data_plain');
+    toast('تم إعادة التعيين. سيتم تحديث الصفحة...','success');
+    setTimeout(()=>location.reload(),1500);
+}
+
+/* ========== 20. التهيئة ========== */
+load();
+if(isDark)document.body.classList.add('dark');
+applyTheme();
+</script>
+</body>
+</html>
