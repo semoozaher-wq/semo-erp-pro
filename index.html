@@ -3,118 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الدفتر الذهبي | نظام محاسبي متكامل</title>
+    <title>GOLDEN AI ERP V12</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
-        :root {
-            --primary: #0d9488; --dark-bg: #0f172a; --card-bg: #ffffff;
-            --text-main: #1e293b; --border: #e2e8f0; --accent: #f59e0b;
-            --danger: #ef4444; --success: #10b981;
-        }
-        [data-theme="dark"] {
-            --dark-bg: #020617; --card-bg: #1e293b; --text-main: #f1f5f9; --border: #334155;
-        }
+        :root { --primary: #0f172a; --accent: #3b82f6; --success: #10b981; --danger: #ef4444; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; }
+        [data-theme="dark"] { --primary: #f8fafc; --accent: #60a5fa; --bg: #020617; --card: #1e293b; --text: #f1f5f9; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-        body { background-color: var(--dark-bg); color: var(--text-main); transition: 0.3s; }
+        body { background: var(--bg); color: var(--text); transition: 0.3s; overflow-x: hidden; }
+
+        /* شاشة الدخول */
+        .auth-page { position: fixed; inset: 0; z-index: 2000; background: #0f172a; display: flex; align-items: center; justify-content: center; }
+        .auth-box { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; color: #333; }
+        .auth-box input, .auth-box select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; }
+
+        /* الهيكل الرئيسي */
+        .wrapper { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+        @media (max-width: 768px) { .wrapper { grid-template-columns: 1fr; } .sidebar { display: none; } }
         
-        .app-container { display: flex; min-height: 100vh; }
-        .sidebar { width: 280px; background: var(--card-bg); border-left: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 5px; position: sticky; top: 0; height: 100vh; }
-        .main-content { flex: 1; padding: 25px; overflow-y: auto; }
+        .sidebar { background: #0f172a; color: white; padding: 20px; display: flex; flex-direction: column; gap: 8px; position: sticky; top: 0; height: 100vh; }
+        .nav-item { padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; font-size: 14px; }
+        .nav-item:hover, .nav-item.active { background: var(--accent); color: white; }
+
+        .main { padding: 25px; }
+        .card { background: var(--card); padding: 20px; border-radius: 18px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.05); }
+
+        /* بوت الذكاء الاصطناعي */
+        #aiBot { position: fixed; bottom: 20px; left: 20px; width: 300px; height: 400px; background: var(--card); border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: none; flex-direction: column; z-index: 1000; border: 2px solid var(--accent); }
+        .bot-header { background: var(--accent); color: white; padding: 15px; border-radius: 18px 18px 0 0; display: flex; justify-content: space-between; }
+        .bot-messages { flex: 1; padding: 15px; overflow-y: auto; font-size: 13px; }
+        .bot-input { padding: 10px; border-top: 1px solid #eee; display: flex; }
         
-        .nav-link { padding: 12px 15px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; font-weight: 600; color: var(--text-main); background: none; width: 100%; text-align: right; border: none; }
-        .nav-link:hover, .nav-link.active { background: var(--primary); color: white; }
+        .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; transition: 0.2s; }
+        .btn-primary { background: var(--accent); color: white; }
         
-        .card { background: var(--card-bg); border-radius: 15px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 25px; }
-        
-        .pos-grid { display: grid; grid-template-columns: 1fr 400px; gap: 20px; }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; max-height: 60vh; overflow-y: auto; padding: 5px; }
-        .prod-card { background: var(--card-bg); border: 1px solid var(--border); padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .prod-card:hover { transform: translateY(-3px); border-color: var(--primary); }
-        
-        .table-res { width: 100%; border-collapse: collapse; margin-top: 15px; border-radius: 10px; overflow: hidden; }
-        .table-res th { background: var(--primary); color: white; padding: 15px; text-align: center; }
-        .table-res td { padding: 12px; border-bottom: 1px solid var(--border); text-align: center; }
-        
-        .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-accent { background: var(--accent); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        
-        .auth-overlay { position: fixed; inset: 0; background: linear-gradient(135deg, #0d9488, #0f172a); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .auth-card { background: white; padding: 40px; border-radius: 25px; width: 420px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #f1f5f9; border-radius: 10px; background: #f8fafc; color: #1e293b; font-size: 15px; }
-        
-        .toast { position: fixed; bottom: 20px; right: 20px; background: var(--success); color: white; padding: 12px 25px; border-radius: 10px; display: none; z-index: 10000; animation: slideIn 0.3s ease; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        
-        .auto-save-badge { position: fixed; bottom: 20px; left: 20px; background: var(--card-bg); padding: 6px 12px; border-radius: 20px; font-size: 11px; border: 1px solid var(--border); z-index: 100; }
-        
-        @media print { 
-            .sidebar, .btn, .nav-link, .no-print { display: none !important; } 
-            .main-content { padding: 0; width: 100%; } 
-        }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background: rgba(0,0,0,0.02); padding: 12px; font-size: 13px; color: #64748b; }
+        td { padding: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); text-align: center; }
+
+        input[type="text"].search-bar { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); margin-bottom: 15px; background: var(--card); color: var(--text); }
     </style>
 </head>
 <body>
 
-<div id="toast" class="toast"></div>
-<div class="auto-save-badge"><i class="fas fa-cloud-upload-alt"></i> حفظ تلقائي كل 15 دقيقة</div>
-
-<!-- شاشة المصادقة -->
-<div id="authScreen" class="auth-overlay">
-    <div class="auth-card">
-        <h1 style="color: var(--primary); margin-bottom: 5px;"><i class="fas fa-gem"></i> الدفتر الذهبي</h1>
-        <p style="color: #64748b; margin-bottom: 25px;">الإصدار 9.0 | نظام محاسبي سحابي</p>
-        <div id="loginForm">
-            <input type="email" id="email" placeholder="البريد الإلكتروني" value="">
-            <input type="password" id="password" placeholder="كلمة المرور">
-            <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="app.handleAuth('login')">تسجيل الدخول</button>
-            <button class="btn" style="width: 100%; margin-top: 10px; border: 1px solid #e2e8f0;" onclick="app.handleAuth('google')"><i class="fab fa-google" style="color: #ea4335;"></i> الدخول بواسطة Google</button>
-            <p style="margin-top: 20px; cursor: pointer; color: var(--primary);" onclick="app.toggleAuthForms('register')">✨ إنشاء حساب جديد مجاناً</p>
-        </div>
-        <div id="regForm" style="display: none;">
-            <input type="text" id="regName" placeholder="الاسم الكامل">
-            <input type="email" id="regEmail" placeholder="البريد الإلكتروني">
-            <input type="password" id="regPass" placeholder="كلمة المرور (6 أحرف على الأقل)">
-            <button class="btn btn-accent" style="width: 100%; margin-top: 10px;" onclick="app.handleAuth('register')">إنشاء حساب والبدء</button>
-            <p style="margin-top: 20px; cursor: pointer;" onclick="app.toggleAuthForms('login')">لديك حساب بالفعل؟ سجل دخولك</p>
-        </div>
-        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8;">
-            <i class="fas fa-info-circle"></i> البيانات تُحفظ تلقائياً في السحابة<br>
-            <i class="fas fa-sync-alt"></i> مزامنة بين جميع أجهزتك
-        </div>
+<div id="authScreen" class="auth-page">
+    <div class="auth-box">
+        <h2 style="color:var(--accent)">GOLDEN AI V12</h2>
+        <input type="email" id="email" placeholder="البريد الإلكتروني">
+        <input type="password" id="password" placeholder="كلمة المرور">
+        <select id="userRole">
+            <option value="admin">مدير (Admin)</option>
+            <option value="user">موظف (User)</option>
+        </select>
+        <button class="btn btn-primary" style="width: 100%;" onclick="app.handleAuth()" id="authBtn">دخول</button>
+        <p onclick="app.toggleAuth()" style="margin-top:15px; cursor:pointer; font-size:13px; color:#64748b;" id="authToggle">ليس لديك حساب؟ إنشاء حساب جديد</p>
     </div>
 </div>
 
-<!-- التطبيق الرئيسي -->
-<div id="mainApp" class="app-container" style="display: none;">
-    <aside class="sidebar no-print">
-        <div style="padding: 10px; text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 20px;">
-            <h2 style="color: var(--primary);"><i class="fas fa-coins"></i> GOLDEN V9</h2>
-            <small id="userDisplay" style="color: var(--accent); font-weight: 700;"></small>
+<div id="mainApp" class="wrapper" style="display: none;">
+    <aside class="sidebar">
+        <div style="padding: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h3 style="color:var(--accent)">AI SYSTEM</h3>
+            <small id="roleTag" style="background:var(--success); padding:2px 8px; border-radius:5px; font-size:10px;"></small>
         </div>
-        <button class="nav-link active" onclick="app.route('dashboard', this)"><i class="fas fa-home"></i> لوحة التحكم</button>
-        <button class="nav-link" onclick="app.route('pos', this)"><i class="fas fa-cash-register"></i> نقطة البيع POS</button>
-        <button class="nav-link" onclick="app.route('inventory', this)"><i class="fas fa-boxes"></i> المخزون</button>
-        <button class="nav-link" onclick="app.route('journal', this)"><i class="fas fa-book"></i> القيود المحاسبية</button>
-        <button class="nav-link" onclick="app.route('reports', this)"><i class="fas fa-file-invoice-dollar"></i> القوائم المالية</button>
-        
-        <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);">
-            <button class="nav-link" onclick="app.toggleTheme()"><i class="fas fa-circle-half-stroke"></i> الوضع الليلي</button>
-            <button class="nav-link" onclick="app.logout()" style="color: var(--danger);"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
-        </div>
+        <div class="nav-item active" onclick="app.route('dashboard', this)"><i class="fas fa-chart-pie"></i> لوحة التحكم</div>
+        <div class="nav-item" onclick="app.route('pos', this)"><i class="fas fa-cash-register"></i> المبيعات</div>
+        <div class="nav-item" onclick="app.route('inventory', this)"><i class="fas fa-boxes"></i> المخزن</div>
+        <div class="nav-item" onclick="app.toggleTheme()"><i class="fas fa-moon"></i> الوضع الليلي</div>
+        <div class="nav-item" onclick="app.logout()" style="margin-top:auto; color:var(--danger);"><i class="fas fa-power-off"></i> خروج</div>
     </aside>
-
-    <main class="main-content" id="viewPort"></main>
+    <main class="main" id="viewPort"></main>
 </div>
 
+<!-- زر المساعد الذكي -->
+<button onclick="app.toggleAI()" style="position:fixed; bottom:20px; left:20px; width:60px; height:60px; border-radius:50%; background:var(--accent); color:white; border:none; cursor:pointer; font-size:24px; z-index:1001; box-shadow:0 5px 15px rgba(59,130,246,0.4)">
+    <i class="fas fa-robot"></i>
+</button>
+
+<div id="aiBot">
+    <div class="bot-header"><span>المساعد الذكي AI</span> <i class="fas fa-times" onclick="app.toggleAI()" style="cursor:pointer"></i></div>
+    <div class="bot-messages" id="botMsgs">مرحباً! أنا مساعدك الذكي. اسألني عن المبيعات أو الأرباح أو تحليل المخزون.</div>
+    <div class="bot-input">
+        <input type="text" id="aiQuery" placeholder="اسألني أي شيء..." style="flex:1; border:none; outline:none;">
+        <button class="btn btn-primary" onclick="app.askAI()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script>
-// ================== إعدادات Firebase الصحيحة ==================
 const firebaseConfig = {
     apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
     authDomain: "my-pos-system-11dee.firebaseapp.com",
@@ -124,173 +105,178 @@ const firebaseConfig = {
     messagingSenderId: "565195477080",
     appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d"
 };
-
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const database = firebase.database();
+const db = firebase.database();
 
-// ================== التطبيق الرئيسي ==================
 const app = {
-    user: null,
-    db: { products: [], journal: [], clients: [] },
-    currentCart: [],
+    user: null, role: 'user', isSignUp: false,
+    data: { products: [], journal: [], customers: {}, vendors: {} },
+    cart: [],
 
-    async init() {
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
+    init() {
+        auth.onAuthStateChanged(user => {
+            if(user) {
                 this.user = user;
-                document.getElementById('authScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'flex';
-                document.getElementById('userDisplay').innerHTML = `<i class="fas fa-user-circle"></i> ${user.displayName || user.email.split('@')[0]}`;
-                await this.loadData();
-                this.route('dashboard');
+                this.loadRole();
+                document.getElementById('authScreen').style.display='none';
+                document.getElementById('mainApp').style.display='grid';
+                this.loadData();
                 this.startAutoSave();
-                this.showToast(`مرحباً ${user.displayName || 'مدير'}! تم تفعيل الحفظ التلقائي`, 'success');
             } else {
-                document.getElementById('authScreen').style.display = 'flex';
-                document.getElementById('mainApp').style.display = 'none';
+                document.getElementById('authScreen').style.display='flex';
+                document.getElementById('mainApp').style.display='none';
             }
         });
     },
 
-    async loadData() {
-        const snap = await database.ref(`users/${this.user.uid}/data`).once('value');
-        if (snap.exists()) {
-            this.db = snap.val();
-        } else {
-            this.db = {
-                products: [
-                    { id: 1, name: 'هاتف ذكي', price: 2500, cost: 1800, stock: 15 },
-                    { id: 2, name: 'حاسوب محمول', price: 5200, cost: 4200, stock: 8 },
-                    { id: 3, name: 'سماعة لاسلكية', price: 350, cost: 200, stock: 50 }
-                ],
-                journal: [],
-                clients: []
-            };
-            await this.saveData();
-        }
+    toggleAuth() {
+        this.isSignUp = !this.isSignUp;
+        document.getElementById('authTitle').innerText = this.isSignUp ? "إنشاء حساب جديد" : "GOLDEN AI V12";
+        document.getElementById('authBtn').innerText = this.isSignUp ? "تسجيل" : "دخول";
     },
 
-    async saveData() {
+    async handleAuth() {
+        const e = document.getElementById('email').value, p = document.getElementById('password').value, r = document.getElementById('userRole').value;
         try {
-            await database.ref(`users/${this.user.uid}/data`).set(this.db);
-            console.log("✅ تم حفظ البيانات في السحابة");
-        } catch(e) { console.error("❌ فشل الحفظ:", e); }
+            let res;
+            if(this.isSignUp) {
+                res = await auth.createUserWithEmailAndPassword(e, p);
+                await db.ref(`roles/${res.user.uid}`).set(r);
+            } else {
+                await auth.signInWithEmailAndPassword(e, p);
+            }
+        } catch(err) { this.notify(err.message, "error"); }
+    },
+
+    async loadRole() {
+        const snap = await db.ref(`roles/${this.user.uid}`).once('value');
+        this.role = snap.val() || 'user';
+        document.getElementById('roleTag').innerText = this.role.toUpperCase();
+    },
+
+    async loadData() {
+        const snap = await db.ref(`v12/${this.user.uid}`).once('value');
+        this.data = snap.val() || { products: [], journal: [], customers: {}, vendors: {} };
+        this.route('dashboard');
+    },
+
+    async sync() {
+        try {
+            await db.ref(`v12/${this.user.uid}`).set(this.data);
+            this.notify("تم مزامنة البيانات تلقائياً ✅");
+        } catch (e) { this.notify("خطأ في المزامنة! تحقق من الإنترنت ❌", "error"); }
     },
 
     startAutoSave() {
-        setInterval(() => {
-            this.saveData();
-            this.showToast("💾 تم الحفظ التلقائي في السحابة", 'info');
-        }, 15 * 60 * 1000);
+        setInterval(() => { this.sync(); }, 60000); // حفظ كل دقيقة
     },
 
-    async addJournalEntry(desc, debitAcc, creditAcc, amount) {
-        const entry = {
-            id: Date.now(),
-            date: new Date().toLocaleString('ar-EG'),
-            desc, debitAcc, creditAcc,
-            amount: parseFloat(amount)
-        };
-        if(!this.db.journal) this.db.journal = [];
-        this.db.journal.unshift(entry);
-        await this.saveData();
-        this.showToast(`📝 قيد محاسبي جديد: ${desc}`, 'info');
-    },
-
-    showToast(msg, type = 'success') {
-        const toast = document.getElementById('toast');
-        toast.style.background = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#f59e0b';
-        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i> ${msg}`;
-        toast.style.display = 'block';
-        setTimeout(() => toast.style.display = 'none', 3000);
-    },
-
-    // ================== باقي الدوال ==================
     route(page, el) {
-        if(el) {
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            el.classList.add('active');
-        }
+        if(el) { document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); el.classList.add('active'); }
         const vp = document.getElementById('viewPort');
         if(page === 'dashboard') vp.innerHTML = this.renderDashboard();
-        else if(page === 'pos') vp.innerHTML = this.renderPOS();
-        else if(page === 'inventory') vp.innerHTML = this.renderInventory();
-        else if(page === 'journal') vp.innerHTML = this.renderJournal();
-        else if(page === 'reports') vp.innerHTML = this.renderReports();
-        if(page === 'dashboard') setTimeout(() => this.renderChart(), 100);
+        if(page === 'pos') vp.innerHTML = this.renderPOS();
+        if(page === 'inventory') vp.innerHTML = this.renderInventory();
+        if(page === 'dashboard') this.initChart();
     },
 
     renderDashboard() {
-        const totalSales = (this.db.journal || []).filter(j => j.creditAcc === 'المبيعات').reduce((s, j) => s + j.amount, 0);
+        const sales = this.data.journal.reduce((s,j)=>s+j.amount, 0);
         return `
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                <div class="card" style="background: linear-gradient(135deg, #0d9488, #14b8a6); color: white;">
-                    <h3><i class="fas fa-chart-line"></i> إجمالي المبيعات</h3>
-                    <h1 style="font-size: 2rem;">${totalSales.toLocaleString()} ج.م</h1>
-                </div>
-                <div class="card" style="background: linear-gradient(135deg, #f59e0b, #fbbf24); color: white;">
-                    <h3><i class="fas fa-boxes"></i> عدد المنتجات</h3>
-                    <h1 style="font-size: 2rem;">${this.db.products.length}</h1>
-                </div>
-                <div class="card" style="background: linear-gradient(135deg, #6366f1, #818cf8); color: white;">
-                    <h3><i class="fas fa-book"></i> القيود المحاسبية</h3>
-                    <h1 style="font-size: 2rem;">${this.db.journal?.length || 0}</h1>
-                </div>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">
+                <div class="card" style="border-bottom: 4px solid var(--success);"><h4>إجمالي المبيعات</h4><h2>${sales} ج.م</h2></div>
+                <div class="card" style="border-bottom: 4px solid var(--danger);"><h4>ديون العملاء</h4><h2>${Object.values(this.data.customers).reduce((a,b)=>a+b,0)} ج.م</h2></div>
+                <div class="card" style="border-bottom: 4px solid var(--accent);"><h4>عدد المنتجات</h4><h2>${this.data.products.length}</h2></div>
             </div>
-            <div class="card"><canvas id="mainChart" height="100"></canvas></div>
+            <div class="card">
+                <h3>تحليل المبيعات (الرسم البياني)</h3>
+                <canvas id="salesChart" style="max-height:300px;"></canvas>
+            </div>
         `;
+    },
+
+    initChart() {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: this.data.journal.slice(-7).map(j => j.date.split(',')[0]),
+                datasets: [{ label: 'المبيعات', data: this.data.journal.slice(-7).map(j => j.amount), borderColor: '#3b82f6', fill: true }]
+            }
+        });
     },
 
     renderPOS() {
         return `
-            <div class="pos-grid">
+            <input type="text" class="search-bar" placeholder="🔍 بحث سريع عن منتج..." oninput="app.filterPOS(this.value)">
+            <div style="display:grid; grid-template-columns: 1fr 350px; gap:20px;">
+                <div class="card"><div class="prod-grid" id="posGrid">${this.renderProdGrid(this.data.products)}</div></div>
                 <div class="card">
-                    <input type="text" placeholder="🔍 ابحث عن منتج..." oninput="app.searchPos(this.value)" style="margin-bottom:15px;">
-                    <div class="product-grid">
-                        ${this.db.products.map(p => `
-                            <div class="prod-card" onclick="app.addToCart(${p.id})">
-                                <h4>${p.name}</h4>
-                                <p style="color:var(--primary); font-weight:800;">${p.price} ج.م</p>
-                                <small>المخزون: ${p.stock}</small>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-                <div class="card">
-                    <h3>🧾 سلة المشتريات</h3>
-                    <div id="cartItems" style="min-height: 200px; margin: 15px 0;"></div>
-                    <div style="border-top: 2px dashed var(--border); padding-top: 15px;">
-                        <div style="display:flex; justify-content:space-between; font-size:1.3rem; font-weight:800;">
-                            <span>الإجمالي:</span>
-                            <span id="cartTotal" style="color:var(--primary);">0.00 ج.م</span>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" style="width:100%; margin-top:15px;" onclick="app.checkout()">✅ إتمام البيع</button>
-                    <button class="btn btn-danger" style="width:100%; margin-top:10px;" onclick="app.currentCart=[]; app.updateCartUI();">🗑️ إلغاء الكل</button>
+                    <h3>السلة</h3>
+                    <div id="cartList" style="margin:15px 0; min-height:150px;"></div>
+                    <button class="btn btn-primary" style="width:100%" onclick="app.checkout()">إتمام العملية</button>
                 </div>
             </div>
         `;
+    },
+
+    renderProdGrid(prods) {
+        return prods.map(p => `
+            <div class="card" style="text-align:center; cursor:pointer;" onclick="app.addToCart(${p.id})">
+                <b>${p.name}</b><br><small>${p.price} ج.م</small><br>
+                <span style="font-size:10px; color:${p.stock < 5 ? 'red':'green'}">المخزن: ${p.stock}</span>
+            </div>
+        `).join('');
+    },
+
+    filterPOS(val) {
+        const filtered = this.data.products.filter(p => p.name.includes(val));
+        document.getElementById('posGrid').innerHTML = this.renderProdGrid(filtered);
+    },
+
+    addToCart(id) {
+        const p = this.data.products.find(x=>x.id===id);
+        if(!p || p.stock <= 0) return this.notify("نفذت الكمية من المخزن!", "error");
+        this.cart.push({...p});
+        this.updateCartUI();
+    },
+
+    updateCartUI() {
+        const list = document.getElementById('cartList');
+        let total = 0;
+        list.innerHTML = this.cart.map(i => { total += parseFloat(i.price); return `<div>${i.name} - ${i.price}</div>`; }).join('');
+        list.innerHTML += `<hr><b>الإجمالي: ${total}</b>`;
+    },
+
+    async checkout() {
+        if(!this.cart.length) return;
+        const total = this.cart.reduce((s,i)=>s+parseFloat(i.price), 0);
+        this.cart.forEach(item => { const p = this.data.products.find(x=>x.id===item.id); if(p) p.stock--; });
+        this.data.journal.push({ date: new Date().toLocaleString(), amount: total });
+        this.cart = []; this.sync(); this.route('pos');
+        this.notify("تمت عملية البيع بنجاح 🧾");
     },
 
     renderInventory() {
         return `
             <div class="card">
-                <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                    <h3><i class="fas fa-boxes"></i> إدارة المخزون</h3>
-                    <button class="btn btn-primary" onclick="app.showAddProduct()">+ إضافة منتج</button>
+                <h3>إدارة المخزن</h3>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <input id="n" placeholder="اسم المنتج"> <input id="p" placeholder="السعر"> <input id="s" placeholder="الكمية">
+                    <button class="btn btn-primary" onclick="app.saveP()">إضافة</button>
                 </div>
-                <table class="table-res">
-                    <thead><tr><th>المنتج</th><th>سعر الشراء</th><th>سعر البيع</th><th>الكمية</th><th>القيمة</th><th></th></tr></thead>
+            </div>
+            <div class="card">
+                <table>
+                    <thead><tr><th>المنتج</th><th>السعر</th><th>المخزون</th><th>العمليات</th></tr></thead>
                     <tbody>
-                        ${this.db.products.map(p => `
+                        ${this.data.products.map(p => `
                             <tr>
-                                <td>${p.name}</td>
-                                <td>${p.cost} ج.م</td>
-                                <td>${p.price} ج.م</td>
-                                <td style="color:${p.stock < 5 ? '#ef4444' : 'inherit'}">${p.stock}</td>
-                                <td>${(p.stock * p.cost).toLocaleString()} ج.م</td>
-                                <td><button class="btn btn-danger" onclick="app.deleteProd(${p.id})"><i class="fas fa-trash"></i></button></td>
+                                <td>${p.name}</td><td>${p.price}</td><td>${p.stock}</td>
+                                <td>
+                                    ${this.role === 'admin' ? `<button class="btn" style="color:red" onclick="app.delP(${p.id})"><i class="fas fa-trash"></i></button>` : '---'}
+                                </td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -299,163 +285,40 @@ const app = {
         `;
     },
 
-    renderJournal() {
-        return `
-            <div class="card">
-                <h3><i class="fas fa-book"></i> دفتر اليومية - القيود المزدوجة</h3>
-                <table class="table-res">
-                    <thead><tr><th>التاريخ</th><th>البيان</th><th>مدين</th><th>دائن</th><th>المبلغ</th></tr></thead>
-                    <tbody>
-                        ${(this.db.journal || []).map(j => `
-                            <tr>
-                                <td>${j.date}</td>
-                                <td>${j.desc}</td>
-                                <td style="color:green">${j.debitAcc}</td>
-                                <td style="color:red">${j.creditAcc}</td>
-                                <td><b>${j.amount.toLocaleString()} ج.م</b></td>
-                            </tr>
-                        `).join('') || '<tr><td colspan="5">لا توجد قيود محاسبية بعد</td></tr>'}
-                    </tbody>
-                </table>
-            </div>
-        `;
+    saveP() {
+        const n = document.getElementById('n').value, p = document.getElementById('p').value, s = document.getElementById('s').value;
+        if(n && p) { this.data.products.push({ id: Date.now(), name: n, price: p, stock: parseInt(s) }); this.sync(); this.route('inventory'); }
     },
 
-    renderReports() {
-        const income = (this.db.journal || []).filter(j => j.creditAcc === 'المبيعات').reduce((s, j) => s + j.amount, 0);
-        const netProfit = income;
-        return `
-            <div class="card">
-                <h2 style="text-align:center; color:var(--primary);">📊 قائمة الدخل</h2>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin:20px 0;">
-                    <div class="card"><h4>إجمالي الإيرادات</h4><h2 style="color:green">+ ${income.toLocaleString()} ج.م</h2></div>
-                    <div class="card"><h4>صافي الربح</h4><h2 style="color:${netProfit >=0 ? 'green' : 'red'}">${netProfit.toLocaleString()} ج.م</h2></div>
-                </div>
-                <div class="no-print" style="text-align:center;"><button class="btn btn-primary" onclick="window.print()">🖨️ طباعة التقرير</button></div>
-            </div>
-        `;
-    },
+    delP(id) { if(confirm("هل تريد الحذف؟")) { this.data.products = this.data.products.filter(x=>x.id!==id); this.sync(); this.route('inventory'); } },
 
-    searchPos(query) {
-        const filtered = this.db.products.filter(p => p.name.includes(query));
-        const grid = document.querySelector('.product-grid');
-        if(grid) {
-            grid.innerHTML = filtered.map(p => `
-                <div class="prod-card" onclick="app.addToCart(${p.id})">
-                    <h4>${p.name}</h4>
-                    <p style="color:var(--primary)">${p.price} ج.م</p>
-                    <small>المخزون: ${p.stock}</small>
-                </div>
-            `).join('');
+    toggleAI() { const b = document.getElementById('aiBot'); b.style.display = b.style.display === 'flex' ? 'none' : 'flex'; },
+
+    askAI() {
+        const q = document.getElementById('aiQuery').value.toLowerCase();
+        const msgBox = document.getElementById('botMsgs');
+        let ans = "عذراً، لم أفهم سؤالك. جرب أن تسأل عن (المبيعات، الأرباح، المخزن).";
+
+        if(q.includes("مبيعات") || q.includes("كم")) {
+            const total = this.data.journal.reduce((s,j)=>s+j.amount,0);
+            ans = `إجمالي مبيعاتك المسجلة حتى الآن هو ${total} ج.م.`;
+        } else if(q.includes("مخزن") || q.includes("منتج")) {
+            const low = this.data.products.filter(p=>p.stock < 5).length;
+            ans = `لديك حالياً ${this.data.products.length} منتجات في المخزن، منها ${low} أصناف أوشكت على النفاد.`;
+        } else if(q.includes("نصيحة")) {
+            ans = "بناءً على مبيعاتك، أنصحك بزيادة مخزون المنتجات الأكثر طلباً لزيادة أرباحك.";
         }
+
+        msgBox.innerHTML += `<div style="margin-top:10px; color:var(--accent)"><b>أنت:</b> ${q}</div>`;
+        msgBox.innerHTML += `<div style="margin-top:5px; color:var(--success)"><b>AI:</b> ${ans}</div>`;
+        document.getElementById('aiQuery').value = "";
     },
 
-    addToCart(pid) {
-        const prod = this.db.products.find(p => p.id === pid);
-        if (prod.stock <= 0) {
-            this.showToast("⚠️ المنتج غير متوفر!", 'error');
-            return;
-        }
-        const existing = this.currentCart.find(i => i.id === pid);
-        if(existing) existing.qty++;
-        else this.currentCart.push({...prod, qty: 1});
-        this.updateCartUI();
+    notify(msg, type="success") {
+        Toastify({ text: msg, duration: 3000, gravity: "top", position: "left", style: { background: type === "success" ? "#10b981" : "#ef4444" } }).showToast();
     },
 
-    updateCartUI() {
-        const container = document.getElementById('cartItems');
-        if(!container) return;
-        let total = 0;
-        container.innerHTML = this.currentCart.map((item, idx) => {
-            total += item.price * item.qty;
-            return `<div style="display:flex; justify-content:space-between; margin-bottom:10px; padding:8px; background:var(--dark-bg); border-radius:8px;">
-                <span><b>${item.name}</b> x${item.qty}</span>
-                <span>${(item.price * item.qty).toFixed(2)} ج.م <i class="fas fa-trash" onclick="app.removeFromCart(${idx})" style="color:var(--danger); cursor:pointer;"></i></span>
-            </div>`;
-        }).join('');
-        document.getElementById('cartTotal').innerHTML = `${total.toLocaleString()} ج.م`;
-    },
-
-    removeFromCart(idx) {
-        this.currentCart.splice(idx, 1);
-        this.updateCartUI();
-    },
-
-    async checkout() {
-        if (this.currentCart.length === 0) { this.showToast("السلة فارغة!", 'error'); return; }
-        const total = this.currentCart.reduce((s, i) => s + (i.price * i.qty), 0);
-        
-        this.currentCart.forEach(item => {
-            const p = this.db.products.find(x => x.id === item.id);
-            if(p) p.stock -= item.qty;
-        });
-
-        await this.addJournalEntry(`فاتورة مبيعات #${Date.now().toString().slice(-6)}`, 'الصندوق', 'المبيعات', total);
-        
-        this.showToast(`✅ تمت عملية البيع بقيمة ${total.toLocaleString()} ج.م`, 'success');
-        window.print();
-        
-        this.currentCart = [];
-        this.updateCartUI();
-        await this.saveData();
-        this.route('pos');
-    },
-
-    showAddProduct() {
-        const name = prompt('اسم المنتج:');
-        const cost = parseFloat(prompt('سعر الشراء:'));
-        const price = parseFloat(prompt('سعر البيع:'));
-        const stock = parseInt(prompt('الكمية المتاحة:'));
-        if (name && price) {
-            this.db.products.push({ id: Date.now(), name, cost, price, stock });
-            this.saveData();
-            this.route('inventory');
-            this.showToast(`✅ تم إضافة ${name}`, 'success');
-        }
-    },
-
-    deleteProd(id) {
-        if(confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
-            this.db.products = this.db.products.filter(p => p.id !== id);
-            this.saveData();
-            this.route('inventory');
-            this.showToast("تم حذف المنتج", 'info');
-        }
-    },
-
-    renderChart() {
-        const ctx = document.getElementById('mainChart');
-        if(!ctx) return;
-        new Chart(ctx, {
-            type: 'bar',
-            data: { labels: ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3', 'الأسبوع 4'],
-                    datasets: [{ label: 'المبيعات', data: [8500, 12400, 9800, 15600], backgroundColor: '#0d9488' }] },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    },
-
-    async handleAuth(type) {
-        try {
-            if (type === 'login') {
-                await auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('password').value);
-            } else if (type === 'google') {
-                await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-            } else if (type === 'register') {
-                const res = await auth.createUserWithEmailAndPassword(document.getElementById('regEmail').value, document.getElementById('regPass').value);
-                await res.user.updateProfile({ displayName: document.getElementById('regName').value });
-            }
-        } catch(e) { this.showToast(e.message, 'error'); }
-    },
-
-    toggleAuthForms(target) {
-        document.getElementById('loginForm').style.display = target === 'login' ? 'block' : 'none';
-        document.getElementById('regForm').style.display = target === 'register' ? 'block' : 'none';
-    },
-
-    toggleTheme() {
-        const current = document.body.getAttribute('data-theme');
-        document.body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
-    },
+    toggleTheme() { const t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.body.setAttribute('data-theme', t); },
 
     logout() { auth.signOut(); }
 };
