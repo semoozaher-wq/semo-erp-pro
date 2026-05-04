@@ -1,272 +1,86 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GOLDEN ERP V20 | الإصدار الأسطوري المتكامل</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <style>
-        :root { --primary: #0f172a; --accent: #3b82f6; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; }
-        [data-theme="dark"] { --primary: #f8fafc; --accent: #60a5fa; --bg: #020617; --card: #1e293b; --text: #f1f5f9; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-        body { background: var(--bg); color: var(--text); transition: 0.3s; overflow-x: hidden; }
+// استبدل دالة renderDash بهذا الكود المطور في ملفك
+renderDash() {
+    const s = this.data.sales.reduce((a,b)=>a+Number(b.total), 0);
+    const r = this.data.returns.reduce((a,b)=>a+Number(b.total), 0);
+    const e = this.data.expenses.reduce((a,b)=>a+Number(b.amount), 0);
+    const profit = s - r - e;
 
-        .wrapper { display: flex; min-height: 100vh; }
-        .sidebar { width: 280px; background: var(--primary); color: white; padding: 20px; position: fixed; right: 0; height: 100vh; z-index: 1000; transition: 0.3s; }
-        .main { flex: 1; margin-right: 280px; padding: 25px; transition: 0.3s; }
-
-        .nav-item { display: flex; align-items: center; gap: 15px; padding: 12px 15px; border-radius: 12px; cursor: pointer; color: #94a3b8; margin-bottom: 5px; transition: 0.2s; }
-        .nav-item.active, .nav-item:hover { background: var(--accent); color: white; }
-
-        .card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.05); }
-        .btn { padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: 0.2s; }
-        .btn-p { background: var(--accent); color: white; }
-        .btn-d { background: var(--danger); color: white; }
-        .btn-s { background: var(--success); color: white; }
-
-        input, select { padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; width: 100%; margin-top: 5px; background: var(--card); color: var(--text); }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { background: #f8fafc; padding: 15px; text-align: center; color: #64748b; font-size: 13px; }
-        td { padding: 15px; border-bottom: 1px solid #f1f5f9; text-align: center; }
-
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
-        .modal-content { background: var(--bg); width: 100%; max-width: 800px; border-radius: 25px; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative; }
-
-        @media (max-width: 768px) { .sidebar { width: 0; padding: 0; overflow: hidden; } .main { margin-right: 0; } }
-    </style>
-</head>
-<body>
-
-<div id="authScreen" style="position:fixed; inset:0; background:var(--primary); z-index:9999; display:flex; align-items:center; justify-content:center;">
-    <div class="card" style="width:90%; max-width:400px; text-align:center;">
-        <h1 style="color:var(--accent); font-weight:900;">GOLDEN V20</h1>
-        <input type="email" id="email" placeholder="البريد الإلكتروني">
-        <input type="password" id="pass" placeholder="كلمة المرور">
-        <select id="userRole"><option value="admin">مدير (كامل الصلاحيات)</option><option value="user">موظف (مبيعات فقط)</option></select>
-        <button class="btn btn-p" style="width:100%; margin-top:20px; justify-content:center;" onclick="app.handleAuth()">دخول النظام</button>
-    </div>
-</div>
-
-<div id="appWrap" class="wrapper" style="display:none;">
-    <aside class="sidebar" id="sidebar">
-        <h2 style="text-align:center; padding:20px; color:var(--accent); font-weight:900;">GOLDEN V20</h2>
-        <nav style="padding:10px;">
-            <div class="nav-item active" onclick="app.route('dash', this)"><i class="fas fa-chart-line"></i> الرئيسية</div>
-            <div class="nav-item" onclick="app.route('pos', this)"><i class="fas fa-cash-register"></i> نقطة البيع</div>
-            <div class="nav-item admin-only" onclick="app.route('ledger', this)"><i class="fas fa-users-cog"></i> الحسابات</div>
-            <div class="nav-item admin-only" onclick="app.route('stock', this)"><i class="fas fa-boxes"></i> المخزن</div>
-            <div class="nav-item admin-only" onclick="app.route('exp', this)"><i class="fas fa-wallet"></i> المصاريف</div>
-            <div class="nav-item" onclick="app.toggleTheme()"><i class="fas fa-moon"></i> الوضع الليلي</div>
-            <div class="nav-item" onclick="app.logout()" style="color:var(--danger); margin-top:50px;"><i class="fas fa-power-off"></i> خروج</div>
-        </nav>
-    </aside>
-
-    <main class="main" id="viewArea"></main>
-</div>
-
-<div id="mainModal" class="modal"><div class="modal-content" id="modalBody"></div></div>
-
-<script>
-const firebaseConfig = {
-    apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
-    authDomain: "my-pos-system-11dee.firebaseapp.com",
-    databaseURL: "https://my-pos-system-11dee-default-rtdb.firebaseio.com",
-    projectId: "my-pos-system-11dee",
-    storageBucket: "my-pos-system-11dee.firebasestorage.app",
-    messagingSenderId: "565195477080",
-    appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth(), db = firebase.database();
-
-const app = {
-    user: null, role: 'admin',
-    data: { products: [], sales: [], contacts: [], expenses: [] },
-
-    init() {
-        auth.onAuthStateChanged(u => {
-            if(u) {
-                this.user = u;
-                db.ref(`roles/${u.uid}`).once('value', s => {
-                    this.role = s.val() || 'admin';
-                    this.sync();
-                });
-            } else {
-                document.getElementById('authScreen').style.display='flex';
-                document.getElementById('appWrap').style.display='none';
-            }
-        });
-    },
-
-    async handleAuth() {
-        const e = document.getElementById('email').value, p = document.getElementById('pass').value, r = document.getElementById('userRole').value;
-        try {
-            const res = await auth.signInWithEmailAndPassword(e, p).catch(()=>auth.createUserWithEmailAndPassword(e,p));
-            await db.ref(`roles/${res.user.uid}`).set(r);
-        } catch(err) { alert(err.message); }
-    },
-
-    sync() {
-        db.ref(`v20/${this.user.uid}`).on('value', snap => {
-            const v = snap.val() || {};
-            this.data = { products: v.products || [], sales: v.sales || [], contacts: v.contacts || [], expenses: v.expenses || [] };
-            document.getElementById('authScreen').style.display='none';
-            document.getElementById('appWrap').style.display='flex';
-            if(this.role !== 'admin') document.querySelectorAll('.admin-only').forEach(el => el.style.display='none');
-            this.route('dash');
-        });
-    },
-
-    async save() { await db.ref(`v20/${this.user.uid}`).set(this.data); },
-
-    route(p, el) {
-        if(el) { document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active')); el.classList.add('active'); }
-        const area = document.getElementById('viewArea');
-        if(p==='dash') area.innerHTML = this.renderDash();
-        if(p==='pos') area.innerHTML = this.renderPOS();
-        if(p==='ledger') area.innerHTML = this.renderLedger();
-        if(p==='stock') area.innerHTML = this.renderStock();
-        if(p==='exp') area.innerHTML = this.renderExp();
-    },
-
-    renderDash() {
-        const s = this.data.sales.reduce((a,b)=>a+Number(b.total), 0);
-        const e = this.data.expenses.reduce((a,b)=>a+Number(b.amount), 0);
-        return `
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">
-                <div class="card" style="background:var(--accent); color:white;"><h4>إجمالي المبيعات</h4><h2>${s.toLocaleString()} ج.م</h2></div>
-                <div class="card" style="background:var(--danger); color:white;"><h4>إجمالي المصاريف</h4><h2>${e.toLocaleString()} ج.م</h2></div>
-                <div class="card" style="background:var(--success); color:white;"><h4>صافي الربح</h4><h2>${(s-e).toLocaleString()} ج.م</h2></div>
-            </div>
-            <div class="card" style="margin-top:20px;"><h3>📊 نشاطات اليوم</h3><table><thead><tr><th>التاريخ</th><th>البيان</th><th>المبلغ</th></tr></thead><tbody>${this.data.sales.slice(0,5).map(x=>`<tr><td>${x.date}</td><td>فاتورة مبيعات</td><td>${x.total} ج.م</td></tr>`).join('')}</tbody></table></div>
-        `;
-    },
-
-    renderPOS() {
-        return `
-            <div style="display:grid; grid-template-columns: 1fr 350px; gap:20px;">
-                <div class="card">
-                    <h3>🛒 قائمة المنتجات</h3>
-                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:10px; margin-top:15px;">
-                        ${this.data.products.map(p=>`<div class="card" style="padding:10px; text-align:center; cursor:pointer; border:2px solid #eee;" onclick="app.addToCart('${p.id}')"><b>${p.name}</b><br><span style="color:var(--accent)">${p.price} ج.م</span></div>`).join('')}
-                    </div>
+    return `
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">
+            <!-- كارت المبيعات: الآن قابل للضغط -->
+            <div class="card" onclick="app.route('pos')" style="cursor:pointer; background:var(--accent); color:white; transition:0.3s;">
+                <div style="display:flex; justify-content:space-between;">
+                    <i class="fas fa-shopping-bag" style="font-size:25px;"></i>
+                    <small>إجمالي المبيعات</small>
                 </div>
-                <div class="card">
-                    <h3>الفاتورة الحالية</h3>
-                    <div id="cartArea" style="min-height:200px; margin-top:10px; border-bottom:1px dashed #ccc;"></div>
-                    <div style="padding:15px 0;"><b>الإجمالي: </b><span id="cartTotal">0</span> ج.م</div>
-                    <select id="saleCust"><option value="نقدي">عميل نقدي</option>${this.data.contacts.filter(c=>c.type==='عميل').map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select>
-                    <button class="btn btn-p" style="width:100%; margin-top:15px;" onclick="app.checkout()">إتمام و طباعة QR 🧾</button>
+                <h2 style="margin-top:10px;">${s.toLocaleString()} ج.م</h2>
+                <p style="font-size:11px; margin-top:5px; opacity:0.8;">اضغط لعرض سجل الفواتير ➜</p>
+            </div>
+
+            <!-- كارت المصاريف: الآن قابل للضغط -->
+            <div class="card" onclick="app.route('returns')" style="cursor:pointer; background:var(--danger); color:white;">
+                <div style="display:flex; justify-content:space-between;">
+                    <i class="fas fa-arrow-down" style="font-size:25px;"></i>
+                    <small>إجمالي المصاريف والمرتجع</small>
                 </div>
+                <h2 style="margin-top:10px;">${(e + r).toLocaleString()} ج.م</h2>
+                <p style="font-size:11px; margin-top:5px; opacity:0.8;">اضغط لإدارة المرتجعات ➜</p>
             </div>
-        `;
-    },
 
-    cart: [],
-    addToCart(id) {
-        const p = this.data.products.find(x=>x.id==id);
-        this.cart.push(p);
-        this.updateCartUI();
-    },
-
-    updateCartUI() {
-        const area = document.getElementById('cartArea');
-        area.innerHTML = this.cart.map((item, i)=>`<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${item.name}</span><b>${item.price} <i class="fas fa-times" onclick="app.cart.splice(${i},1); app.updateCartUI();" style="color:red; cursor:pointer;"></i></b></div>`).join('');
-        document.getElementById('cartTotal').innerText = this.cart.reduce((a,b)=>a+Number(b.price),0);
-    },
-
-    checkout() {
-        if(this.cart.length === 0) return;
-        const total = this.cart.reduce((a,b)=>a+Number(b.price),0);
-        const cid = document.getElementById('saleCust').value;
-        const sale = { id: Date.now(), total, date: new Date().toLocaleString(), customerId: cid, items: [...this.cart] };
-        this.data.sales.unshift(sale);
-        if(cid !== 'نقدي') {
-            const c = this.data.contacts.find(x=>x.id===cid);
-            if(c) c.balance = (c.balance || 0) + total;
-        }
-        this.save();
-        this.printInv(sale);
-        this.cart = [];
-        this.updateCartUI();
-    },
-
-    printInv(sale) {
-        const qr = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=ID:${sale.id}-Amt:${sale.total}`;
-        const w = window.open('', '_blank');
-        w.document.write(`<html><body style="text-align:center; font-family:Cairo;"><h2>GOLDEN ERP</h2><p>فاتورة #${sale.id}</p><hr><p>الإجمالي: ${sale.total} ج.م</p><img src="${qr}"><br><script>window.print();<\/script></body></html>`);
-        w.document.close();
-    },
-
-    renderLedger() {
-        return `
-            <div class="card">
-                <h3>👥 الحسابات (عملاء وموردين)</h3>
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <input id="cName" placeholder="الاسم"><select id="cType"><option value="عميل">عميل</option><option value="مورد">مورد</option></select>
-                    <button class="btn btn-p" onclick="app.addContact()">إضافة</button>
+            <!-- كارت الربح: يفتح تحليل مالي -->
+            <div class="card" onclick="app.showProfitAnalysis()" style="cursor:pointer; background:var(--success); color:white;">
+                <div style="display:flex; justify-content:space-between;">
+                    <i class="fas fa-chart-pie" style="font-size:25px;"></i>
+                    <small>صافي الربح</small>
                 </div>
+                <h2 style="margin-top:10px;">${profit.toLocaleString()} ج.م</h2>
+                <p style="font-size:11px; margin-top:5px; opacity:0.8;">اضغط لعرض تحليل الأرباح ➜</p>
             </div>
-            <div class="card">
-                <table><thead><tr><th>الاسم</th><th>النوع</th><th>الرصيد</th></tr></thead>
-                <tbody>${this.data.contacts.map(c=>`<tr onclick="app.showProfile('${c.id}')" style="cursor:pointer; color:var(--accent); font-weight:bold;"><td>${c.name}</td><td>${c.type}</td><td>${c.balance || 0} ج.م</td></tr>`).join('')}</tbody></table>
+        </div>
+
+        <div class="card" style="margin-top:30px;">
+            <h3><i class="fas fa-bolt" style="color:var(--warning);"></i> نشاطات سريعة</h3>
+            <table style="margin-top:15px;">
+                <thead>
+                    <tr><th>التاريخ</th><th>النوع</th><th>المبلغ</th></tr>
+                </thead>
+                <tbody>
+                    ${this.data.sales.slice(0,5).map(x => `<tr><td>${x.date}</td><td>بيع</td><td style="color:var(--success)">+${x.total}</td></tr>`).join('')}
+                    ${this.data.returns.slice(0,2).map(x => `<tr><td>${x.date}</td><td>مرتجع</td><td style="color:var(--danger)">-${x.total}</td></tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+// دالة جديدة تماماً لإظهار تفاصيل الربح عند الضغط على كارت الربح
+showProfitAnalysis() {
+    const s = this.data.sales.reduce((a,b)=>a+Number(b.total), 0);
+    const r = this.data.returns.reduce((a,b)=>a+Number(b.total), 0);
+    const e = this.data.expenses.reduce((a,b)=>a+Number(b.amount), 0);
+    
+    document.getElementById('modalBody').innerHTML = `
+        <h2 style="border-bottom:2px solid #eee; padding-bottom:10px;">📊 تحليل الأرباح الخزينة</h2>
+        <div style="margin-top:20px;">
+            <div style="display:flex; justify-content:space-between; padding:10px; background:#f8fafc;">
+                <span>إجمالي المدخولات (المبيعات)</span>
+                <span style="color:var(--success); font-weight:bold;">+ ${s} ج.م</span>
             </div>
-        `;
-    },
-
-    showProfile(id) {
-        const c = this.data.contacts.find(x=>x.id===id);
-        const history = this.data.sales.filter(s=>s.customerId===id);
-        const modal = document.getElementById('mainModal');
-        document.getElementById('modalBody').innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #eee; padding-bottom:15px;">
-                <h2>ملف: ${c.name}</h2>
-                <button class="btn btn-d" onclick="document.getElementById('mainModal').style.display='none'">إغلاق</button>
+            <div style="display:flex; justify-content:space-between; padding:10px;">
+                <span>إجمالي الخارج (المرتجع)</span>
+                <span style="color:var(--danger);"> - ${r} ج.م</span>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
-                <div class="card"><h4>الرصيد المستحق</h4><h2 style="color:var(--danger)">${c.balance || 0} ج.م</h2></div>
-                <div class="card"><h4>إجمالي المعاملات</h4><h2>${history.reduce((a,b)=>a+Number(b.total),0)} ج.م</h2></div>
+            <div style="display:flex; justify-content:space-between; padding:10px; background:#f8fafc;">
+                <span>إجمالي الخارج (المصاريف)</span>
+                <span style="color:var(--danger);"> - ${e} ج.م</span>
             </div>
-            <h3>📋 سجل الحركات</h3>
-            <table><thead><tr><th>التاريخ</th><th>المبلغ</th></tr></thead><tbody>${history.map(h=>`<tr><td>${h.date}</td><td>${h.total} ج.م</td></tr>`).join('')}</tbody></table>
-            <button class="btn btn-s" style="width:100%; margin-top:20px;" onclick="app.pay('${c.id}')">تسجيل سداد نقدية</button>
-        `;
-        modal.style.display='flex';
-    },
-
-    pay(id) {
-        const amt = prompt("أدخل المبلغ المدفوع:");
-        if(amt) {
-            const c = this.data.contacts.find(x=>x.id===id);
-            c.balance -= Number(amt);
-            this.save();
-            this.showProfile(id);
-        }
-    },
-
-    renderStock() {
-        return `<div class="card"><h3>📦 المخزن</h3><div style="display:flex; gap:10px;"><input id="pName" placeholder="الاسم"><input id="pPrice" placeholder="السعر"><button class="btn btn-p" onclick="app.addP()">إضافة</button></div></div>
-        <div class="card"><table><thead><tr><th>الصنف</th><th>السعر</th></tr></thead><tbody>${this.data.products.map(p=>`<tr><td>${p.name}</td><td>${p.price} ج.م</td></tr>`).join('')}</tbody></table></div>`;
-    },
-
-    renderExp() {
-        return `<div class="card"><h3>📉 المصاريف</h3><div style="display:flex; gap:10px;"><input id="eNote" placeholder="البيان"><input id="eAmt" placeholder="المبلغ"><button class="btn btn-d" onclick="app.addExp()">تسجيل مصروف</button></div></div>
-        <div class="card"><table><thead><tr><th>التاريخ</th><th>البيان</th><th>المبلغ</th></tr></thead><tbody>${this.data.expenses.map(e=>`<tr><td>${e.date}</td><td>${e.note}</td><td style="color:red">-${e.amount} ج.م</td></tr>`).join('')}</tbody></table></div>`;
-    },
-
-    addContact() { const n=document.getElementById('cName').value, t=document.getElementById('cType').value; if(n){ this.data.contacts.push({id:Date.now(), name:n, type:t, balance:0}); this.save(); } },
-    addP() { const n=document.getElementById('pName').value, p=document.getElementById('pPrice').value; if(n&&p){ this.data.products.push({id:Date.now(), name:n, price:p}); this.save(); } },
-    addExp() { const n=document.getElementById('eNote').value, a=document.getElementById('eAmt').value; if(n&&a){ this.data.expenses.unshift({id:Date.now(), note:n, amount:a, date:new Date().toLocaleDateString()}); this.save(); } },
-    toggleTheme() { document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); },
-    logout() { auth.signOut(); }
-};
-
-app.init();
-</script>
-</body>
-</html>
+            <hr style="margin:15px 0;">
+            <div style="display:flex; justify-content:space-between; padding:10px; font-size:20px; font-weight:900;">
+                <span>الربح الصافي النهائي</span>
+                <span style="color:var(--accent);">${s - r - e} ج.م</span>
+            </div>
+        </div>
+        <button class="btn btn-d" style="width:100%; margin-top:20px;" onclick="document.getElementById('mainModal').style.display='none'">إغلاق النافذة</button>
+    `;
+    document.getElementById('mainModal').style.display = 'flex';
+}
