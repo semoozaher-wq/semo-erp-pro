@@ -1,86 +1,180 @@
-// استبدل دالة renderDash بهذا الكود المطور في ملفك
-renderDash() {
-    const s = this.data.sales.reduce((a,b)=>a+Number(b.total), 0);
-    const r = this.data.returns.reduce((a,b)=>a+Number(b.total), 0);
-    const e = this.data.expenses.reduce((a,b)=>a+Number(b.amount), 0);
-    const profit = s - r - e;
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOLDEN ERP V22 | النظام المحاسبي المتكامل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <style>
+        :root { --primary: #0f172a; --accent: #3b82f6; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; }
+        [data-theme="dark"] { --primary: #f8fafc; --accent: #60a5fa; --bg: #020617; --card: #1e293b; --text: #f1f5f9; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: var(--bg); color: var(--text); transition: 0.3s; overflow-x: hidden; }
+        .wrapper { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--primary); color: white; position: fixed; right: 0; height: 100vh; padding: 20px; z-index: 1000; transition: 0.3s; border-left: 1px solid rgba(255,255,255,0.1); }
+        .main { flex: 1; margin-right: 260px; padding: 25px; transition: 0.3s; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; cursor: pointer; color: #94a3b8; margin-bottom: 8px; transition: 0.2s; }
+        .nav-item:hover, .nav-item.active { background: var(--accent); color: white; }
+        .card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
+        .btn { padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-p { background: var(--accent); color: white; }
+        .btn-d { background: var(--danger); color: white; }
+        .btn-s { background: var(--success); color: white; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background: #f1f5f9; padding: 12px; font-size: 13px; color: #64748b; }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: center; }
+        input, select { padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; width: 100%; margin-top: 5px; background: var(--card); color: var(--text); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--bg); width: 95%; max-width: 700px; border-radius: 25px; padding: 30px; max-height: 90vh; overflow-y: auto; }
+        @media (max-width: 768px) { .sidebar { width: 0; padding: 0; overflow: hidden; } .main { margin-right: 0; } }
+    </style>
+</head>
+<body>
 
-    return `
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">
-            <!-- كارت المبيعات: الآن قابل للضغط -->
-            <div class="card" onclick="app.route('pos')" style="cursor:pointer; background:var(--accent); color:white; transition:0.3s;">
-                <div style="display:flex; justify-content:space-between;">
-                    <i class="fas fa-shopping-bag" style="font-size:25px;"></i>
-                    <small>إجمالي المبيعات</small>
+<div class="wrapper">
+    <aside class="sidebar">
+        <h2 style="text-align:center; padding:20px; color:var(--accent); font-weight:900;">GOLDEN V22</h2>
+        <nav>
+            <div class="nav-item active" onclick="app.route('dash', this)"><i class="fas fa-chart-pie"></i> الرئيسية</div>
+            <div class="nav-item" onclick="app.route('pos', this)"><i class="fas fa-shopping-cart"></i> المبيعات (POS)</div>
+            <div class="nav-item" onclick="app.route('returns', this)"><i class="fas fa-undo"></i> المرتجعات</div>
+            <div class="nav-item" onclick="app.route('ledger', this)"><i class="fas fa-users-cog"></i> الحسابات</div>
+            <div class="nav-item" onclick="app.route('exp', this)"><i class="fas fa-wallet"></i> المصاريف</div>
+            <div class="nav-item" onclick="app.route('stock', this)"><i class="fas fa-boxes"></i> المخزن</div>
+            <div class="nav-item" onclick="app.toggleTheme()" style="margin-top:40px;"><i class="fas fa-moon"></i> الوضع الليلي</div>
+        </nav>
+    </aside>
+
+    <main class="main" id="viewArea"></main>
+</div>
+
+<div id="mainModal" class="modal"><div class="modal-content" id="modalBody"></div></div>
+
+<script>
+const firebaseConfig = { databaseURL: "https://my-pos-system-11dee-default-rtdb.firebaseio.com" };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const app = {
+    data: { products: [], sales: [], contacts: [], expenses: [], returns: [] },
+
+    init() {
+        db.ref('v22_gold').on('value', snap => {
+            this.data = snap.val() || { products: [], sales: [], contacts: [], expenses: [], returns: [] };
+            this.route('dash');
+        });
+    },
+
+    save() { db.ref('v22_gold').set(this.data); },
+
+    route(p, el) {
+        if(el) { document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active')); el.classList.add('active'); }
+        const area = document.getElementById('viewArea');
+        if(p==='dash') area.innerHTML = this.renderDash();
+        if(p==='pos') area.innerHTML = this.renderPOS();
+        if(p==='returns') area.innerHTML = this.renderReturns();
+        if(p==='ledger') area.innerHTML = this.renderLedger();
+        if(p==='exp') area.innerHTML = this.renderExp();
+        if(p==='stock') area.innerHTML = this.renderStock();
+    },
+
+    renderDash() {
+        const s = this.data.sales.reduce((a,b)=>a+Number(b.total), 0);
+        const r = this.data.returns.reduce((a,b)=>a+Number(b.total), 0);
+        const e = this.data.expenses.reduce((a,b)=>a+Number(b.amount), 0);
+        const profit = s - r - e;
+
+        return `
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">
+                <div class="card" onclick="app.route('pos')" style="cursor:pointer; background:var(--accent); color:white;">
+                    <small>إجمالي المبيعات</small><h2>${s.toLocaleString()} ج.م</h2>
+                    <p style="font-size:10px; opacity:0.8;">اضغط لعرض الفواتير ➜</p>
                 </div>
-                <h2 style="margin-top:10px;">${s.toLocaleString()} ج.م</h2>
-                <p style="font-size:11px; margin-top:5px; opacity:0.8;">اضغط لعرض سجل الفواتير ➜</p>
-            </div>
-
-            <!-- كارت المصاريف: الآن قابل للضغط -->
-            <div class="card" onclick="app.route('returns')" style="cursor:pointer; background:var(--danger); color:white;">
-                <div style="display:flex; justify-content:space-between;">
-                    <i class="fas fa-arrow-down" style="font-size:25px;"></i>
-                    <small>إجمالي المصاريف والمرتجع</small>
+                <div class="card" onclick="app.route('exp')" style="cursor:pointer; background:var(--danger); color:white;">
+                    <small>إجمالي المصاريف</small><h2>${e.toLocaleString()} ج.م</h2>
+                    <p style="font-size:10px; opacity:0.8;">اضغط لتسجيل مصروف ➜</p>
                 </div>
-                <h2 style="margin-top:10px;">${(e + r).toLocaleString()} ج.م</h2>
-                <p style="font-size:11px; margin-top:5px; opacity:0.8;">اضغط لإدارة المرتجعات ➜</p>
-            </div>
-
-            <!-- كارت الربح: يفتح تحليل مالي -->
-            <div class="card" onclick="app.showProfitAnalysis()" style="cursor:pointer; background:var(--success); color:white;">
-                <div style="display:flex; justify-content:space-between;">
-                    <i class="fas fa-chart-pie" style="font-size:25px;"></i>
-                    <small>صافي الربح</small>
+                <div class="card" onclick="app.showProfitAnalysis()" style="cursor:pointer; background:var(--success); color:white;">
+                    <small>صافي الربح</small><h2>${profit.toLocaleString()} ج.م</h2>
+                    <p style="font-size:10px; opacity:0.8;">اضغط للتحليل المالي ➜</p>
                 </div>
-                <h2 style="margin-top:10px;">${profit.toLocaleString()} ج.م</h2>
-                <p style="font-size:11px; margin-top:5px; opacity:0.8;">اضغط لعرض تحليل الأرباح ➜</p>
             </div>
-        </div>
+            <div class="card" style="margin-top:20px;">
+                <h3>📊 نشاطات اليوم</h3>
+                <table>
+                    <thead><tr><th>التاريخ</th><th>البيان</th><th>المبلغ</th></tr></thead>
+                    <tbody>
+                        ${this.data.sales.slice(0,5).map(x=>`<tr><td>${x.date}</td><td>فاتورة مبيعات</td><td style="color:var(--success)">+${x.total}</td></tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    },
 
-        <div class="card" style="margin-top:30px;">
-            <h3><i class="fas fa-bolt" style="color:var(--warning);"></i> نشاطات سريعة</h3>
-            <table style="margin-top:15px;">
-                <thead>
-                    <tr><th>التاريخ</th><th>النوع</th><th>المبلغ</th></tr>
-                </thead>
-                <tbody>
-                    ${this.data.sales.slice(0,5).map(x => `<tr><td>${x.date}</td><td>بيع</td><td style="color:var(--success)">+${x.total}</td></tr>`).join('')}
-                    ${this.data.returns.slice(0,2).map(x => `<tr><td>${x.date}</td><td>مرتجع</td><td style="color:var(--danger)">-${x.total}</td></tr>`).join('')}
-                </tbody>
-            </table>
-        </div>
-    `;
-}
+    showProfitAnalysis() {
+        const s = this.data.sales.reduce((a,b)=>a+Number(b.total), 0);
+        const r = this.data.returns.reduce((a,b)=>a+Number(b.total), 0);
+        const e = this.data.expenses.reduce((a,b)=>a+Number(b.amount), 0);
+        document.getElementById('modalBody').innerHTML = `
+            <h2>تحليل مالي مفصل</h2>
+            <div class="card" style="margin-top:15px;">
+                <p>إجمالي المبيعات: <b style="color:var(--success)">+${s}</b></p>
+                <p>إجمالي المرتجعات: <b style="color:var(--danger)">-${r}</b></p>
+                <p>إجمالي المصاريف: <b style="color:var(--danger)">-${e}</b></p>
+                <hr><h3 style="margin-top:10px;">الربح الفعلي: ${s-r-e} ج.م</h3>
+            </div>
+            <button class="btn btn-d" style="width:100%" onclick="document.getElementById('mainModal').style.display='none'">إغلاق</button>
+        `;
+        document.getElementById('mainModal').style.display='flex';
+    },
 
-// دالة جديدة تماماً لإظهار تفاصيل الربح عند الضغط على كارت الربح
-showProfitAnalysis() {
-    const s = this.data.sales.reduce((a,b)=>a+Number(b.total), 0);
-    const r = this.data.returns.reduce((a,b)=>a+Number(b.total), 0);
-    const e = this.data.expenses.reduce((a,b)=>a+Number(b.amount), 0);
-    
-    document.getElementById('modalBody').innerHTML = `
-        <h2 style="border-bottom:2px solid #eee; padding-bottom:10px;">📊 تحليل الأرباح الخزينة</h2>
-        <div style="margin-top:20px;">
-            <div style="display:flex; justify-content:space-between; padding:10px; background:#f8fafc;">
-                <span>إجمالي المدخولات (المبيعات)</span>
-                <span style="color:var(--success); font-weight:bold;">+ ${s} ج.م</span>
+    renderPOS() {
+        return `
+            <div style="display:grid; grid-template-columns: 1fr 350px; gap:20px;">
+                <div class="card">
+                    <h3>قائمة الأصناف</h3>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:10px; margin-top:15px;">
+                        ${this.data.products.map(p=>`<div class="card" style="text-align:center; cursor:pointer; border:1px solid #ddd;" onclick="app.addToCart(${p.id})"><b>${p.name}</b><br>${p.price} ج.م</div>`).join('')}
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>الفاتورة</h3>
+                    <div id="cart" style="min-height:200px; border-bottom:1px solid #eee;"></div>
+                    <button class="btn btn-p" style="width:100%; margin-top:15px;" onclick="app.checkout()">إتمام و طباعة QR</button>
+                </div>
             </div>
-            <div style="display:flex; justify-content:space-between; padding:10px;">
-                <span>إجمالي الخارج (المرتجع)</span>
-                <span style="color:var(--danger);"> - ${r} ج.م</span>
+        `;
+    },
+
+    renderLedger() {
+        return `
+            <div class="card">
+                <h3>العملاء والموردين</h3>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <input id="cn" placeholder="الاسم">
+                    <select id="ct"><option value="عميل">عميل</option><option value="مورد">مورد</option></select>
+                    <button class="btn btn-p" onclick="app.addC()">إضافة</button>
+                </div>
             </div>
-            <div style="display:flex; justify-content:space-between; padding:10px; background:#f8fafc;">
-                <span>إجمالي الخارج (المصاريف)</span>
-                <span style="color:var(--danger);"> - ${e} ج.م</span>
+            <div class="card">
+                <table><thead><tr><th>الاسم</th><th>النوع</th><th>الرصيد</th></tr></thead>
+                <tbody>${this.data.contacts.map(c=>`<tr onclick="app.showC('${c.id}')" style="cursor:pointer; color:var(--accent);"><td>${c.name}</td><td>${c.type}</td><td>${c.balance || 0}</td></tr>`).join('')}</tbody></table>
             </div>
-            <hr style="margin:15px 0;">
-            <div style="display:flex; justify-content:space-between; padding:10px; font-size:20px; font-weight:900;">
-                <span>الربح الصافي النهائي</span>
-                <span style="color:var(--accent);">${s - r - e} ج.م</span>
-            </div>
-        </div>
-        <button class="btn btn-d" style="width:100%; margin-top:20px;" onclick="document.getElementById('mainModal').style.display='none'">إغلاق النافذة</button>
-    `;
-    document.getElementById('mainModal').style.display = 'flex';
-}
+        `;
+    },
+
+    addC() { const n=document.getElementById('cn').value, t=document.getElementById('ct').value; if(n){this.data.contacts.push({id:Date.now(), name:n, type:t, balance:0}); this.save();}},
+    renderExp() { return `<div class="card"><h3>المصاريف</h3><input id="en" placeholder="البيان"><input id="ea" type="number" placeholder="المبلغ"><button class="btn btn-d" onclick="app.addE()">تسجيل</button></div>`; },
+    addE() { const n=document.getElementById('en').value, a=document.getElementById('ea').value; if(n&&a){this.data.expenses.push({id:Date.now(), note:n, amount:a, date:new Date().toLocaleDateString()}); this.save();}},
+    toggleTheme() { document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); },
+    renderStock() { return `<div class="card"><h3>المخزن</h3><input id="pn" placeholder="الصنف"><input id="pp" placeholder="السعر"><button class="btn btn-p" onclick="app.addP()">إضافة</button></div>`; },
+    addP() { const n=document.getElementById('pn').value, p=document.getElementById('pp').value; if(n&&p){this.data.products.push({id:Date.now(), name:n, price:p}); this.save();}}
+};
+
+app.init();
+</script>
+</body>
+</html>
