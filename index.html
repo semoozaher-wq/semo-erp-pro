@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GOLDEN ERP | V1.2 FULL</title>
+    <title>GOLDEN ERP | V1.3 FULL</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
@@ -43,7 +43,7 @@
 
 <div id="authScreen" style="position:fixed; inset:0; background:var(--primary); z-index:9999; display:flex; align-items:center; justify-content:center;">
     <div class="card" style="width:400px; text-align:center;">
-        <h2 style="margin-bottom:20px;">نظام الذهبي V1.2</h2>
+        <h2 style="margin-bottom:20px;">نظام الذهبي V1.3</h2>
         <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
         <input type="password" id="loginPass" placeholder="كلمة المرور">
         <button class="btn btn-p" style="width:100%" onclick="app.emailLogin()">دخول</button>
@@ -94,7 +94,9 @@ const app = {
     googleLogin() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); },
     emailLogin() {
         const e = document.getElementById('loginEmail').value, p = document.getElementById('loginPass').value;
-        auth.signInWithEmailAndPassword(e, p).catch(() => auth.createUserWithEmailAndPassword(e, p));
+        auth.signInWithEmailAndPassword(e, p).catch(error => {
+            alert("فشل تسجيل الدخول: " + error.message);
+        });
     },
     logout() { auth.signOut().then(() => location.reload()); },
 
@@ -108,7 +110,6 @@ const app = {
                     document.getElementById('appUI').style.display = 'block';
                     this.route('dash');
                 });
-                // الحفظ التلقائي كل 15 دقيقة
                 setInterval(() => this.autoSave(), 15 * 60 * 1000);
             }
         });
@@ -218,10 +219,14 @@ const app = {
         document.getElementById('cartTotal').innerText = this.cart.reduce((a,b)=>a+(b.price*b.q),0).toFixed(2);
     },
 
-    chQ(idx,v) { this.cart[idx].q += v; if(this.cart[idx].q <= 0) this.cart.splice(idx,1); this.updCart(); },
+    chQ(idx,v) { 
+        this.cart[idx].q += v; 
+        if(this.cart[idx].q <= 0) this.cart.splice(idx,1); 
+        this.updCart(); 
+    },
 
     checkout() {
-        if(!this.cart.length) return;
+        if(!this.cart.length) return alert("السلة فارغة!"); // تنبيه إذا كانت السلة فارغة
         const total = Number(document.getElementById('cartTotal').innerText);
         const sale = { id: Date.now(), total, items: [...this.cart], date: new Date().toLocaleString() };
         this.data.sales.unshift(sale);
@@ -243,6 +248,7 @@ const app = {
                 <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin:20px 0;">
                     <input id="pName" placeholder="اسم المنتج">
                     <select id="pCat">${this.data.cats.map(c=>`<option value="${c}">${c}</option>`).join('')}</select>
+                    <input id="pCost" type="number" placeholder="سعر التكلفة">
                     <input id="pPrice" type="number" placeholder="السعر">
                     <input id="pQty" type="number" placeholder="الكمية">
                     <button class="btn btn-s" onclick="app.addP()">إضافة منتج</button>
@@ -251,22 +257,60 @@ const app = {
                     <input id="newCatName" placeholder="إضافة فئة جديدة..." style="width:200px; margin-left:10px;">
                     <button class="btn btn-p" onclick="app.addCat()">إضافة فئة</button>
                 </div>
-                <table><thead><th>المنتج</th><th>الفئة</th><th>السعر</th><th>الكمية</th><th>إجراء</th></thead>
-                <tbody>${this.data.products.map((p,i)=>`<tr><td>${p.name}</td><td>${p.cat}</td><td>${p.price}</td><td>${p.qty}</td>
-                <td><button onclick="app.editP(${i})">تعديل</button> <button onclick="app.delP(${i})">حذف</button></td></tr>`).join('')}</tbody></table>
+                <table><thead><th>المنتج</th><th>الفئة</th><th>سعر التكلفة</th><th>السعر</th><th>الكمية</th><th>إجراء</th></thead>
+                <tbody>${this.data.products.map((p,i)=>`
+                    <tr>
+                        <td>${p.name}</td>
+                        <td>${p.cat}</td>
+                        <td>${p.cost}</td>
+                        <td>${p.price}</td>
+                        <td>${p.qty}</td>
+                        <td>
+                            <button onclick="app.editP(${i})">تعديل</button> 
+                            <button onclick="app.delP(${i})">حذف</button>
+                        </td>
+                    </tr>`).join('')}</tbody></table>
             </div>`;
     },
 
-    addCat() { const c = document.getElementById('newCatName').value; if(c) { this.data.cats.push(c); this.save(); this.route('stock'); }},
-    addP() {
-        const n=document.getElementById('pName').value, c=document.getElementById('pCat').value, p=Number(document.getElementById('pPrice').value), q=Number(document.getElementById('pQty').value);
-        this.data.products.push({id:Date.now(), name:n, cat:c, price:p, qty:q}); this.save(); this.route('stock');
+    addCat() { 
+        const c = document.getElementById('newCatName').value; 
+        if(c) { 
+            this.data.cats.push(c); 
+            this.save(); 
+            this.route('stock'); 
+        } 
     },
-    editP(i) { this.data.products[i].name = prompt("الاسم الجديد:", this.data.products[i].name); this.save(); this.route('stock'); },
-    delP(i) { this.data.products.splice(i,1); this.save(); this.route('stock'); },
+    addP() {
+        const n=document.getElementById('pName').value, c=document.getElementById('pCat').value, cost=Number(document.getElementById('pCost').value), p=Number(document.getElementById('pPrice').value), q=Number(document.getElementById('pQty').value);
+        this.data.products.push({id:Date.now(), name:n, cat:c, cost:cost, price:p, qty:q}); this.save(); this.route('stock');
+    },
+    editP(i) { 
+        const p = this.data.products[i];
+        const newName = prompt("الاسم الجديد:", p.name);
+        const newCat = prompt("الفئة الجديدة:", p.cat);
+        const newCost = prompt("سعر التكلفة الجديد:", p.cost);
+        const newPrice = prompt("السعر الجديد:", p.price);
+        const newQty = prompt("الكمية الجديدة:", p.qty);
+        
+        if (newName) p.name = newName;
+        if (newCat) p.cat = newCat;
+        if (newCost) p.cost = Number(newCost);
+        if (newPrice) p.price = Number(newPrice);
+        if (newQty) p.qty = Number(newQty);
+        
+        this.save(); 
+        this.route('stock'); 
+    },
+    delP(i) { 
+        this.data.products.splice(i,1); 
+        this.save(); 
+        this.route('stock'); 
+    },
     exportXLS() {
         const ws = XLSX.utils.json_to_sheet(this.data.products);
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Inventory");
+        const wb = XLSX.utils.book_new(); 
+        XLSX.utils.book_append_sheet(wb, ws, "Inventory");
         XLSX.writeFile(wb, "Stock_Report.xlsx");
     },
 
@@ -280,17 +324,49 @@ const app = {
                     <button class="btn btn-s" onclick="app.addC()">إضافة</button>
                 </div>
                 <table><thead><th>الاسم</th><th>النوع</th><th>الديون (د.ل)</th><th>إجراء</th></thead>
-                <tbody>${this.data.contacts.map((c,i)=>`<tr><td>${c.name}</td><td>${c.type}</td><td style="color:red">${c.debt || 0}</td>
-                <td><button onclick="app.settleC(${i})">تسوية ديون</button> <button onclick="app.delC(${i})">حذف</button></td></tr>`).join('')}</tbody></table>
+                <tbody>${this.data.contacts.map((c,i)=>`
+                    <tr>
+                        <td>${c.name}</td>
+                        <td>${c.type}</td>
+                        <td style="color:red">${c.debt || 0}</td>
+                        <td>
+                            <button onclick="app.editC(${i})">تعديل</button> 
+                            <button onclick="app.settleC(${i})">تسوية ديون</button> 
+                            <button onclick="app.delC(${i})">حذف</button>
+                        </td>
+                    </tr>`).join('')}</tbody></table>
             </div>`;
     },
 
-    addC() { this.data.contacts.push({name:document.getElementById('cName').value, type:document.getElementById('cType').value, debt:0}); this.save(); this.route('contacts'); },
+    addC() { 
+        this.data.contacts.push({name:document.getElementById('cName').value, type:document.getElementById('cType').value, debt:0}); 
+        this.save(); 
+        this.route('contacts'); 
+    },
+    editC(i) { 
+        const c = this.data.contacts[i];
+        const newName = prompt("الاسم الجديد:", c.name);
+        const newType = prompt("النوع الجديد:", c.type);
+        
+        if (newName) c.name = newName;
+        if (newType) c.type = newType;
+        
+        this.save(); 
+        this.route('contacts'); 
+    },
     settleC(i) { 
         const amt = Number(prompt("أدخل المبلغ المسدد:")); 
-        if(amt) { this.data.contacts[i].debt -= amt; this.save(); this.route('contacts'); }
+        if(amt) { 
+            this.data.contacts[i].debt -= amt; 
+            this.save(); 
+            this.route('contacts'); 
+        }
     },
-    delC(i) { this.data.contacts.splice(i,1); this.save(); this.route('contacts'); },
+    delC(i) { 
+        this.data.contacts.splice(i,1); 
+        this.save(); 
+        this.route('contacts'); 
+    },
 
     renderExpenses(v) {
         v.innerHTML = `
@@ -300,21 +376,52 @@ const app = {
                 <input id="eAmt" type="number" placeholder="المبلغ">
                 <button class="btn btn-d" onclick="app.addE()">تسجيل مصروف</button>
                 <table><thead><th>البيان</th><th>المبلغ</th><th>التاريخ</th><th>إجراء</th></thead>
-                <tbody>${this.data.expenses.map((e,i)=>`<tr><td>${e.n}</td><td>${e.amt}</td><td>${e.date}</td>
-                <td><button onclick="app.delE(${i})">حذف</button></td></tr>`).join('')}</tbody></table>
+                <tbody>${this.data.expenses.map((e,i)=>`
+                    <tr>
+                        <td>${e.n}</td>
+                        <td>${e.amt}</td>
+                        <td>${e.date}</td>
+                        <td>
+                            <button onclick="app.editE(${i})">تعديل</button> 
+                            <button onclick="app.delE(${i})">حذف</button>
+                        </td>
+                    </tr>`).join('')}</tbody></table>
             </div>`;
     },
 
-    addE() { this.data.expenses.push({n:document.getElementById('eName').value, amt:Number(document.getElementById('eAmt').value), date:new Date().toLocaleDateString()}); this.save(); this.route('expenses'); },
-    delE(i) { this.data.expenses.splice(i,1); this.save(); this.route('expenses'); },
+    addE() { 
+        this.data.expenses.push({n:document.getElementById('eName').value, amt:Number(document.getElementById('eAmt').value), date:new Date().toLocaleDateString()}); 
+        this.save(); 
+        this.route('expenses'); 
+    },
+    editE(i) { 
+        const e = this.data.expenses[i];
+        const newName = prompt("بيان المصروف الجديد:", e.n);
+        const newAmt = prompt("المبلغ الجديد:", e.amt);
+        
+        if (newName) e.n = newName;
+        if (newAmt) e.amt = Number(newAmt);
+        
+        this.save(); 
+        this.route('expenses'); 
+    },
+    delE(i) { 
+        this.data.expenses.splice(i,1); 
+        this.save(); 
+        this.route('expenses'); 
+    },
 
     renderReports(v) {
         v.innerHTML = `
             <div class="card">
                 <h3>سجل المبيعات والمرتجعات</h3>
                 <table><thead><th>التاريخ</th><th>الإجمالي</th><th>إجراء</th></thead>
-                <tbody>${this.data.sales.map((s,i)=>`<tr><td>${s.date}</td><td>${s.total}</td>
-                <td><button class="btn-d" onclick="app.returnSale(${i})">إرجاع الفاتورة</button></td></tr>`).join('')}</tbody></table>
+                <tbody>${this.data.sales.map((s,i)=>`
+                    <tr>
+                        <td>${s.date}</td>
+                        <td>${s.total}</td>
+                        <td><button class="btn-d" onclick="app.returnSale(${i})">إرجاع الفاتورة</button></td>
+                    </tr>`).join('')}</tbody></table>
             </div>`;
     },
 
