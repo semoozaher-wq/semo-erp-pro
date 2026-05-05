@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GOLDEN ERP V28 | النسخة المتكاملة</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -13,51 +13,298 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { --primary: #0f172a; --accent: #3b82f6; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; }
-        [data-theme="dark"] { --primary: #f8fafc; --accent: #60a5fa; --bg: #020617; --card: #1e293b; --text: #f1f5f9; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-        body { background: var(--bg); color: var(--text); transition: 0.3s; }
-        .wrapper { display: flex; }
-        .sidebar { width: 260px; background: var(--primary); color: white; position: fixed; right: 0; height: 100vh; padding: 20px; z-index: 1000; }
-        .main { flex: 1; margin-right: 260px; padding: 25px; min-height: 100vh; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; cursor: pointer; color: #94a3b8; margin-bottom: 5px; transition: 0.2s; }
-        .nav-item.active, .nav-item:hover { background: var(--accent); color: white; }
-        .card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .btn { padding: 8px 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
-        .btn-p { background: var(--accent); color: white; } .btn-d { background: var(--danger); color: white; } .btn-s { background: var(--success); color: white; }
-        input, select { padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; width: 100%; margin-top: 5px; background: var(--card); color: var(--text); }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; border-bottom: 1px solid #f1f5f9; text-align: center; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-content { background: var(--bg); width: 90%; max-width: 500px; padding: 25px; border-radius: 20px; }
-        .qty-btn { width: 30px; height: 30px; border-radius: 5px; border: 1px solid #ddd; cursor: pointer; }
-        @media print { .sidebar, .btn, .no-print { display: none !important; } .main { margin: 0; } }
+        :root {
+            --bg: #f0f2f5;
+            --bg2: #e4e7ec;
+            --card: #ffffff;
+            --card2: #f8f9fb;
+            --text: #1a1d26;
+            --text2: #6b7280;
+            --accent: #d97706;
+            --accent2: #f59e0b;
+            --accent-soft: rgba(217,119,6,0.1);
+            --success: #059669;
+            --success-soft: rgba(5,150,105,0.1);
+            --danger: #dc2626;
+            --danger-soft: rgba(220,38,38,0.08);
+            --info: #0284c7;
+            --info-soft: rgba(2,132,199,0.1);
+            --border: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
+            --sidebar-bg: #0f1219;
+            --sidebar-text: #8892a4;
+            --sidebar-active: #d97706;
+            --radius: 14px;
+        }
+        [data-theme="dark"] {
+            --bg: #0b0e14;
+            --bg2: #141820;
+            --card: #171c26;
+            --card2: #1c2230;
+            --text: #e8ecf1;
+            --text2: #7c8698;
+            --border: #252d3a;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+            --accent-soft: rgba(217,119,6,0.15);
+            --success-soft: rgba(5,150,105,0.15);
+            --danger-soft: rgba(220,38,38,0.12);
+            --info-soft: rgba(2,132,199,0.15);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Cairo',sans-serif; background:var(--bg); color:var(--text); transition: background .35s, color .35s; overflow-x:hidden; }
+        ::-webkit-scrollbar { width:6px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+        /* === التحقق === */
+        #authScreen { position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center;
+            background: linear-gradient(135deg, #0f1219 0%, #1a1f2e 50%, #0f1219 100%); }
+        .auth-card { background:var(--card); border-radius:24px; padding:40px 32px; width:92%; max-width:420px;
+            box-shadow: var(--shadow-lg); border:1px solid var(--border); }
+        .auth-logo { width:60px; height:60px; border-radius:16px; background:linear-gradient(135deg,#d97706,#f59e0b);
+            display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:24px; color:#fff; }
+        .auth-card h2 { text-align:center; margin-bottom:8px; font-weight:900; font-size:22px; }
+        .auth-card p.sub { text-align:center; color:var(--text2); font-size:13px; margin-bottom:24px; }
+        .field { margin-bottom:14px; }
+        .field label { display:block; font-size:12px; font-weight:700; color:var(--text2); margin-bottom:4px; }
+        .field input, .field select { width:100%; padding:12px 14px; border:2px solid var(--border); border-radius:10px;
+            background:var(--card2); color:var(--text); font-family:inherit; font-size:14px; transition:.2s; outline:none; }
+        .field input:focus, .field select:focus { border-color:var(--accent); }
+        .btn { padding:10px 18px; border-radius:10px; border:none; cursor:pointer; font-family:inherit;
+            font-weight:700; font-size:13px; display:inline-flex; align-items:center; gap:6px; transition:.2s; white-space:nowrap; }
+        .btn:active { transform:scale(.97); }
+        .btn-accent { background:linear-gradient(135deg,#d97706,#f59e0b); color:#fff; box-shadow:0 4px 14px rgba(217,119,6,.3); }
+        .btn-accent:hover { box-shadow:0 6px 20px rgba(217,119,6,.4); }
+        .btn-ghost { background:var(--card2); color:var(--text); border:1px solid var(--border); }
+        .btn-ghost:hover { background:var(--bg2); }
+        .btn-danger { background:var(--danger); color:#fff; }
+        .btn-success { background:var(--success); color:#fff; }
+        .btn-info { background:var(--info); color:#fff; }
+        .btn-full { width:100%; justify-content:center; padding:14px; font-size:15px; }
+        .auth-toggle { text-align:center; margin-top:18px; font-size:13px; color:var(--text2); }
+        .auth-toggle span { color:var(--accent); cursor:pointer; font-weight:700; }
+
+        /* === الهيكل === */
+        .wrapper { display:flex; min-height:100vh; }
+        .sidebar { width:260px; background:var(--sidebar-bg); position:fixed; right:0; top:0; height:100vh;
+            display:flex; flex-direction:column; z-index:1000; transition:transform .35s cubic-bezier(.4,0,.2,1); }
+        .sidebar-head { padding:24px 20px 16px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,.06); }
+        .sidebar-logo { width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg,#d97706,#f59e0b);
+            display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; flex-shrink:0; }
+        .sidebar-brand { color:#fff; font-weight:900; font-size:15px; line-height:1.2; }
+        .sidebar-brand small { display:block; color:var(--sidebar-text); font-weight:400; font-size:11px; }
+        .sidebar-nav { flex:1; overflow-y:auto; padding:12px 10px; }
+        .nav-item { display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:10px;
+            cursor:pointer; color:var(--sidebar-text); font-size:13px; font-weight:600; margin-bottom:3px; transition:.2s; }
+        .nav-item i { width:20px; text-align:center; font-size:14px; }
+        .nav-item:hover { background:rgba(255,255,255,.05); color:#d1d5db; }
+        .nav-item.active { background:linear-gradient(135deg,rgba(217,119,6,.2),rgba(245,158,11,.1)); color:var(--accent2); }
+        .nav-divider { height:1px; background:rgba(255,255,255,.06); margin:12px 14px; }
+        .nav-item.danger-item { color:#f87171; }
+        .nav-item.danger-item:hover { background:rgba(220,38,38,.1); }
+        .sidebar-foot { padding:14px 20px; border-top:1px solid rgba(255,255,255,.06); }
+        .sidebar-foot .user-info { display:flex; align-items:center; gap:10px; }
+        .sidebar-foot .avatar { width:34px; height:34px; border-radius:10px; background:var(--accent); color:#fff;
+            display:flex; align-items:center; justify-content:center; font-weight:900; font-size:13px; }
+        .sidebar-foot .uname { color:#e2e8f0; font-size:13px; font-weight:600; }
+        .sidebar-foot .urole { color:var(--sidebar-text); font-size:11px; }
+
+        /* === المحتوى === */
+        .main { flex:1; margin-right:260px; padding:24px; transition:margin .35s; }
+        .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; gap:12px; flex-wrap:wrap; }
+        .topbar h1 { font-size:22px; font-weight:900; }
+        .topbar-actions { display:flex; gap:8px; align-items:center; }
+        .icon-btn { width:40px; height:40px; border-radius:10px; border:1px solid var(--border); background:var(--card);
+            color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.2s; font-size:15px; }
+        .icon-btn:hover { background:var(--bg2); border-color:var(--accent); color:var(--accent); }
+
+        /* === البطاقات === */
+        .card { background:var(--card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);
+            border:1px solid var(--border); transition:background .35s, border .35s; }
+        .stat-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:16px; margin-bottom:24px; }
+        .stat-card { background:var(--card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);
+            border:1px solid var(--border); display:flex; align-items:center; gap:16px; transition:.2s; }
+        .stat-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-lg); }
+        .stat-icon { width:50px; height:50px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+        .stat-icon.gold { background:var(--accent-soft); color:var(--accent); }
+        .stat-icon.green { background:var(--success-soft); color:var(--success); }
+        .stat-icon.red { background:var(--danger-soft); color:var(--danger); }
+        .stat-icon.blue { background:var(--info-soft); color:var(--info); }
+        .stat-val { font-size:24px; font-weight:900; line-height:1.1; }
+        .stat-label { font-size:12px; color:var(--text2); font-weight:600; }
+
+        /* === الجداول === */
+        .table-wrap { overflow-x:auto; margin-top:16px; }
+        table { width:100%; border-collapse:collapse; }
+        th { padding:10px 14px; text-align:right; font-size:11px; font-weight:700; color:var(--text2);
+            text-transform:uppercase; border-bottom:2px solid var(--border); background:var(--card2); white-space:nowrap; }
+        td { padding:12px 14px; border-bottom:1px solid var(--border); font-size:13px; white-space:nowrap; }
+        tr:hover td { background:var(--accent-soft); }
+        .badge { padding:3px 10px; border-radius:6px; font-size:11px; font-weight:700; display:inline-block; }
+        .badge-gold { background:var(--accent-soft); color:var(--accent); }
+        .badge-green { background:var(--success-soft); color:var(--success); }
+        .badge-red { background:var(--danger-soft); color:var(--danger); }
+
+        /* === الإدخال === */
+        .form-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:12px; margin-bottom:16px; }
+        .form-group label { display:block; font-size:12px; font-weight:700; color:var(--text2); margin-bottom:4px; }
+        .form-group input, .form-group select { width:100%; padding:10px 12px; border:2px solid var(--border); border-radius:8px;
+            background:var(--card2); color:var(--text); font-family:inherit; font-size:13px; outline:none; transition:.2s; }
+        .form-group input:focus, .form-group select:focus { border-color:var(--accent); }
+        .search-box { position:relative; }
+        .search-box i { position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text2); font-size:13px; }
+        .search-box input { padding-right:36px !important; }
+
+        /* === POS === */
+        .pos-layout { display:grid; grid-template-columns:1fr 400px; gap:20px; }
+        .pos-cats { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
+        .pos-cat { padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:var(--card2);
+            font-size:12px; font-weight:700; cursor:pointer; transition:.2s; color:var(--text2); }
+        .pos-cat.active, .pos-cat:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .pos-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px,1fr)); gap:10px; max-height:calc(100vh - 260px); overflow-y:auto; padding:4px; }
+        .pos-item { background:var(--card2); border:1px solid var(--border); border-radius:12px; padding:14px 10px;
+            text-align:center; cursor:pointer; transition:.2s; }
+        .pos-item:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:var(--shadow); }
+        .pos-item .pname { font-weight:700; font-size:13px; margin-bottom:4px; }
+        .pos-item .pprice { color:var(--accent); font-weight:900; font-size:15px; }
+        .pos-item .pqty { font-size:11px; color:var(--text2); }
+        .pos-item.out-of-stock { opacity:.4; pointer-events:none; }
+        .cart-panel { background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border);
+            display:flex; flex-direction:column; max-height:calc(100vh - 150px); position:sticky; top:24px; }
+        .cart-head { padding:16px 20px; border-bottom:1px solid var(--border); font-weight:900; font-size:15px;
+            display:flex; align-items:center; justify-content:space-between; }
+        .cart-body { flex:1; overflow-y:auto; padding:10px; }
+        .cart-row { display:flex; align-items:center; gap:8px; padding:10px; border-radius:10px; margin-bottom:6px;
+            background:var(--card2); border:1px solid var(--border); transition:.15s; }
+        .cart-row:hover { border-color:var(--accent); }
+        .cart-row .cname { flex:1; font-size:13px; font-weight:600; }
+        .cart-row .cprice { font-weight:700; font-size:13px; color:var(--accent); min-width:60px; text-align:center; }
+        .qty-ctrl { display:flex; align-items:center; gap:4px; }
+        .qty-btn { width:28px; height:28px; border-radius:6px; border:1px solid var(--border); background:var(--card);
+            cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900; transition:.15s; }
+        .qty-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .qty-val { min-width:24px; text-align:center; font-weight:900; font-size:14px; }
+        .cart-row .del-btn { color:var(--danger); cursor:pointer; font-size:13px; opacity:.5; transition:.15s; }
+        .cart-row .del-btn:hover { opacity:1; }
+        .cart-foot { padding:16px 20px; border-top:1px solid var(--border); }
+        .cart-discount { display:flex; gap:8px; margin-bottom:10px; }
+        .cart-discount input { flex:1; padding:8px 10px; border:2px solid var(--border); border-radius:8px;
+            background:var(--card2); color:var(--text); font-family:inherit; font-size:13px; outline:none; }
+        .cart-totals { margin-bottom:12px; }
+        .cart-totals .row { display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px; }
+        .cart-totals .row.final { font-size:20px; font-weight:900; color:var(--accent); border-top:2px solid var(--border); padding-top:8px; margin-top:4px; }
+
+        /* === الإشعارات === */
+        .toast-container { position:fixed; top:20px; left:20px; z-index:10000; display:flex; flex-direction:column; gap:8px; }
+        .toast { padding:14px 20px; border-radius:12px; color:#fff; font-size:13px; font-weight:700; font-family:'Cairo';
+            display:flex; align-items:center; gap:10px; animation: slideIn .3s ease; box-shadow:var(--shadow-lg); min-width:280px; }
+        .toast.success { background:linear-gradient(135deg,#059669,#10b981); }
+        .toast.error { background:linear-gradient(135deg,#dc2626,#ef4444); }
+        .toast.warning { background:linear-gradient(135deg,#d97706,#f59e0b); }
+        .toast.info { background:linear-gradient(135deg,#0284c7,#0ea5e9); }
+        @keyframes slideIn { from { opacity:0; transform:translateX(-40px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes slideOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(-40px); } }
+
+        /* === المودال === */
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:5000;
+            align-items:center; justify-content:center; backdrop-filter:blur(6px); animation:fadeIn .2s; }
+        .modal-overlay.show { display:flex; }
+        .modal-box { background:var(--card); border-radius:20px; padding:28px; width:92%; max-width:480px;
+            box-shadow:var(--shadow-lg); border:1px solid var(--border); animation:scaleIn .25s ease; max-height:90vh; overflow-y:auto; }
+        .modal-box h3 { margin-bottom:20px; font-weight:900; font-size:18px; }
+        .modal-actions { display:flex; gap:8px; margin-top:20px; justify-content:flex-start; }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes scaleIn { from{opacity:0;transform:scale(.92)} to{opacity:1;transform:scale(1)} }
+
+        /* === الفاتورة === */
+        .inv-print { text-align:center; font-family:'Cairo'; }
+        .inv-print h2 { font-size:22px; margin-bottom:4px; }
+        .inv-print .inv-meta { color:var(--text2); font-size:12px; margin-bottom:16px; }
+        .inv-print table { margin:0 auto 16px; }
+        .inv-print .inv-total { font-size:28px; font-weight:900; color:var(--accent); }
+        .inv-print #qr { display:flex; justify-content:center; margin-top:12px; }
+
+        /* === تنبيهات المخزون === */
+        .low-stock-badge { color:var(--danger); font-size:11px; font-weight:700; }
+        .empty-state { text-align:center; padding:60px 20px; color:var(--text2); }
+        .empty-state i { font-size:48px; margin-bottom:16px; opacity:.3; display:block; }
+        .empty-state p { font-size:14px; }
+
+        /* === الطباعة === */
+        @media print {
+            .sidebar, .topbar, .btn, .no-print, .toast-container { display:none !important; }
+            .main { margin:0 !important; padding:10px !important; }
+            .modal-overlay { position:static; background:none; backdrop-filter:none; }
+            .modal-box { box-shadow:none; border:none; max-width:100%; padding:0; }
+        }
+        /* === الجوال === */
+        .mobile-toggle { display:none; }
+        @media(max-width:900px) {
+            .sidebar { transform:translateX(100%); }
+            .sidebar.open { transform:translateX(0); }
+            .main { margin-right:0; }
+            .mobile-toggle { display:flex; }
+            .pos-layout { grid-template-columns:1fr; }
+            .cart-panel { position:static; max-height:none; }
+            .stat-grid { grid-template-columns:1fr 1fr; }
+            .form-row { grid-template-columns:1fr; }
+        }
+        @media(max-width:500px) { .stat-grid { grid-template-columns:1fr; } }
     </style>
 </head>
 <body>
 
-<div id="authScreen" style="position:fixed; inset:0; background:var(--primary); z-index:9999; display:flex; align-items:center; justify-content:center;">
-    <div class="card" style="width:90%; max-width:400px; text-align:center;">
-        <h2 id="authTitle" style="color:var(--accent); margin-bottom:20px;">تسجيل الدخول</h2>
-        <input type="email" id="authEmail" placeholder="البريد الإلكتروني">
-        <input type="password" id="authPass" placeholder="كلمة المرور">
-        <div id="roleSelect" style="display:none; margin-top:10px;">
+<div id="toastContainer" class="toast-container"></div>
+
+<div id="authScreen">
+    <div class="auth-card">
+        <div class="auth-logo"><i class="fas fa-crown"></i></div>
+        <h2 id="authTitle">تسجيل الدخول</h2>
+        <p class="sub" id="authSub">أدخل بياناتك للوصول إلى النظام</p>
+        <div class="field">
+            <label>البريد الإلكتروني</label>
+            <input type="email" id="authEmail" placeholder="example@mail.com">
+        </div>
+        <div class="field">
+            <label>كلمة المرور</label>
+            <input type="password" id="authPass" placeholder="••••••••">
+        </div>
+        <div class="field" id="roleField" style="display:none;">
+            <label>الدور الوظيفي</label>
             <select id="userRole"><option value="admin">مدير النظام</option><option value="staff">موظف مبيعات</option></select>
         </div>
-        <button class="btn btn-p" style="width:100%; margin-top:15px; justify-content:center;" onclick="app.handleAuth()">دخول</button>
-        <p id="toggleAuth" style="margin-top:15px; cursor:pointer; color:var(--accent);" onclick="app.toggleAuthMode()">إنشاء حساب جديد</p>
+        <button class="btn btn-accent btn-full" onclick="app.handleAuth()" id="authBtn">تسجيل الدخول</button>
+        <div class="auth-toggle">
+            <span id="toggleAuth" onclick="app.toggleAuthMode()">إنشاء حساب جديد</span>
+        </div>
     </div>
 </div>
 
 <div class="wrapper" id="appUI" style="display:none;">
-    <aside class="sidebar">
-        <h2 style="text-align:center; color:var(--accent); margin-bottom:20px;">GOLDEN V28</h2>
-        <nav id="mainNav"></nav>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-head">
+            <div class="sidebar-logo"><i class="fas fa-crown"></i></div>
+            <div class="sidebar-brand">GOLDEN ERP <small>الإصدار 28</small></div>
+        </div>
+        <nav class="sidebar-nav" id="mainNav"></nav>
+        <div class="sidebar-foot">
+            <div class="user-info">
+                <div class="avatar" id="userAvatar">م</div>
+                <div>
+                    <div class="uname" id="userName">المستخدم</div>
+                    <div class="urole" id="userRoleLabel">مدير</div>
+                </div>
+            </div>
+        </div>
     </aside>
     <main class="main" id="viewPort"></main>
 </div>
 
-<div id="modal" class="modal"><div class="modal-content" id="modalBody"></div></div>
+<div id="modalOverlay" class="modal-overlay">
+    <div class="modal-box" id="modalBody"></div>
+</div>
 
 <script>
 const firebaseConfig = {
@@ -70,16 +317,30 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
+/* === أدوات مساعدة === */
+function toast(msg, type='info') {
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':type==='error'?'times-circle':type==='warning'?'exclamation-triangle':'info-circle'}"></i>${msg}`;
+    document.getElementById('toastContainer').appendChild(el);
+    setTimeout(()=>{ el.style.animation='slideOut .3s ease forwards'; setTimeout(()=>el.remove(),300); }, 3000);
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+function openModal(html) { document.getElementById('modalBody').innerHTML = html; document.getElementById('modalOverlay').classList.add('show'); }
+function formatNum(n) { return Number(n||0).toLocaleString('ar-EG'); }
+function genId() { return Date.now() + Math.floor(Math.random()*1000); }
+
+/* === التطبيق الرئيسي === */
 const app = {
-    user: null, role: 'staff', authMode: 'login',
-    data: { products: [], sales: [], contacts: [], expenses: [], returns: [] },
-    cart: [],
+    user: null, role: 'staff', authMode: 'login', currentPage: 'dash',
+    data: { products:[], sales:[], contacts:[], expenses:[], returns:[] },
+    cart: [], posCategory: 'الكل',
 
     init() {
         auth.onAuthStateChanged(u => {
             if(u) {
                 this.user = u;
-                db.ref(`users/${u.uid}/role`).once('value', s => {
+                db.ref(`users/${u.uid}/role`).once('value').then(s => {
                     this.role = s.val() || 'admin';
                     this.loadData();
                 });
@@ -92,213 +353,430 @@ const app = {
 
     toggleAuthMode() {
         this.authMode = this.authMode === 'login' ? 'signup' : 'login';
-        document.getElementById('authTitle').innerText = this.authMode === 'login' ? 'دخول' : 'حساب جديد';
-        document.getElementById('roleSelect').style.display = this.authMode === 'login' ? 'none' : 'block';
+        document.getElementById('authTitle').innerText = this.authMode === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب جديد';
+        document.getElementById('authSub').innerText = this.authMode === 'login' ? 'أدخل بياناتك للوصول إلى النظام' : 'أنشئ حسابك للبدء في استخدام النظام';
+        document.getElementById('authBtn').innerText = this.authMode === 'login' ? 'تسجيل الدخول' : 'إنشاء الحساب';
+        document.getElementById('toggleAuth').innerText = this.authMode === 'login' ? 'إنشاء حساب جديد' : 'لديك حساب؟ تسجيل الدخول';
+        document.getElementById('roleField').style.display = this.authMode === 'signup' ? 'block' : 'none';
     },
 
     handleAuth() {
-        const e = document.getElementById('authEmail').value, p = document.getElementById('authPass').value;
+        const e = document.getElementById('authEmail').value.trim();
+        const p = document.getElementById('authPass').value;
+        if(!e || !p) return toast('أدخل البريد وكلمة المرور','warning');
         if(this.authMode === 'signup') {
             auth.createUserWithEmailAndPassword(e,p).then(res => {
                 db.ref(`users/${res.user.uid}/role`).set(document.getElementById('userRole').value);
-            }).catch(err => alert(err.message));
+                toast('تم إنشاء الحساب بنجاح','success');
+            }).catch(err => toast(err.message,'error'));
         } else {
-            auth.signInWithEmailAndPassword(e,p).catch(err => alert(err.message));
+            auth.signInWithEmailAndPassword(e,p).catch(err => toast(err.message,'error'));
         }
     },
 
     loadData() {
         db.ref(`users/${this.user.uid}/data`).on('value', s => {
-            this.data = s.val() || { products: [], sales: [], contacts: [], expenses: [], returns: [] };
+            this.data = s.val() || { products:[], sales:[], contacts:[], expenses:[], returns:[] };
             if(!this.data.contacts) this.data.contacts = [];
             if(!this.data.expenses) this.data.expenses = [];
-            this.drawNav();
-            this.route('dash');
+            if(!this.data.returns) this.data.returns = [];
+            this.setupUI();
+            this.route(this.currentPage);
         });
     },
 
     save() { db.ref(`users/${this.user.uid}/data`).set(this.data); },
 
-    drawNav() {
-        let h = `<div class="nav-item active" onclick="app.route('dash', this)"><i class="fas fa-home"></i> الرئيسية</div>
-                 <div class="nav-item" onclick="app.route('pos', this)"><i class="fas fa-cash-register"></i> المبيعات</div>`;
+    setupUI() {
+        const email = this.user.email || '';
+        const initial = email.charAt(0).toUpperCase();
+        document.getElementById('userAvatar').innerText = initial;
+        document.getElementById('userName').innerText = email.split('@')[0];
+        document.getElementById('userRoleLabel').innerText = this.role === 'admin' ? 'مدير النظام' : 'موظف مبيعات';
+
+        let h = `<div class="nav-item active" data-page="dash" onclick="app.route('dash')"><i class="fas fa-chart-pie"></i> لوحة التحكم</div>
+                  <div class="nav-item" data-page="pos" onclick="app.route('pos')"><i class="fas fa-cash-register"></i> نقطة البيع</div>`;
         if(this.role === 'admin') {
-            h += `<div class="nav-item" onclick="app.route('stock', this)"><i class="fas fa-boxes"></i> المخزن</div>
-                  <div class="nav-item" onclick="app.route('ledger', this)"><i class="fas fa-users"></i> الحسابات</div>
-                  <div class="nav-item" onclick="app.route('exp', this)"><i class="fas fa-wallet"></i> المصاريف</div>
-                  <div class="nav-item" onclick="app.route('returns', this)"><i class="fas fa-undo"></i> المرتجعات</div>`;
+            h += `<div class="nav-divider"></div>
+                  <div class="nav-item" data-page="stock" onclick="app.route('stock')"><i class="fas fa-boxes-stacked"></i> إدارة المخزون</div>
+                  <div class="nav-item" data-page="ledger" onclick="app.route('ledger')"><i class="fas fa-handshake"></i> العملاء والموردين</div>
+                  <div class="nav-item" data-page="exp" onclick="app.route('exp')"><i class="fas fa-receipt"></i> المصاريف</div>
+                  <div class="nav-item" data-page="returns" onclick="app.route('returns')"><i class="fas fa-rotate-left"></i> المرتجعات</div>`;
         }
-        h += `<div class="nav-item" onclick="auth.signOut()" style="color:var(--danger); margin-top:20px;"><i class="fas fa-sign-out-alt"></i> خروج</div>`;
+        h += `<div class="nav-divider"></div><div class="nav-item danger-item" onclick="auth.signOut()"><i class="fas fa-arrow-right-from-bracket"></i> تسجيل الخروج</div>`;
         document.getElementById('mainNav').innerHTML = h;
         document.getElementById('authScreen').style.display = 'none';
         document.getElementById('appUI').style.display = 'flex';
     },
 
-    route(p, el) {
-        if(el) { document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active')); el.classList.add('active'); }
+    route(p) {
+        this.currentPage = p;
+        this.cart = [];
+        this.posCategory = 'الكل';
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.page === p));
         const v = document.getElementById('viewPort');
-        if(p === 'dash') v.innerHTML = this.renderDash();
-        if(p === 'pos') v.innerHTML = this.renderPOS();
-        if(p === 'stock') v.innerHTML = this.renderStock();
-        if(p === 'ledger') v.innerHTML = this.renderLedger();
-        if(p === 'exp') v.innerHTML = this.renderExp();
-        if(p === 'returns') v.innerHTML = this.renderReturns();
-        if(p === 'dash' && this.role === 'admin') this.initChart();
+        const isAdmin = this.role === 'admin';
+
+        if(p === 'dash') v.innerHTML = this.viewDash(isAdmin);
+        else if(p === 'pos') v.innerHTML = this.viewPOS();
+        else if(p === 'stock') v.innerHTML = this.viewStock();
+        else if(p === 'ledger') v.innerHTML = this.viewLedger();
+        else if(p === 'exp') v.innerHTML = this.viewExp();
+        else if(p === 'returns') v.innerHTML = this.viewReturns();
+
+        if(p === 'dash' && isAdmin) setTimeout(()=>this.initCharts(), 100);
+        if(p === 'pos') this.renderCart();
     },
 
-    renderDash() {
-        const s = this.data.sales?.reduce((a,b)=>a+Number(b.total),0) || 0;
-        const e = this.data.expenses?.reduce((a,b)=>a+Number(b.amount),0) || 0;
-        const r = this.data.returns?.reduce((a,b)=>a+Number(b.total),0) || 0;
-        return `
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
-                <div class="card" style="background:var(--accent); color:white;"><h4>المبيعات</h4><h2>${s}</h2></div>
-                ${this.role === 'admin' ? `<div class="card" style="background:var(--danger); color:white;"><h4>المصاريف والمرتجع</h4><h2>${e + r}</h2></div>
-                <div class="card" style="background:var(--success); color:white;"><h4>الربح الصافي</h4><h2>${s - e - r}</h2></div>` : ''}
+    /* === لوحة التحكم === */
+    viewDash(isAdmin) {
+        const totalSales = this.data.sales.reduce((a,b)=>a+Number(b.total||0),0);
+        const totalExp = this.data.expenses.reduce((a,b)=>a+Number(b.amount||0),0);
+        const totalRet = this.data.returns.reduce((a,b)=>a+Number(b.total||0),0);
+        const net = totalSales - totalExp - totalRet;
+        const todayStr = new Date().toLocaleDateString('ar-EG');
+        const todaySales = this.data.sales.filter(s=>(s.date||'').includes(todayStr)).reduce((a,b)=>a+Number(b.total||0),0);
+        const lowStock = (this.data.products||[]).filter(p=>p.qty<=5).length;
+        const totalProducts = (this.data.products||[]).length;
+
+        let stats = `
+            <div class="stat-card"><div class="stat-icon gold"><i class="fas fa-coins"></i></div><div><div class="stat-val">${formatNum(totalSales)}</div><div class="stat-label">إجمالي المبيعات</div></div></div>
+            <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-calendar-day"></i></div><div><div class="stat-val">${formatNum(todaySales)}</div><div class="stat-label">مبيعات اليوم</div></div></div>`;
+        if(isAdmin) {
+            stats += `
+            <div class="stat-card"><div class="stat-icon green"><i class="fas fa-chart-line"></i></div><div><div class="stat-val">${formatNum(net)}</div><div class="stat-label">صافي الربح</div></div></div>
+            <div class="stat-card"><div class="stat-icon red"><i class="fas fa-arrow-trend-down"></i></div><div><div class="stat-val">${formatNum(totalExp+totalRet)}</div><div class="stat-label">المصاريف والمرتجعات</div></div></div>
+            <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-box"></i></div><div><div class="stat-val">${totalProducts}</div><div class="stat-label">إجمالي المنتجات</div></div></div>
+            <div class="stat-card"><div class="stat-icon red"><i class="fas fa-triangle-exclamation"></i></div><div><div class="stat-val">${lowStock}</div><div class="stat-label">مخزون منخفض</div></div></div>`;
+        }
+
+        let charts = '';
+        if(isAdmin) charts = `<div style="display:grid; grid-template-columns:2fr 1fr; gap:16px; margin-bottom:24px;">
+            <div class="card"><h3 style="margin-bottom:12px; font-size:15px;">تحليل المبيعات</h3><canvas id="salesChart" height="90"></canvas></div>
+            <div class="card"><h3 style="margin-bottom:12px; font-size:15px;">توزيع الإيرادات</h3><canvas id="pieChart" height="200"></canvas></div></div>`;
+
+        let recent = `<div class="card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="font-size:15px;">آخر العمليات</h3>
+            ${isAdmin ? `<button class="btn btn-ghost" onclick="app.exportExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>` : ''}
+        </div>`;
+        if(this.data.sales.length === 0) {
+            recent += `<div class="empty-state"><i class="fas fa-receipt"></i><p>لا توجد عمليات بعد</p></div>`;
+        } else {
+            recent += `<div class="table-wrap"><table><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>الأصناف</th><th>الإجمالي</th><th>إجراء</th></tr></thead><tbody>
+            ${this.data.sales.slice(0,10).map(s=>`<tr><td><span class="badge badge-gold">#${s.id}</span></td><td>${s.date}</td><td>${(s.items||[]).length} أصناف</td><td style="font-weight:900; color:var(--accent);">${formatNum(s.total)}</td><td><button class="btn btn-ghost" onclick="app.showInvoice('${s.id}')"><i class="fas fa-eye"></i></button></td></tr>`).join('')}
+            </tbody></table></div>`;
+        }
+        recent += `</div>`;
+
+        return `<div class="topbar"><h1>لوحة التحكم</h1><div class="topbar-actions no-print">
+            <button class="icon-btn" onclick="app.toggleTheme()" title="تبديل المظهر"><i class="fas fa-moon" id="themeIcon"></i></button>
+            <button class="icon-btn mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+        </div></div><div class="stat-grid">${stats}</div>${charts}${recent}`;
+    },
+
+    initCharts() {
+        const salesData = this.data.sales.slice(0,10).reverse();
+        const labels = salesData.map(s => s.date ? s.date.split(',')[0] : '');
+        const values = salesData.map(s => Number(s.total||0));
+
+        // رسم بياني خطي
+        const ctx1 = document.getElementById('salesChart');
+        if(ctx1) {
+            new Chart(ctx1.getContext('2d'), {
+                type:'line',
+                data:{ labels, datasets:[{ label:'المبيعات', data:values, borderColor:'#d97706', backgroundColor:'rgba(217,119,6,0.08)', fill:true, tension:.4, pointRadius:4, pointBackgroundColor:'#d97706' }] },
+                options:{ responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, grid:{color:'rgba(0,0,0,.05)'} }, x:{ grid:{display:false} } } }
+            });
+        }
+        // رسم دائري
+        const ctx2 = document.getElementById('pieChart');
+        if(ctx2) {
+            const totalExp = this.data.expenses.reduce((a,b)=>a+Number(b.amount||0),0);
+            const totalRet = this.data.returns.reduce((a,b)=>a+Number(b.total||0),0);
+            const totalS = this.data.sales.reduce((a,b)=>a+Number(b.total||0),0);
+            new Chart(ctx2.getContext('2d'), {
+                type:'doughnut',
+                data:{ labels:['المبيعات','المصاريف','المرتجعات'], datasets:[{ data:[totalS,totalExp,totalRet], backgroundColor:['#d97706','#dc2626','#6b7280'], borderWidth:0 }] },
+                options:{ responsive:true, plugins:{ legend:{ position:'bottom', labels:{ font:{family:'Cairo',size:11}, padding:12 } } } }
+            });
+        }
+    },
+
+    /* === نقطة البيع === */
+    viewPOS() {
+        const cats = ['الكل', ...new Set((this.data.products||[]).map(p=>p.category||'أخرى'))];
+        return `<div class="topbar"><h1>نقطة البيع</h1><div class="topbar-actions no-print">
+            <button class="icon-btn" onclick="app.toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
+            <button class="icon-btn mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+        </div></div>
+        <div class="pos-layout">
+            <div class="card">
+                <div class="search-box" style="margin-bottom:14px;">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="ابحث عن منتج بالاسم أو الباركود..." oninput="app.filterPOS(this.value)">
+                </div>
+                <div class="pos-cats" id="posCats">${cats.map(c=>`<div class="pos-cat ${c===this.posCategory?'active':''}" onclick="app.setCat('${c}')">${c}</div>`).join('')}</div>
+                <div class="pos-grid" id="posGrid"></div>
             </div>
-            ${this.role === 'admin' ? `<div class="card"><canvas id="salesChart" height="100"></canvas></div>` : ''}
-            <div class="card"><h3>📊 آخر العمليات</h3><table><thead><th>التاريخ</th><th>المبلغ</th><th>إجراء</th></thead>
-            <tbody>${this.data.sales?.slice(0,5).map(x=>`<tr><td>${x.date}</td><td>${x.total}</td><td><button class="btn btn-p" onclick="app.printInv('${x.id}')">📄</button></td></tr>`).join('')}</tbody></table></div>`;
-    },
-
-    initChart() {
-        const ctx = document.getElementById('salesChart').getContext('2d');
-        new Chart(ctx, { type: 'line', data: { labels: this.data.sales?.slice(0,7).map(x=>x.date), datasets: [{ label: 'المبيعات', data: this.data.sales?.slice(0,7).map(x=>x.total), borderColor: '#3b82f6', fill: true }] } });
-    },
-
-    renderPOS() {
-        return `
-            <div style="display:grid; grid-template-columns: 1fr 380px; gap:20px;">
-                <div class="card">
-                    <input type="text" placeholder="بحث سريع عن منتج..." onkeyup="app.filterPOS(this.value)">
-                    <div id="posGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:10px; margin-top:15px;">
-                        ${this.data.products?.filter(p=>p.qty>0).map(p=>`<div class="card" style="text-align:center; cursor:pointer;" onclick="app.addToCart('${p.id}')"><b>${p.name}</b><br><small>${p.price} ج.م</small><br><small>متاح: ${p.qty}</small></div>`).join('')}
+            <div class="cart-panel no-print">
+                <div class="cart-head"><span><i class="fas fa-cart-shopping" style="margin-left:6px;"></i> سلة المشتريات</span><span id="cartCount" class="badge badge-gold">0</span></div>
+                <div class="cart-body" id="cartList"></div>
+                <div class="cart-foot">
+                    <div class="cart-discount">
+                        <input type="number" id="discountVal" placeholder="خصم" min="0" oninput="app.renderCart()">
+                        <select id="discountType" style="width:80px; padding:8px; border:2px solid var(--border); border-radius:8px; background:var(--card2); color:var(--text); font-family:inherit;" onchange="app.renderCart()">
+                            <option value="fixed">ج.م</option><option value="percent">%</option>
+                        </select>
                     </div>
+                    <div class="form-group" style="margin-bottom:10px;">
+                        <select id="posCustomer" style="width:100%; padding:8px 10px; border:2px solid var(--border); border-radius:8px; background:var(--card2); color:var(--text); font-family:inherit; font-size:13px;">
+                            <option value="">عميل نقدي</option>
+                            ${(this.data.contacts||[]).filter(c=>c.type==='عميل').map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="cart-totals" id="cartTotals"></div>
+                    <button class="btn btn-accent btn-full" onclick="app.checkout()" style="font-size:16px; padding:16px;">
+                        <i class="fas fa-check-circle"></i> إتمام البيع وطباعة
+                    </button>
                 </div>
-                <div class="card">
-                    <h3>🛒 السلة</h3>
-                    <div id="cartList" style="min-height:250px; border-bottom:1px solid #eee;"></div>
-                    <h2 style="padding:15px 0;">الإجمالي: <span id="cartTotal">0</span></h2>
-                    <button class="btn btn-p" style="width:100%; height:50px;" onclick="app.checkout()">إتمام و طباعة QR</button>
-                </div>
-            </div>`;
+            </div>
+        </div>`;
     },
+
+    setCat(c) {
+        this.posCategory = c;
+        document.querySelectorAll('.pos-cat').forEach(el=>el.classList.toggle('active', el.innerText===c));
+        this.renderPOSGrid();
+    },
+
+    renderPOSGrid(filter='') {
+        let items = this.data.products || [];
+        if(this.posCategory !== 'الكل') items = items.filter(p=>(p.category||'أخرى')===this.posCategory);
+        if(filter) items = items.filter(p=>p.name.includes(filter) || (p.barcode||'').includes(filter));
+        const grid = document.getElementById('posGrid');
+        if(!grid) return;
+        if(items.length === 0) {
+            grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-box-open"></i><p>لا توجد منتجات</p></div>`;
+            return;
+        }
+        grid.innerHTML = items.map(p=>{
+            const out = p.qty <= 0;
+            return `<div class="pos-item ${out?'out-of-stock':''}" onclick="app.addToCart(${p.id})">
+                <div class="pname">${p.name}</div>
+                <div class="pprice">${formatNum(p.price)}</div>
+                <div class="pqty">${out?'نفذت الكمية':'متاح: '+p.qty}</div>
+            </div>`;
+        }).join('');
+    },
+
+    filterPOS(v) { this.renderPOSGrid(v); },
 
     addToCart(id) {
-        const p = this.data.products.find(x=>x.id==id);
-        const inCart = this.cart.find(x=>x.id==id);
-        if(inCart) { if(inCart.count < p.qty) inCart.count++; else alert("الكمية انتهت!"); }
-        else { this.cart.push({...p, count: 1}); }
-        this.updateCart();
-    },
-
-    updateCart() {
-        const area = document.getElementById('cartList');
-        area.innerHTML = this.cart.map((it, i)=>`
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span>${it.name}</span>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <button class="qty-btn" onclick="app.changeQty(${i}, -1)">-</button>
-                    <span>${it.count}</span>
-                    <button class="qty-btn" onclick="app.changeQty(${i}, 1)">+</button>
-                </div>
-                <b>${it.price * it.count} <i class="fas fa-trash" onclick="app.cart.splice(${i},1); app.updateCart();" style="color:red; cursor:pointer;"></i></b>
-            </div>`).join('');
-        document.getElementById('cartTotal').innerText = this.cart.reduce((a,b)=>a+(b.price*b.count),0);
+        const p = this.data.products.find(x=>x.id===id);
+        if(!p || p.qty<=0) return toast('المنتج غير متاح','warning');
+        const inCart = this.cart.find(x=>x.id===id);
+        if(inCart) {
+            if(inCart.count < p.qty) inCart.count++;
+            else toast('وصلت للحد الأقصى المتاح','warning');
+        } else {
+            this.cart.push({id:p.id, name:p.name, price:p.price, count:1, maxQty:p.qty});
+        }
+        this.renderCart();
+        toast(`تم إضافة ${p.name}`,'success');
     },
 
     changeQty(i, v) {
         const it = this.cart[i];
-        const p = this.data.products.find(x=>x.id == it.id);
-        if(v === 1 && it.count < p.qty) it.count++;
-        if(v === -1 && it.count > 1) it.count--;
-        this.updateCart();
+        if(v===1 && it.count < it.maxQty) it.count++;
+        else if(v===-1 && it.count>1) it.count--;
+        else if(v===-1 && it.count===1) { this.cart.splice(i,1); }
+        this.renderCart();
+    },
+
+    removeFromCart(i) { this.cart.splice(i,1); this.renderCart(); },
+
+    renderCart() {
+        const list = document.getElementById('cartList');
+        const totals = document.getElementById('cartTotals');
+        const count = document.getElementById('cartCount');
+        if(!list) return;
+        count.innerText = this.cart.reduce((a,b)=>a+b.count,0);
+        if(this.cart.length===0) {
+            list.innerHTML = `<div class="empty-state" style="padding:30px;"><i class="fas fa-cart-shopping"></i><p>السلة فارغة</p></div>`;
+            if(totals) totals.innerHTML = `<div class="row final"><span>الإجمالي</span><span>0 ج.م</span></div>`;
+            return;
+        }
+        list.innerHTML = this.cart.map((it,i)=>`
+            <div class="cart-row">
+                <span class="cname">${it.name}</span>
+                <div class="qty-ctrl">
+                    <button class="qty-btn" onclick="app.changeQty(${i},-1)">-</button>
+                    <span class="qty-val">${it.count}</span>
+                    <button class="qty-btn" onclick="app.changeQty(${i},1)">+</button>
+                </div>
+                <span class="cprice">${formatNum(it.price*it.count)}</span>
+                <i class="fas fa-xmark del-btn" onclick="app.removeFromCart(${i})"></i>
+            </div>`).join('');
+
+        const subtotal = this.cart.reduce((a,b)=>a+b.price*b.count,0);
+        const discVal = Number(document.getElementById('discountVal')?.value||0);
+        const discType = document.getElementById('discountType')?.value||'fixed';
+        let discount = discType==='percent' ? subtotal*(discVal/100) : discVal;
+        discount = Math.min(discount, subtotal);
+        const total = subtotal - discount;
+
+        let html = `<div class="row"><span>المجموع الفرعي</span><span>${formatNum(subtotal)} ج.م</span></div>`;
+        if(discount > 0) html += `<div class="row" style="color:var(--danger);"><span>الخصم</span><span>-${formatNum(discount)} ج.م</span></div>`;
+        html += `<div class="row final"><span>الإجمالي</span><span>${formatNum(total)} ج.م</span></div>`;
+        if(totals) totals.innerHTML = html;
+    },
+
+    getCartTotal() {
+        const subtotal = this.cart.reduce((a,b)=>a+b.price*b.count,0);
+        const discVal = Number(document.getElementById('discountVal')?.value||0);
+        const discType = document.getElementById('discountType')?.value||'fixed';
+        let discount = discType==='percent' ? subtotal*(discVal/100) : discVal;
+        return subtotal - Math.min(discount, subtotal);
     },
 
     checkout() {
-        if(this.cart.length === 0) return;
-        const total = this.cart.reduce((a,b)=>a+(b.price*b.count),0);
-        this.cart.forEach(it => { this.data.products.find(x=>x.id==it.id).qty -= it.count; });
-        const invId = Date.now();
-        this.data.sales.unshift({ id: invId, total, date: new Date().toLocaleString(), items: [...this.cart] });
-        this.save(); this.printInv(invId); this.cart = []; this.updateCart();
+        if(this.cart.length===0) return toast('السلة فارغة','warning');
+        const total = this.getCartTotal();
+        const customerId = document.getElementById('posCustomer')?.value||'';
+        // خصم الكميات من المخزون
+        this.cart.forEach(it => {
+            const p = this.data.products.find(x=>x.id===it.id);
+            if(p) p.qty = Math.max(0, p.qty - it.count);
+        });
+        const invId = genId();
+        const sale = {
+            id: invId,
+            total,
+            date: new Date().toLocaleString('ar-EG'),
+            items: this.cart.map(it=>({name:it.name, price:it.price, count:it.count})),
+            customer: customerId,
+            discount: Number(document.getElementById('discountVal')?.value||0)
+        };
+        this.data.sales.unshift(sale);
+        // تحديث رصيد العميل إذا كان آجل
+        if(customerId) {
+            const c = this.data.contacts.find(x=>x.id==customerId);
+            if(c) c.balance = (c.balance||0) + total;
+        }
+        this.save();
+        this.cart = [];
+        toast('تم البيع بنجاح','success');
+        this.showInvoice(invId);
     },
 
-    printInv(id) {
-        const inv = this.data.sales.find(x=>x.id == id);
-        document.getElementById('modalBody').innerHTML = `<div style="text-align:center;"><h2>GOLDEN ERP</h2><p>فاتورة #${inv.id}</p><hr><h3>المجموع: ${inv.total}</h3><div id="qr" style="display:flex; justify-content:center; margin-top:10px;"></div></div><button class="btn btn-p" style="width:100%; margin-top:10px;" onclick="window.print()">طباعة</button><button class="btn btn-d" style="width:100%;" onclick="document.getElementById('modal').style.display='none'">إغلاق</button>`;
-        new QRCode(document.getElementById("qr"), { text: `INV-${inv.id}`, width: 100, height: 100 });
-        document.getElementById('modal').style.display = 'flex';
+    showInvoice(id) {
+        const inv = this.data.sales.find(x=>x.id==id);
+        if(!inv) return;
+        const cust = inv.customer ? this.data.contacts.find(c=>c.id==inv.customer) : null;
+        openModal(`
+            <div class="inv-print" id="invPrint">
+                <h2 style="color:var(--accent);">GOLDEN ERP</h2>
+                <div class="inv-meta">فاتورة رقم #${inv.id} &bull; ${inv.date}${cust?' &bull; العميل: '+cust.name:''}</div>
+                <div class="table-wrap"><table><thead><tr><th>الصنف</th><th>السعر</th><th>الكمية</th><th>المجموع</th></tr></thead>
+                <tbody>${(inv.items||[]).map(it=>`<tr><td>${it.name}</td><td>${formatNum(it.price)}</td><td>${it.count}</td><td>${formatNum(it.price*it.count)}</td></tr>`).join('')}</tbody></table></div>
+                ${inv.discount?`<p style="font-size:13px; color:var(--danger);">خصم: ${formatNum(inv.discount)}</p>`:''}
+                <div class="inv-total">${formatNum(inv.total)} ج.م</div>
+                <div id="qr"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-accent" onclick="window.print()"><i class="fas fa-print"></i> طباعة</button>
+                <button class="btn btn-ghost" onclick="closeModal()">إغلاق</button>
+            </div>`);
+        setTimeout(()=>{
+            const qrEl = document.getElementById('qr');
+            if(qrEl) new QRCode(qrEl, {text:`INV-${inv.id}-${inv.total}`, width:90, height:90});
+        },100);
     },
 
-    renderStock() {
-        return `<div class="card"><h3>📦 إدارة المخزون</h3>
-        <div style="display:flex; gap:8px;"><input id="pn" placeholder="الاسم"><input id="pp" placeholder="السعر"><input id="pq" placeholder="الكمية"><button class="btn btn-p" onclick="app.addP()">حفظ</button></div>
-        <input type="text" placeholder="بحث في المخزن..." onkeyup="app.filterTable('stockTable', this.value)" style="margin-top:10px;">
-        <table id="stockTable"><thead><th>المنتج</th><th>السعر</th><th>الكمية</th><th>إجراء</th></thead>
-        <tbody>${this.data.products?.map(p=>`<tr><td>${p.name}</td><td>${p.price}</td><td>${p.qty}</td><td><button class="btn btn-s" onclick="app.editProduct('${p.id}')">تعديل</button><button class="btn btn-d" onclick="app.del('products','${p.id}')">حذف</button></td></tr>`).join('')}</tbody></table></div>`;
+    /* === إدارة المخزون === */
+    viewStock() {
+        const lowCount = (this.data.products||[]).filter(p=>p.qty<=5).length;
+        return `<div class="topbar"><h1>إدارة المخزون</h1><div class="topbar-actions no-print">
+            ${lowCount>0?`<span class="badge badge-red"><i class="fas fa-triangle-exclamation" style="margin-left:4px;"></i>${lowCount} منتج منخفض</span>`:''}
+            <button class="btn btn-accent" onclick="app.openProductForm()"><i class="fas fa-plus"></i> إضافة منتج</button>
+            <button class="btn btn-ghost" onclick="app.exportExcel('products')"><i class="fas fa-file-excel"></i> تصدير</button>
+            <button class="icon-btn" onclick="app.toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
+            <button class="icon-btn mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+        </div></div>
+        <div class="card">
+            <div class="search-box"><i class="fas fa-search"></i><input type="text" placeholder="ابحث في المخزون..." oninput="app.filterTable('stockTbl',this.value)"></div>
+            <div class="table-wrap"><table id="stockTbl"><thead><tr><th>المنتج</th><th>التصنيف</th><th>السعر</th><th>الكمية</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody>${(this.data.products||[]).length===0?'<tr><td colspan="6"><div class="empty-state"><i class="fas fa-box-open"></i><p>لا توجد منتجات</p></div></td></tr>':
+            this.data.products.map(p=>{
+                const low = p.qty<=5;
+                return `<tr><td style="font-weight:700;">${p.name}</td><td><span class="badge badge-gold">${p.category||'أخرى'}</span></td><td>${formatNum(p.price)} ج.م</td><td>${p.qty}</td>
+                <td>${low?'<span class="low-stock-badge"><i class="fas fa-circle-exclamation"></i> منخفض</span>':'<span class="badge badge-green">متوفر</span>'}</td>
+                <td><button class="btn btn-ghost" onclick="app.openProductForm(${p.id})" style="padding:6px 10px;"><i class="fas fa-pen"></i></button> <button class="btn btn-ghost" onclick="app.deleteItem('products',${p.id})" style="padding:6px 10px; color:var(--danger);"><i class="fas fa-trash"></i></button></td></tr>`;
+            }).join('')}</tbody></table></div>
+        </div>`;
     },
 
-    editProduct(id) {
-        const p = this.data.products.find(x=>x.id == id);
-        const nn = prompt("الاسم الجديد:", p.name), np = prompt("السعر الجديد:", p.price), nq = prompt("الكمية الجديدة:", p.qty);
-        if(nn && np && nq) { p.name = nn; p.price = Number(np); p.qty = Number(nq); this.save(); }
+    openProductForm(editId) {
+        const p = editId ? this.data.products.find(x=>x.id===editId) : null;
+        const cats = [...new Set((this.data.products||[]).map(x=>x.category||'أخرى'))];
+        openModal(`
+            <h3>${p?'تعديل منتج':'إضافة منتج جديد'}</h3>
+            <div class="form-group" style="margin-bottom:12px;"><label>اسم المنتج</label><input id="fPName" value="${p?p.name:''}"></div>
+            <div class="form-row">
+                <div class="form-group"><label>السعر</label><input type="number" id="fPPrice" value="${p?p.price:''}"></div>
+                <div class="form-group"><label>الكمية</label><input type="number" id="fPQty" value="${p?p.qty:''}"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>التصنيف</label><input id="fPCat" list="catList" value="${p?p.category||'':''}"><datalist id="catList">${cats.map(c=>`<option value="${c}">`).join('')}</datalist></div>
+                <div class="form-group"><label>الباركود</label><input id="fPBarcode" value="${p?p.barcode||'':''}"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-accent" onclick="app.saveProduct(${editId||0})"><i class="fas fa-save"></i> حفظ</button>
+                <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+            </div>`);
     },
 
-    renderLedger() {
-        return `<div class="card"><h3>👥 العملاء والموردين</h3>
-        <div style="display:flex; gap:8px;"><input id="cn" placeholder="الاسم"><select id="ct"><option value="عميل">عميل</option><option value="مورد">مورد</option></select><button class="btn btn-p" onclick="app.addContact()">إضافة</button></div>
-        <input type="text" placeholder="بحث في الحسابات..." onkeyup="app.filterTable('ledgerTable', this.value)" style="margin-top:10px;">
-        <table id="ledgerTable"><thead><th>الاسم</th><th>النوع</th><th>الرصيد</th><th>إجراء</th></thead>
-        <tbody>${this.data.contacts?.map(c=>`<tr><td>${c.name}</td><td>${c.type}</td><td>${c.balance || 0}</td><td><button class="btn btn-s" onclick="app.editContact('${c.id}')">تعديل</button><button class="btn btn-p" onclick="app.payDebt('${c.id}')">تسديد</button><button class="btn btn-d" onclick="app.del('contacts','${c.id}')">حذف</button></td></tr>`).join('')}</tbody></table></div>`;
+    saveProduct(editId) {
+        const name = document.getElementById('fPName').value.trim();
+        const price = Number(document.getElementById('fPPrice').value);
+        const qty = Number(document.getElementById('fPQty').value);
+        const category = document.getElementById('fPCat').value.trim()||'أخرى';
+        const barcode = document.getElementById('fPBarcode').value.trim();
+        if(!name || !price || isNaN(qty)) return toast('أكمل جميع البيانات','warning');
+        if(editId) {
+            const p = this.data.products.find(x=>x.id===editId);
+            if(p) { Object.assign(p, {name, price, qty, category, barcode}); }
+        } else {
+            this.data.products.push({id:genId(), name, price, qty, category, barcode});
+        }
+        this.save(); closeModal();
+        toast(editId?'تم تعديل المنتج':'تم إضافة المنتج','success');
     },
 
-    addContact() { const n=document.getElementById('cn').value, t=document.getElementById('ct').value; if(n){this.data.contacts.push({id:Date.now(), name:n, type:t, balance:0}); this.save();}},
-    
-    editContact(id) {
-        const c = this.data.contacts.find(x=>x.id == id);
-        const nn = prompt("الاسم الجديد:", c.name); if(nn) { c.name = nn; this.save(); }
+    /* === العملاء والموردين === */
+    viewLedger() {
+        return `<div class="topbar"><h1>العملاء والموردين</h1><div class="topbar-actions no-print">
+            <button class="btn btn-accent" onclick="app.openContactForm()"><i class="fas fa-plus"></i> إضافة</button>
+            <button class="btn btn-ghost" onclick="app.exportExcel('contacts')"><i class="fas fa-file-excel"></i> تصدير</button>
+            <button class="icon-btn" onclick="app.toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
+            <button class="icon-btn mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+        </div></div>
+        <div class="card">
+            <div class="search-box"><i class="fas fa-search"></i><input type="text" placeholder="ابحث بالاسم..." oninput="app.filterTable('ledgerTbl',this.value)"></div>
+            <div class="table-wrap"><table id="ledgerTbl"><thead><tr><th>الاسم</th><th>النوع</th><th>الرصيد المستحق</th><th>إجراءات</th></tr></thead>
+            <tbody>${(this.data.contacts||[]).length===0?'<tr><td colspan="4"><div class="empty-state"><i class="fas fa-users"></i><p>لا توجد حسابات</p></div></td></tr>':
+            this.data.contacts.map(c=>`<tr><td style="font-weight:700;">${c.name}</td><td><span class="badge ${c.type==='عميل'?'badge-gold':'badge-green'}">${c.type}</span></td>
+            <td style="font-weight:900; color:${(c.balance||0)>0?'var(--danger)':'var(--success)'};">${formatNum(c.balance||0)} ج.م</td>
+            <td><button class="btn btn-ghost" onclick="app.openContactForm(${c.id})" style="padding:6px 10px;"><i class="fas fa-pen"></i></button>
+            <button class="btn btn-success" onclick="app.openPayModal(${c.id})" style="padding:6px 10px;"><i class="fas fa-money-bill-wave"></i></button>
+            <button class="btn btn-ghost" onclick="app.deleteItem('contacts',${c.id})" style="padding:6px 10px; color:var(--danger);"><i class="fas fa-trash"></i></button></td></tr>`).join('')}</tbody></table></div>
+        </div>`;
     },
 
-    payDebt(id) {
-        const c = this.data.contacts.find(x=>x.id == id);
-        const amt = prompt("المبلغ المراد تسديده:"); if(amt) { c.balance = (c.balance || 0) - Number(amt); this.save(); }
-    },
-
-    renderExp() {
-        return `<div class="card"><h3>💸 المصاريف</h3>
-        <div style="display:flex; gap:8px;"><input id="en" placeholder="البيان"><input id="ea" placeholder="المبلغ"><button class="btn btn-d" onclick="app.addExp()">إضافة مصروف</button></div>
-        <table><thead><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></thead>
-        <tbody>${this.data.expenses?.map((x,i)=>`<tr><td>${x.date}</td><td>${x.note}</td><td>${x.amount}</td><td><button class="btn btn-d" onclick="app.delExp(${i})">حذف</button></td></tr>`).join('')}</tbody></table></div>`;
-    },
-
-    addExp() { const n=document.getElementById('en').value, a=document.getElementById('ea').value; if(n&&a){this.data.expenses.unshift({note:n, amount:Number(a), date:new Date().toLocaleDateString()}); this.save();}},
-    delExp(i) { if(confirm("حذف المصروف؟")) { this.data.expenses.splice(i, 1); this.save(); }},
-
-    renderReturns() {
-        return `<div class="card"><h3>↩️ المرتجعات</h3>
-        <div style="display:flex; gap:8px;"><input id="ri" placeholder="رقم الفاتورة"><input id="ra" placeholder="المبلغ المرتجع"><button class="btn btn-w" onclick="app.addRet()" style="background:var(--warning); color:white;">تأكيد المرتجع</button></div>
-        <table><thead><th>التاريخ</th><th>الفاتورة</th><th>المبلغ</th></thead>
-        <tbody>${this.data.returns?.map(r=>`<tr><td>${r.date}</td><td>${r.invId}</td><td>${r.total}</td></tr>`).join('')}</tbody></table></div>`;
-    },
-
-    addRet() {
-        const i = document.getElementById('ri').value, a = document.getElementById('ra').value;
-        if(i && a) { this.data.returns.unshift({ invId: i, total: Number(a), date: new Date().toLocaleString() }); this.save(); alert("تم تسجيل المرتجع"); }
-    },
-
-    addP() { const n=document.getElementById('pn').value, p=document.getElementById('pp').value, q=document.getElementById('pq').value; if(n&&p&&q){this.data.products.push({id:Date.now(), name:n, price:Number(p), qty:Number(q)}); this.save();} },
-    del(type, id) { if(confirm("حذف نهائي؟")) { this.data[type] = this.data[type].filter(x=>x.id != id); this.save(); } },
-    filterTable(id, val) { 
-        const rows = document.querySelectorAll(`#${id} tbody tr`);
-        rows.forEach(r => r.style.display = r.innerText.includes(val) ? '' : 'none');
-    },
-    filterPOS(val) {
-        const items = document.querySelectorAll('#posGrid .card');
-        items.forEach(i => i.style.display = i.innerText.includes(val) ? '' : 'none');
-    }
-};
-app.init();
-</script>
-</body>
-</html>
+    openContactForm(editId) {
+        const c = editId ? this.data.contacts.find(x=>x.id===editId) : null;
+        openModal(`
+            <h3>${c?'تعديل':'إضافة'} حساب</h3>
+            <div class="form-group" style="margin-bottom:12px;"><label>الاسم</label><input id="fCName" value="${c?c.name:''}"></div>
+            <div class="form-group" style="margin-bottom:12px;"><label>النوع</label><select id="fCType"><option value="عميل" ${c&&c.type==='عميل'?'selected':''}>عميل</option><option value="مورد" ${c&&c.type==='مورد'?'selected':''}>مورد</option></select></div>
+            <div class="form-group"><label>رصيد مبدئي</label><input type="number" id="fCBal" value="${c?c.ba
