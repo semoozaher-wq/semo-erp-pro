@@ -13,61 +13,6 @@ db = SQLAlchemy(app)
 # --- الجداول (Database Schema) ---
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    cost = db.Column(db.Float)
-    price = db.Column(db.Float)
-    qty = db.Column(db.Integer)
-
-class Contact(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    type = db.Column(db.String(20))  # عميل / مورد
-    debt = db.Column(db.Float, default=0.0)
-
-class Expense(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100))
-    amount = db.Column(db.Float)
-    date = db.Column(db.DateTime, default=datetime.utcnow)
-
-class Sale(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    items = db.Column(db.Text) 
-    total = db.Column(db.Float)
-    profit = db.Column(db.Float)
-    is_return = db.Column(db.Boolean, default=False)
-    date = db.Column(db.DateTime, default=datetime.utcnow)
-
-with app.app_context():
-    db.create_all()
-
-# --- الواجهة البرمجية المتكاملة ---
-UI = """
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GOLDEN ERP ULTIMATE</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <إليك كود كامل لنظام ERP باستخدام Flask وSQLAlchemy، يتضمن جميع الوظائف المطلوبة مع التصحيحات والتعديلات اللازمة. هذا الكود جاهز للتشغيل مباشرةً:
-
-```python
-from flask import Flask, render_template_string, request, jsonify, send_file
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-import pandas as pd
-import io
-import json
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ultimate_golden_erp.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
-# --- الجداول (Database Schema) ---
-class Product(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     cost = db.Column(db.Float, nullable=False)
     price = db.Column(db.Float, nullable=False)
@@ -113,30 +58,22 @@ UI = """
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: 0.2s; }
         body { background: var(--bg); color: var(--text); display: flex; margin: 0; min-height: 100vh; overflow-x: hidden; }
         
-        /* Sidebar */
         .sidebar { width: 260px; background: var(--p); color: white; height: 100vh; position: fixed; padding: 20px; z-index: 100; }
         .main { margin-right: 260px; padding: 25px; width: calc(100% - 260px); }
         .nav-item { padding: 12px; cursor: pointer; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
         .nav-item:hover, .active { background: var(--a); transform: scale(1.02); }
         
-        /* Elements */
         .card { background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.05); }
         .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; color: white; display: inline-flex; align-items: center; gap: 5px; }
         .btn-s { background: var(--s); } .btn-d { background: var(--d); } .btn-p { background: var(--a); }
         input, select { padding: 12px; border-radius: 10px; border: 1px solid #ddd; width: 100%; margin-bottom: 12px; background: var(--card); color: var(--text); }
         
-        /* Tables */
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: var(--card); }
         th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
-        tr:hover { background: rgba(59, 130, 246, 0.05); }
         .low-stock { color: var(--d); font-weight: bold; background: #fee2e2; }
-
-        /* POS Style */
         .pos-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
-        .qty-btns { display: flex; gap: 5px; align-items: center; }
         
-        /* Modal */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
         .modal-content { background:var(--card); padding:30px; border-radius:20px; width:400px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); }
     </style>
@@ -160,7 +97,6 @@ UI = """
 
     <main class="main" id="view"></main>
 
-    <!-- Modal التعديل -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <h3>تعديل المنتج</h3>
@@ -186,15 +122,15 @@ UI = """
                 const r = await fetch('/api/stats'); const d = await r.json();
                 v.innerHTML = `
                     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:20px;">
-                        <div class="card"><h4><i class="fas fa-wallet"></i> صافي الأرباح</h4><h2 style="color:var(--s)">${d.profit} د.ل</h2></div>
-                        <div class="card"><h4><i class="fas fa-shopping-cart"></i> المبيعات</h4><h2>${d.rev} د.ل</h2></div>
-                        <div class="card"><h4><i class="fas fa-minus-circle"></i> المصاريف</h4><h2 style="color:var(--d)">${d.exp} د.ل</h2></div>
+                        <div class="card"><h4>💰 صافي الأرباح</h4><h2 style="color:var(--s)">${d.profit} د.ل</h2></div>
+                        <div class="card"><h4>🛒 المبيعات</h4><h2>${d.rev} د.ل</h2></div>
+                        <div class="card"><h4>📉 المصاريف</h4><h2 style="color:var(--d)">${d.exp} د.ل</h2></div>
                     </div>
                     <div class="card" style="height:350px;"><canvas id="mainChart"></canvas></div>
                 `;
                 new Chart(document.getElementById('mainChart').getContext('2d'), {
                     type: 'line',
-                    data: { labels: ['السابق', 'الحالي'], datasets: [{ label: 'المبيعات', data: [0, d.rev], borderColor: '#3b82f6', fill: true, backgroundColor: 'rgba(59, 130, 246, 0.1)' }] }
+                    data: { labels: ['السابق', 'الحالي'], datasets: [{ label: 'المبيعات', data: [0, d.rev], borderColor: '#3b82f6', fill: true }] }
                 });
             }
 
@@ -203,17 +139,17 @@ UI = """
                 v.innerHTML = `
                     <div class="pos-grid">
                         <div class="card">
-                            <h3><i class="fas fa-search"></i> اختر المنتجات</h3>
+                            <h3>🔍 اختر المنتجات</h3>
                             <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:10px;">
                                 ${ps.map(p => `<button class="btn btn-p" ${p.qty <=0 ? 'disabled':''} onclick="addToCart(${p.id},'${p.name}',${p.price})">${p.name}<br>${p.price} د.ل<br><small>مخزون: ${p.qty}</small></button>`).join('')}
                             </div>
                         </div>
                         <div class="card">
-                            <h3><i class="fas fa-shopping-basket"></i> السلة</h3>
+                            <h3>🛒 السلة</h3>
                             <div id="cart-items"></div>
                             <hr>
                             <div style="display:flex; justify-content:space-between"><h4>الإجمالي:</h4><h4 id="total-price">0 د.ل</h4></div>
-                            <button class="btn btn-s" style="width:100%; height:50px;" onclick="checkout()"><i class="fas fa-check-circle"></i> تنفيذ البيع وطباعة QR</button>
+                            <button class="btn btn-s" style="width:100%; height:50px;" onclick="checkout()">✅ تنفيذ البيع وطباعة QR</button>
                             <div id="qrcode" style="margin-top:15px; display:flex; justify-content:center;"></div>
                         </div>
                     </div>
@@ -225,25 +161,22 @@ UI = """
                 const r = await fetch('/api/products'); const ps = await r.json();
                 v.innerHTML = `
                     <div class="card">
-                        <h3><i class="fas fa-plus"></i> إضافة منتج جديد</h3>
+                        <h3>➕ إضافة منتج جديد</h3>
                         <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
                             <input id="pn" placeholder="اسم المنتج" required> <input id="pc" type="number" placeholder="التكلفة" required>
                             <input id="pp" type="number" placeholder="سعر البيع" required> <input id="pq" type="number" placeholder="الكمية" required>
                         </div>
-                        <button class="btn btn-s" onclick="saveP()"><i class="fas fa-save"></i> إضافة للمخزن</button>
-                        <button class="btn btn-p" onclick="location.href='/api/export'"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+                        <button class="btn btn-s" onclick="saveP()">💾 إضافة للمخزن</button>
+                        <button class="btn btn-p" onclick="location.href='/api/export'">📥 تصدير Excel</button>
                     </div>
                     <div class="card">
-                        <h3><i class="fas fa-table"></i> حالة المخزون</h3>
-                        <table>
-                            <thead><th>ID</th><th>المنتج</th><th>التكلفة</th><th>البيع</th><th>الكمية</th><th>إجراءات</th></thead>
-                            <tbody>${ps.map(p => `<tr class="${p.qty < 5 ? 'low-stock':''}">
-                                <td>${p.id}</td><td>${p.name}</td><td>${p.cost}</td><td>${p.price}</td><td>${p.qty}</td>
-                                <td>
-                                    <button class="btn btn-p" onclick="openEdit(${p.id},'${p.name}',${p.cost},${p.price},${p.qty})"><i class="fas fa-edit"></i></button>
-                                    ${userRole==='admin' ? `<button class="btn btn-d" onclick="delP(${p.id})"><i class="fas fa-trash"></i></button>` : ''}
-                                </td>
-                            </tr>`).join('')}</tbody>
+                        <h3>📦 حالة المخزون</h3>
+                        <table><thead><th>ID</th><th>المنتج</th><th>التكلفة</th><th>البيع</th><th>الكمية</th><th>إجراءات</th></thead>
+                        <tbody>${ps.map(p => `<tr class="${p.qty < 5 ? 'low-stock':''}">
+                            <td>${p.id}</td><td>${p.name}</td><td>${p.cost}</td><td>${p.price}</td><td>${p.qty}</td>
+                            <td><button class="btn btn-p" onclick="openEdit(${p.id},'${p.name}',${p.cost},${p.price},${p.qty})">✏️ تعديل</button>
+                            ${userRole==='admin' ? `<button class="btn btn-d" onclick="delP(${p.id})">🗑️ حذف</button>` : ''}</td>
+                         </tr>`).join('')}</tbody>
                         </table>
                     </div>
                 `;
@@ -253,26 +186,67 @@ UI = """
                 const r = await fetch('/api/sales_history'); const sh = await r.json();
                 v.innerHTML = `
                     <div class="card">
-                        <h3><i class="fas fa-history"></i> سجل المبيعات والمرتجعات</h3>
-                        <table>
-                            <thead><th>رقم الفاتورة</th><th>التاريخ</th><th>الإجمالي</th><th>الحالة</th><th>إجراء</th></thead>
-                            <tbody>${sh.map(s => `<tr>
-                                <td>#${s.id}</td><td>${s.date}</td><td>${s.total} د.ل</td>
-                                <td>${s.is_return ? '<span style="color:red">مرتجع</span>':'<span style="color:green">تمت</span>'}</td>
-                                <td>${!s.is_return ? `<button class="btn btn-d" onclick="makeReturn(${s.id})">عمل مرتجع</button>` : '-'}</td>
-                            </tr>`).join('')}</tbody>
+                        <h3>📜 سجل المبيعات والمرتجعات</h3>
+                        <table><thead><th>رقم الفاتورة</th><th>التاريخ</th><th>الإجمالي</th><th>الحالة</th><th>إجراء</th></thead>
+                        <tbody>${sh.map(s => `<tr>
+                            <td>#${s.id}</td><td>${s.date}</td><td>${s.total} د.ل</td>
+                            <td>${s.is_return ? '<span style="color:red">مرتجع</span>':'<span style="color:green">تمت</span>'}</td>
+                            <td>${!s.is_return ? `<button class="btn btn-d" onclick="makeReturn(${s.id})">🔄 عمل مرتجع</button>` : '-'}</td>
+                         </tr>`).join('')}</tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            if(page === 'contacts') {
+                const r = await fetch('/api/contacts'); const cs = await r.json();
+                v.innerHTML = `
+                    <div class="card">
+                        <h3>👥 العملاء والموردين</h3>
+                        <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:10px;">
+                            <input id="cname" placeholder="الاسم" required>
+                            <select id="ctype"><option value="عميل">عميل</option><option value="مورد">مورد</option></select>
+                            <button class="btn btn-s" onclick="addContact()">➕ إضافة</button>
+                        </div>
+                        <tr><thead><th>الاسم</th><th>النوع</th><th>الرصيد/الديون</th><th>تسديد</th><th>حذف</th></thead>
+                        <tbody>${cs.map(c => `<tr>
+                            <td>${c.name}</td><td>${c.type}</td><td style="color:${c.debt>0?'red':'green'}">${c.debt} د.ل</td>
+                            <td><button class="btn btn-s" onclick="payDebt(${c.id})">💰 تسديد</button></td>
+                            <td><button class="btn btn-d" onclick="deleteContact(${c.id})">🗑️ حذف</button></td>
+                         </tr>`).join('')}</tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            if(page === 'exp') {
+                const r = await fetch('/api/expenses'); const ex = await r.json();
+                v.innerHTML = `
+                    <div class="card">
+                        <h3>💸 المصاريف العامة</h3>
+                        <div style="display:grid; grid-template-columns:2fr 1fr auto; gap:10px;">
+                            <input id="etitle" placeholder="بيان المصروف" required>
+                            <input id="eamount" type="number" placeholder="المبلغ" required>
+                            <button class="btn btn-d" onclick="addExpense()">➕ إضافة مصروف</button>
+                        </div>
+                        <tr><thead><th>البيان</th><th>المبلغ</th><th>التاريخ</th><th>حذف</th></thead>
+                        <tbody>${ex.map(e => `<tr>
+                            <td>${e.title}</td><td>${e.amount} د.ل</td><td>${e.date}</td>
+                            <td><button class="btn btn-d" onclick="deleteExpense(${e.id})">🗑️ حذف</button></td>
+                         </tr>`).join('')}</tbody>
                         </table>
                     </div>
                 `;
             }
         }
 
-        // --- وظائف POS المتطورة ---
+        // --- وظائف السلة ---
         function addToCart(id, name, price) {
             const existing = cart.find(i => i.id === id);
             if(existing) { existing.q++; } else { cart.push({id, name, price, q: 1}); }
             renderCart();
         }
+        
         function changeQty(id, delta) {
             const item = cart.find(i => i.id === id);
             if(item) {
@@ -281,6 +255,7 @@ UI = """
                 renderCart();
             }
         }
+        
         function renderCart() {
             const list = document.getElementById('cart-items');
             if(!list) return;
@@ -305,11 +280,11 @@ UI = """
                 const data = await res.json();
                 document.getElementById('qrcode').innerHTML = "";
                 new QRCode(document.getElementById("qrcode"), { text: "Inv#"+data.id+" Total:"+data.total, width: 128, height: 128 });
-                alert("تم البيع بنجاح!"); cart = []; route('pos');
+                alert("تم البيع بنجاح!"); cart = []; renderCart();
             }
         }
 
-        // --- وظائف إدارة المنتجات ---
+        // --- وظائف المخزن ---
         function openEdit(id, name, cost, price, qty) {
             document.getElementById('editId').value = id;
             document.getElementById('editName').value = name;
@@ -318,20 +293,54 @@ UI = """
             document.getElementById('editQty').value = qty;
             document.getElementById('editModal').style.display = 'flex';
         }
+        
         function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+        
         async function updateProduct() {
             const id = document.getElementById('editId').value;
             const data = { n: document.getElementById('editName').value, c: document.getElementById('editCost').value, p: document.getElementById('editPrice').value, q: document.getElementById('editQty').value };
             await fetch(`/api/products/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
             closeModal(); route('stock');
         }
+        
         async function delP(id) { if(confirm("حذف المنتج نهائياً؟")) { await fetch(`/api/products/${id}`, {method:'DELETE'}); route('stock'); } }
+        
         async function saveP() {
             const data = { n: document.getElementById('pn').value, c: document.getElementById('pc').value, p: document.getElementById('pp').value, q: document.getElementById('pq').value };
             await fetch('/api/products', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
             route('stock');
         }
+        
         async function makeReturn(id) { if(confirm("هل تريد إرجاع هذه الفاتورة؟")) { await fetch(`/api/return/${id}`, {method:'POST'}); route('sales'); } }
+
+        // --- وظائف العملاء والمصاريف ---
+        async function addContact() {
+            const name = document.getElementById('cname').value;
+            const type = document.getElementById('ctype').value;
+            if(!name) return alert("أدخل الاسم!");
+            await fetch('/api/contacts', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, type}) });
+            route('contacts');
+        }
+        
+        async function payDebt(id) {
+            const amount = prompt("أدخل المبلغ المسدد:");
+            if(amount && !isNaN(amount)) {
+                await fetch(`/api/contacts/${id}/pay`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount: parseFloat(amount)}) });
+                route('contacts');
+            }
+        }
+        
+        async function deleteContact(id) { if(confirm("حذف هذا الحساب؟")) { await fetch(`/api/contacts/${id}`, {method:'DELETE'}); route('contacts'); } }
+        
+        async function addExpense() {
+            const title = document.getElementById('etitle').value;
+            const amount = document.getElementById('eamount').value;
+            if(!title || !amount) return alert("أدخل البيانات!");
+            await fetch('/api/expenses', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title, amount: parseFloat(amount)}) });
+            route('exp');
+        }
+        
+        async function deleteExpense(id) { if(confirm("حذف هذا المصروف؟")) { await fetch(`/api/expenses/${id}`, {method:'DELETE'}); route('exp'); } }
 
         function updateRole() { userRole = document.getElementById('roleSelect').value; route('stock'); }
         function toggleDark() { document.body.classList.toggle('dark-mode'); }
@@ -342,7 +351,7 @@ UI = """
 </html>
 """
 
-# --- APIs الحسابية والمنطقية ---
+# ==================== APIs ====================
 
 @app.route('/')
 def index(): 
@@ -356,7 +365,7 @@ def stats():
     return jsonify({"rev": round(rev, 2), "profit": round(profit - exp, 2), "exp": round(exp, 2)})
 
 @app.route('/api/products', methods=['GET', 'POST'])
-def handle_p():
+def handle_products():
     if request.method == 'POST':
         d = request.json
         db.session.add(Product(name=d['n'], cost=float(d['c']), price=float(d['p']), qty=int(d['q'])))
@@ -364,7 +373,7 @@ def handle_p():
     return jsonify([{'id':p.id,'name':p.name,'cost':p.cost,'price':p.price,'qty':p.qty} for p in Product.query.all()])
 
 @app.route('/api/products/<int:id>', methods=['PUT', 'DELETE'])
-def update_p(id):
+def update_product(id):
     p = Product.query.get(id)
     if request.method == 'PUT':
         d = request.json
@@ -375,8 +384,10 @@ def update_p(id):
     return jsonify({"status": "ok"})
 
 @app.route('/api/sales', methods=['POST'])
-def handle_sales():
-    d = request.json; total = 0; profit = 0
+def add_sale():
+    d = request.json
+    total = 0
+    profit = 0
     for i in d['items']:
         p = Product.query.get(i['id'])
         if p and p.qty >= i['q']:
@@ -384,7 +395,8 @@ def handle_sales():
             total += p.price * i['q']
             profit += (p.price - p.cost) * i['q']
     new_sale = Sale(items=json.dumps(d['items']), total=total, profit=profit)
-    db.session.add(new_sale); db.session.commit()
+    db.session.add(new_sale)
+    db.session.commit()
     return jsonify({"id": new_sale.id, "total": total})
 
 @app.route('/api/sales_history')
@@ -392,25 +404,68 @@ def sales_history():
     return jsonify([{'id':s.id, 'total':s.total, 'is_return':s.is_return, 'date':s.date.strftime('%Y-%m-%d %H:%M')} for s in Sale.query.order_by(Sale.id.desc()).all()])
 
 @app.route('/api/return/<int:id>', methods=['POST'])
-def make_return(id):
+def return_sale(id):
     s = Sale.query.get(id)
-    if not s or s.is_return: return jsonify({"error": "Already returned"}), 400
+    if not s or s.is_return:
+        return jsonify({"error": "Already returned"}), 400
     items = json.loads(s.items)
     for i in items:
         p = Product.query.get(i['id'])
-        if p: p.qty += i['q']
+        if p:
+            p.qty += i['q']
     s.is_return = True
     db.session.commit()
     return jsonify({"status": "success"})
 
 @app.route('/api/export')
-def export():
+def export_excel():
     df = pd.DataFrame([{'المنتج':p.name,'التكلفة':p.cost,'البيع':p.price,'المخزون':p.qty} for p in Product.query.all()])
     out = io.BytesIO()
-    with pd.ExcelWriter(out, engine='xlsxwriter') as w: 
+    with pd.ExcelWriter(out, engine='xlsxwriter') as w:
         df.to_excel(w, index=False)
     out.seek(0)
     return send_file(out, mimetype="application/vnd.ms-excel", as_attachment=True, download_name="Golden_Stock.xlsx")
+
+@app.route('/api/contacts', methods=['GET', 'POST'])
+def handle_contacts():
+    if request.method == 'POST':
+        d = request.json
+        db.session.add(Contact(name=d['name'], type=d['type']))
+        db.session.commit()
+    return jsonify([{'id':c.id, 'name':c.name, 'type':c.type, 'debt':c.debt} for c in Contact.query.all()])
+
+@app.route('/api/contacts/<int:id>/pay', methods=['PUT'])
+def pay_contact_debt(id):
+    c = Contact.query.get(id)
+    if c:
+        data = request.json
+        c.debt -= data['amount']
+        db.session.commit()
+    return jsonify({"status": "ok"})
+
+@app.route('/api/contacts/<int:id>', methods=['DELETE'])
+def delete_contact(id):
+    c = Contact.query.get(id)
+    if c:
+        db.session.delete(c)
+        db.session.commit()
+    return jsonify({"status": "ok"})
+
+@app.route('/api/expenses', methods=['GET', 'POST'])
+def handle_expenses():
+    if request.method == 'POST':
+        d = request.json
+        db.session.add(Expense(title=d['title'], amount=d['amount']))
+        db.session.commit()
+    return jsonify([{'id':e.id, 'title':e.title, 'amount':e.amount, 'date':e.date.strftime('%Y-%m-%d')} for e in Expense.query.all()])
+
+@app.route('/api/expenses/<int:id>', methods=['DELETE'])
+def delete_expense(id):
+    e = Expense.query.get(id)
+    if e:
+        db.session.delete(e)
+        db.session.commit()
+    return jsonify({"status": "ok"})
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
