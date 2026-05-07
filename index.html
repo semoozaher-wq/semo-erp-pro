@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>GOLDEN ERP V3.0 | النظام المحاسبي المتكامل</title>
+    <title>GOLDEN ERP V3.0 FULL | النظام المحاسبي المتكامل</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -80,7 +80,7 @@
             <small id="userRoleDisplay" style="color:var(--accent);"></small>
         </div>
         <div class="nav-item active" onclick="app.route('dash', this)"><i class="fas fa-home"></i> الرئيسية</div>
-        <div class="nav-item" onclick="app.route('pos', this)"><i class="fas fa-cash-register"></i> المبيعات</div>
+        <div class="nav-item" onclick="app.route('pos', this)"><i class="fas fa-cash-register"></i> المبيعات (POS)</div>
         <div class="nav-item admin-only" onclick="app.route('stock', this)"><i class="fas fa-boxes"></i> المخزن</div>
         <div class="nav-item admin-only" onclick="app.route('clients', this)"><i class="fas fa-users"></i> العملاء والموردين</div>
         <div class="nav-item admin-only" onclick="app.route('expenses', this)"><i class="fas fa-wallet"></i> المصاريف</div>
@@ -95,7 +95,6 @@
 <div id="printArea" style="display:none;"><div id="printDetails"></div><div id="qrPrint"></div></div>
 
 <script>
-// Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
     authDomain: "my-pos-system-11dee.firebaseapp.com",
@@ -153,6 +152,7 @@ const app = {
         document.getElementById('userNameDisplay').innerText = this.user.displayName || this.user.email.split('@')[0];
         document.getElementById('userRoleDisplay').innerText = this.role === 'admin' ? 'مدير النظام' : 'موظف مبيعات';
         if(this.role !== 'admin') document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        else document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
         
         let dataSnap = await db.ref(`users/${this.user.uid}/data`).once('value');
         let val = dataSnap.val() || {};
@@ -223,8 +223,8 @@ const app = {
             <div class="card"><h3>📈 الرسم البياني للمبيعات</h3><canvas id="salesChart" height="100"></canvas></div>
             <div class="card"><h3>⚠️ تنبيهات المخزون المنخفض</h3>${lowStock.length ? `<div class="grid-stats">${lowStock.map(p => `<div class="card" style="border-right:3px solid var(--danger);">${p.name}<br><b>المتبقي: ${p.qty}</b></div>`).join('')}</div>` : '<p>✅ كل المنتجات متوفرة بكميات جيدة</p>'}</div>
         `;
-        let ctx = document.getElementById('salesChart').getContext('2d');
-        new Chart(ctx, {
+        let ctx = document.getElementById('salesChart');
+        if(ctx) new Chart(ctx, {
             type: 'line',
             data: {
                 labels: this.data.sales.slice(0,10).map(s => s.date),
@@ -257,7 +257,8 @@ const app = {
 
     loadCategories() {
         let cats = ['عام', ...new Set(this.data.products.map(p => p.cat || 'عام'))];
-        document.getElementById('posCat').innerHTML = '<option value="">كل الفئات</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+        let catSelect = document.getElementById('posCat');
+        if(catSelect) catSelect.innerHTML = '<option value="">كل الفئات</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
     },
 
     filterPOS() {
@@ -269,14 +270,14 @@ const app = {
             if(cat && p.cat !== cat) match = false;
             return match;
         });
-        document.getElementById('posGrid').innerHTML = filtered.map(p => `
+        let grid = document.getElementById('posGrid');
+        if(grid) grid.innerHTML = filtered.map(p => `
             <div class="prod-card" onclick="app.addToCart(${p.id})">
                 <b>${p.name}</b><br>
-                <span style="color:var(--accent)">${p.price} </span><br>
+                <span style="color:var(--accent)">${p.price}</span><br>
                 <small>متاح: ${p.qty}</small>
             </div>
         `).join('');
-        this.loadCategories();
     },
 
     addToCart(id) {
@@ -298,7 +299,9 @@ const app = {
                 <b>${(it.price * it.q).toFixed(2)} <i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="app.cart.splice(${i},1); app.updateCart();"></i></b>
             </div>
         `).join('');
-        document.getElementById('cartTotal').innerText = this.cart.reduce((a,b)=>a+(b.price*b.q),0).toFixed(2);
+        let total = this.cart.reduce((a,b)=>a+(b.price*b.q),0);
+        let totalSpan = document.getElementById('cartTotal');
+        if(totalSpan) totalSpan.innerText = total.toFixed(2);
     },
 
     changeQty(i, v) {
@@ -374,12 +377,16 @@ const app = {
     filterStock() {
         let search = document.getElementById('stockSearch')?.value.toLowerCase() || '';
         let filtered = this.data.products.filter(p => p.name.toLowerCase().includes(search));
-        document.querySelector('#stockTable tbody').innerHTML = filtered.map(p => `
+        let tbody = document.querySelector('#stockTable tbody');
+        if(tbody) tbody.innerHTML = filtered.map(p => `
             <tr class="${p.qty < 5 ? 'low-stock' : ''}">
-                <td>${p.name}</td><td>${p.cat || 'عام'}</td><td>${p.cost}</td><td>${p.price}</td><td>${p.qty}</td>
+                <td>${p.name}</td>
+                <td>${p.cat || 'عام'}</td>
+                <td>${p.cost}</td>
+                <td>${p.price}</td>
+                <td>${p.qty}</td>
                 <td><button class="btn btn-p" onclick="app.editProduct(${p.id})"><i class="fas fa-edit"></i></button> <button class="btn btn-d" onclick="app.deleteProduct(${p.id})"><i class="fas fa-trash"></i></button></td>
-            <tr>
-        `).join('');
+            </tr>`).join('');
     },
 
     editProduct(id) {
@@ -427,7 +434,7 @@ const app = {
                 </div>
                 <input type="text" id="clientSearch" placeholder="🔍 بحث..." onkeyup="app.filterClients()" style="margin-top:15px;">
                 <table id="clientTable"><thead><th>الاسم</th><th>النوع</th><th>الرصيد</th><th>إجراءات</th></thead>
-                <tbody></tbody></table>
+                <tbody></tbody><tr>
             </div>`;
         this.filterClients();
     },
@@ -445,12 +452,14 @@ const app = {
     filterClients() {
         let search = document.getElementById('clientSearch')?.value.toLowerCase() || '';
         let filtered = this.data.contacts.filter(c => c.name.toLowerCase().includes(search));
-        document.querySelector('#clientTable tbody').innerHTML = filtered.map(c => `
+        let tbody = document.querySelector('#clientTable tbody');
+        if(tbody) tbody.innerHTML = filtered.map(c => `
             <tr>
-                <td>${c.name}</td><td>${c.type}</td><td>${c.debt || 0}</td>
+                <td>${c.name}</td>
+                <td>${c.type}</td>
+                <td>${c.debt || 0}</td>
                 <td><button class="btn btn-s" onclick="app.payClient(${c.id})">تسديد</button> <button class="btn btn-d" onclick="app.deleteClient(${c.id})">حذف</button></td>
-            </tr>
-        `).join('');
+            </tr>`).join('');
     },
 
     payClient(id) {
@@ -483,7 +492,7 @@ const app = {
                     <button class="btn btn-d" onclick="app.addExpense()">+ إضافة</button>
                 </div>
                 <table id="expTable"><thead><th>التاريخ</th><th>البيان</th><th>المبلغ</th></thead>
-                <tbody>${this.data.expenses.map(e => `<td><td>${e.date}</td><td>${e.note}</td><td>${e.amount}</td></tr>`).join('')}</tbody></table>
+                <tbody>${this.data.expenses.map(e => `<tr><td>${e.date}</td><td>${e.note}</td><td>${e.amount}</td></tr>`).join('')}</tbody></table>
             </div>`;
     },
 
@@ -507,7 +516,7 @@ const app = {
                     <button class="btn btn-w" onclick="app.addReturn()">تسجيل</button>
                 </div>
                 <table id="returnTable"><thead><th>التاريخ</th><th>المنتج</th><th>المبلغ</th></thead>
-                <tbody>${this.data.returns.map(r => `<td><td>${r.date}</td><td>${r.product}</td><td>${r.amount}</td></tr>`).join('')}</tbody></table>
+                <tbody>${this.data.returns.map(r => `<tr><td>${r.date}</td><td>${r.product}</td><td>${r.amount}</td></tr>`).join('')}</tbody></table>
             </div>`;
     },
 
@@ -525,15 +534,15 @@ const app = {
         v.innerHTML = `
             <div class="card">
                 <h3>📋 سجل المبيعات</h3>
-                <div class="table-wrap"><td><thead><th>رقم الفاتورة</th><th>التاريخ</th><th>الإجمالي</th><th>إجراء</th></thead>
+                <div class="table-wrap"></table><thead><th>رقم الفاتورة</th><th>التاريخ</th><th>الإجمالي</th><th>إجراء</th></thead>
                 <tbody>${this.data.sales.map(s => `
                     <tr>
-                        <td>#${s.id}</td>
+                        <td>#${s.id}</tr>
                         <td>${s.date}</td>
                         <td>${s.total.toFixed(2)}</td>
                         <td><button class="btn btn-p" onclick="app.printInvoiceById(${s.id})">طباعة</button> <button class="btn btn-d" onclick="app.returnSale(${s.id})">إرجاع</button></td>
                     </tr>`).join('')}</tbody>
-                </table>
+                </div>
             </div>`;
     },
 
@@ -561,7 +570,6 @@ const app = {
     }
 };
 
-// Start the app
 auth.onAuthStateChanged(user => {
     if(user) {
         app.user = user;
