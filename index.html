@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>GOLDEN ERP V3.0 FULL | النظام المحاسبي المتكامل</title>
+    <title>GOLDEN ERP V4.0 | النظام المحاسبي المتكامل الكامل</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -52,7 +52,7 @@
 <!-- شاشة تسجيل الدخول -->
 <div id="authScreen" style="position:fixed; inset:0; background:var(--primary); z-index:9999; display:flex; align-items:center; justify-content:center;">
     <div class="card" style="width:90%; max-width:420px; text-align:center;">
-        <h1 style="color:var(--accent); margin-bottom:10px;">GOLDEN ERP V3.0</h1>
+        <h1 style="color:var(--accent); margin-bottom:10px;">GOLDEN ERP V4.0</h1>
         <p style="margin-bottom:20px;">النظام المحاسبي المتكامل - حفظ سحابي</p>
         <div id="loginForm">
             <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
@@ -434,7 +434,7 @@ const app = {
                 </div>
                 <input type="text" id="clientSearch" placeholder="🔍 بحث..." onkeyup="app.filterClients()" style="margin-top:15px;">
                 <table id="clientTable"><thead><th>الاسم</th><th>النوع</th><th>الرصيد</th><th>إجراءات</th></thead>
-                <tbody></tbody><tr>
+                <tbody></tbody></table>
             </div>`;
         this.filterClients();
     },
@@ -449,6 +449,12 @@ const app = {
         this.toast("تمت الإضافة");
     },
 
+    editClient(id) {
+        let c = this.data.contacts.find(x => x.id === id);
+        let nn = prompt("الاسم الجديد:", c.name);
+        if(nn) { c.name = nn; this.saveData(); this.filterClients(); this.toast("تم تعديل العميل"); }
+    },
+
     filterClients() {
         let search = document.getElementById('clientSearch')?.value.toLowerCase() || '';
         let filtered = this.data.contacts.filter(c => c.name.toLowerCase().includes(search));
@@ -458,7 +464,7 @@ const app = {
                 <td>${c.name}</td>
                 <td>${c.type}</td>
                 <td>${c.debt || 0}</td>
-                <td><button class="btn btn-s" onclick="app.payClient(${c.id})">تسديد</button> <button class="btn btn-d" onclick="app.deleteClient(${c.id})">حذف</button></td>
+                <td><button class="btn btn-p" onclick="app.editClient(${c.id})">تعديل</button> <button class="btn btn-s" onclick="app.payClient(${c.id})">تسديد</button> <button class="btn btn-d" onclick="app.deleteClient(${c.id})">حذف</button></td>
             </tr>`).join('');
     },
 
@@ -486,14 +492,21 @@ const app = {
         v.innerHTML = `
             <div class="card">
                 <h3>💸 المصاريف</h3>
-                <div style="display:grid; grid-template-columns: 2fr 1fr auto; gap:10px;">
+                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:10px;">
                     <input id="expNote" placeholder="بيان المصروف">
                     <input id="expAmount" type="number" placeholder="المبلغ">
-                    <button class="btn btn-d" onclick="app.addExpense()">+ إضافة</button>
+                    <button class="btn btn-d" onclick="app.addExpense()">إضافة</button>
                 </div>
-                <table id="expTable"><thead><th>التاريخ</th><th>البيان</th><th>المبلغ</th></thead>
-                <tbody>${this.data.expenses.map(e => `<tr><td>${e.date}</td><td>${e.note}</td><td>${e.amount}</td></tr>`).join('')}</tbody></table>
-            </div>`;
+                <table id="expTable"><thead><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th>تعديل</th><th>حذف</th></thead>
+                <tbody>${this.data.expenses.map((e, i) => `
+                    <tr>
+                        <td>${e.date}</td>
+                        <td>${e.note}<table>
+                        <td>${e.amount}</td>
+                        <td><button class="btn btn-p" onclick="app.editExpense(${i})">تعديل</button></td>
+                        <td><button class="btn btn-d" onclick="app.deleteExpense(${i})">حذف</button></td>
+                    </tr>`).join('')}</tbody>
+                </div>`;
     },
 
     addExpense() {
@@ -506,18 +519,45 @@ const app = {
         this.toast("تم تسجيل المصروف");
     },
 
+    editExpense(i) {
+        let e = this.data.expenses[i];
+        let nn = prompt("البيان الجديد:", e.note);
+        let na = prompt("المبلغ الجديد:", e.amount);
+        if(nn) e.note = nn;
+        if(na) e.amount = Number(na);
+        this.saveData();
+        this.renderExpenses(document.getElementById('viewPort'));
+        this.toast("تم تعديل المصروف");
+    },
+
+    deleteExpense(i) {
+        if(confirm("حذف هذا المصروف؟")) {
+            this.data.expenses.splice(i, 1);
+            this.saveData();
+            this.renderExpenses(document.getElementById('viewPort'));
+            this.toast("تم حذف المصروف");
+        }
+    },
+
     renderReturns(v) {
         v.innerHTML = `
             <div class="card">
                 <h3>↩️ المرتجعات</h3>
-                <div style="display:grid; grid-template-columns: 2fr 1fr auto; gap:10px;">
+                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:10px;">
                     <input id="returnProduct" placeholder="المنتج المرتجع">
                     <input id="returnAmount" type="number" placeholder="المبلغ">
                     <button class="btn btn-w" onclick="app.addReturn()">تسجيل</button>
                 </div>
-                <table id="returnTable"><thead><th>التاريخ</th><th>المنتج</th><th>المبلغ</th></thead>
-                <tbody>${this.data.returns.map(r => `<tr><td>${r.date}</td><td>${r.product}</td><td>${r.amount}</td></tr>`).join('')}</tbody></table>
-            </div>`;
+                <table id="returnTable"><thead><th>التاريخ</th><th>المنتج</th><th>المبلغ</th><th>تعديل</th><th>حذف</th></thead>
+                <tbody>${this.data.returns.map((r, i) => `
+                    <tr>
+                        <td>${r.date}</td>
+                        <td>${r.product}</td>
+                        <td>${r.amount}</td>
+                        <td><button class="btn btn-p" onclick="app.editReturn(${i})">تعديل</button></td>
+                        <td><button class="btn btn-d" onclick="app.deleteReturn(${i})">حذف</button></td>
+                    </tr>`).join('')}</tbody>
+                </div>`;
     },
 
     addReturn() {
@@ -530,14 +570,34 @@ const app = {
         this.toast("تم تسجيل المرتجع");
     },
 
+    editReturn(i) {
+        let r = this.data.returns[i];
+        let np = prompt("المنتج الجديد:", r.product);
+        let na = prompt("المبلغ الجديد:", r.amount);
+        if(np) r.product = np;
+        if(na) r.amount = Number(na);
+        this.saveData();
+        this.renderReturns(document.getElementById('viewPort'));
+        this.toast("تم تعديل المرتجع");
+    },
+
+    deleteReturn(i) {
+        if(confirm("حذف هذا المرتجع؟")) {
+            this.data.returns.splice(i, 1);
+            this.saveData();
+            this.renderReturns(document.getElementById('viewPort'));
+            this.toast("تم حذف المرتجع");
+        }
+    },
+
     renderReports(v) {
         v.innerHTML = `
             <div class="card">
                 <h3>📋 سجل المبيعات</h3>
-                <div class="table-wrap"></table><thead><th>رقم الفاتورة</th><th>التاريخ</th><th>الإجمالي</th><th>إجراء</th></thead>
+                <div class="table-wrap"><table><thead><th>رقم الفاتورة</th><th>التاريخ</th><th>الإجمالي</th><th>إجراء</th></thead>
                 <tbody>${this.data.sales.map(s => `
                     <tr>
-                        <td>#${s.id}</tr>
+                        <td>#${s.id}</td>
                         <td>${s.date}</td>
                         <td>${s.total.toFixed(2)}</td>
                         <td><button class="btn btn-p" onclick="app.printInvoiceById(${s.id})">طباعة</button> <button class="btn btn-d" onclick="app.returnSale(${s.id})">إرجاع</button></td>
