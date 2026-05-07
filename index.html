@@ -1,471 +1,578 @@
-from flask import Flask, render_template_string, request, jsonify, send_file
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-import pandas as pd
-import io
-import json
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ultimate_golden_erp.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
-# --- الجداول (Database Schema) ---
-class Product(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    cost = db.Column(db.Float, nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    qty = db.Column(db.Integer, nullable=False)
-
-class Contact(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    type = db.Column(db.String(20), nullable=False)  # عميل / مورد
-    debt = db.Column(db.Float, default=0.0)
-
-class Expense(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
-    date = db.Column(db.DateTime, default=datetime.utcnow)
-
-class Sale(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    items = db.Column(db.Text, nullable=False) 
-    total = db.Column(db.Float, nullable=False)
-    profit = db.Column(db.Float, nullable=False)
-    is_return = db.Column(db.Boolean, default=False)
-    date = db.Column(db.DateTime, default=datetime.utcnow)
-
-with app.app_context():
-    db.create_all()
-
-# --- الواجهة البرمجية المتكاملة ---
-UI = """
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GOLDEN ERP ULTIMATE</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>GOLDEN ERP V3.0 | النظام المحاسبي المتكامل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { --p: #0f172a; --a: #3b82f6; --s: #10b981; --d: #ef4444; --bg: #f8fafc; --text: #1e293b; --card: #ffffff; }
-        .dark-mode { --p: #1e293b; --bg: #0f172a; --text: #f8fafc; --card: #334155; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: 0.2s; }
-        body { background: var(--bg); color: var(--text); display: flex; margin: 0; min-height: 100vh; overflow-x: hidden; }
-        
-        .sidebar { width: 260px; background: var(--p); color: white; height: 100vh; position: fixed; padding: 20px; z-index: 100; }
-        .main { margin-right: 260px; padding: 25px; width: calc(100% - 260px); }
-        .nav-item { padding: 12px; cursor: pointer; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
-        .nav-item:hover, .active { background: var(--a); transform: scale(1.02); }
-        
-        .card { background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.05); }
-        .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; color: white; display: inline-flex; align-items: center; gap: 5px; }
-        .btn-s { background: var(--s); } .btn-d { background: var(--d); } .btn-p { background: var(--a); }
-        input, select { padding: 12px; border-radius: 10px; border: 1px solid #ddd; width: 100%; margin-bottom: 12px; background: var(--card); color: var(--text); }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: var(--card); }
-        th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
-        .low-stock { color: var(--d); font-weight: bold; background: #fee2e2; }
-        .pos-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
-        
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
-        .modal-content { background:var(--card); padding:30px; border-radius:20px; width:400px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        :root { --primary: #0f172a; --accent: #3b82f6; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --border: #e2e8f0; }
+        [data-theme="dark"] { --primary: #f8fafc; --accent: #60a5fa; --bg: #020617; --card: #1e293b; --text: #f1f5f9; --border: #334155; }
+        body { background: var(--bg); color: var(--text); transition: 0.3s; }
+        .sidebar { width: 270px; background: var(--primary); color: white; position: fixed; right: 0; height: 100vh; padding: 20px; z-index: 1000; overflow-y: auto; }
+        .main { margin-right: 270px; padding: 25px; min-height: 100vh; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; cursor: pointer; color: #94a3b8; margin-bottom: 5px; transition: 0.2s; }
+        .nav-item.active, .nav-item:hover { background: var(--accent); color: white; }
+        .card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .btn { padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-p { background: var(--accent); color: white; }
+        .btn-s { background: var(--success); color: white; }
+        .btn-d { background: var(--danger); color: white; }
+        .btn-w { background: var(--warning); color: white; }
+        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; width: 100%; margin-bottom: 10px; background: var(--card); color: var(--text); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; border-bottom: 1px solid var(--border); text-align: center; }
+        .qty-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); cursor: pointer; background: var(--card); }
+        .pos-grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; max-height: 60vh; overflow-y: auto; }
+        .prod-card { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .prod-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+        .low-stock { background: #fee2e2 !important; }
+        .toast { position: fixed; bottom: 20px; left: 20px; background: var(--success); color: white; padding: 12px 24px; border-radius: 10px; z-index: 9999; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .menu-toggle { position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--accent); color: white; border: none; cursor: pointer; z-index: 1001; display: none; align-items: center; justify-content: center; }
+        @media (max-width: 768px) { .sidebar { transform: translateX(100%); width: 260px; } .sidebar.open { transform: translateX(0); } .main { margin-right: 0; } .pos-grid { grid-template-columns: 1fr; } .menu-toggle { display: flex; } }
+        @media print { .sidebar, .btn, .menu-toggle, .no-print { display: none !important; } .main { margin: 0; padding: 0; } }
     </style>
 </head>
-<body id="body">
-    <aside class="sidebar">
-        <h2 style="text-align:center; color: var(--a);"><i class="fas fa-crown"></i> الذهبي ERP</h2>
-        <div class="nav-item active" onclick="route('dash')"><i class="fas fa-chart-pie"></i> لوحة التحكم</div>
-        <div class="nav-item" onclick="route('pos')"><i class="fas fa-shopping-basket"></i> نقطة البيع</div>
-        <div class="nav-item" onclick="route('stock')"><i class="fas fa-boxes"></i> إدارة المخزن</div>
-        <div class="nav-item" onclick="route('contacts')"><i class="fas fa-address-book"></i> العملاء والموردين</div>
-        <div class="nav-item" onclick="route('exp')"><i class="fas fa-money-bill-wave"></i> المصاريف العامة</div>
-        <div class="nav-item" onclick="route('sales')"><i class="fas fa-history"></i> سجل العمليات</div>
-        <hr style="opacity:0.2">
-        <select id="roleSelect" onchange="updateRole()">
-            <option value="admin">صلاحية: مدير</option>
-            <option value="user">صلاحية: موظف</option>
-        </select>
-        <button class="btn btn-p" style="width:100%" onclick="toggleDark()"><i class="fas fa-moon"></i> الوضع الليلي</button>
-    </aside>
+<body>
 
-    <main class="main" id="view"></main>
+<div id="toast" class="toast" style="display:none;"></div>
+<button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
 
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <h3>تعديل المنتج</h3>
-            <input id="editId" type="hidden">
-            <input id="editName" placeholder="الاسم" required>
-            <input id="editCost" type="number" placeholder="التكلفة" required>
-            <input id="editPrice" type="number" placeholder="سعر البيع" required>
-            <input id="editQty" type="number" placeholder="الكمية" required>
-            <button class="btn btn-s" onclick="updateProduct()">حفظ التعديلات</button>
-            <button class="btn btn-d" onclick="closeModal()">إلغاء</button>
+<!-- شاشة تسجيل الدخول -->
+<div id="authScreen" style="position:fixed; inset:0; background:var(--primary); z-index:9999; display:flex; align-items:center; justify-content:center;">
+    <div class="card" style="width:90%; max-width:420px; text-align:center;">
+        <h1 style="color:var(--accent); margin-bottom:10px;">GOLDEN ERP V3.0</h1>
+        <p style="margin-bottom:20px;">النظام المحاسبي المتكامل - حفظ سحابي</p>
+        <div id="loginForm">
+            <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
+            <input type="password" id="loginPass" placeholder="كلمة المرور">
+            <button class="btn btn-p" style="width:100%; margin-bottom:10px;" onclick="app.login()">تسجيل الدخول</button>
+            <button class="btn btn-w" style="width:100%;" onclick="app.googleLogin()"><i class="fab fa-google"></i> تسجيل الدخول بجوجل</button>
+            <p style="margin-top:15px; cursor:pointer; color:var(--accent);" onclick="app.showRegister()">إنشاء حساب جديد</p>
+        </div>
+        <div id="registerForm" style="display:none;">
+            <input type="email" id="regEmail" placeholder="البريد الإلكتروني">
+            <input type="password" id="regPass" placeholder="كلمة المرور">
+            <input type="text" id="regName" placeholder="الاسم الكامل">
+            <select id="regRole"><option value="admin">مدير النظام</option><option value="staff">موظف مبيعات</option></select>
+            <button class="btn btn-p" style="width:100%; margin-bottom:10px;" onclick="app.register()">إنشاء حساب</button>
+            <p style="margin-top:15px; cursor:pointer; color:var(--accent);" onclick="app.showLogin()">تسجيل الدخول</p>
         </div>
     </div>
+</div>
 
-    <script>
-        let cart = [];
-        let userRole = 'admin';
+<div id="appUI" style="display:none;">
+    <aside class="sidebar" id="sidebar">
+        <div style="text-align:center; padding:10px; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:15px;">
+            <i class="fas fa-user-circle" style="font-size:40px;"></i>
+            <p id="userNameDisplay" style="margin-top:5px;"></p>
+            <small id="userRoleDisplay" style="color:var(--accent);"></small>
+        </div>
+        <div class="nav-item active" onclick="app.route('dash', this)"><i class="fas fa-home"></i> الرئيسية</div>
+        <div class="nav-item" onclick="app.route('pos', this)"><i class="fas fa-cash-register"></i> المبيعات</div>
+        <div class="nav-item admin-only" onclick="app.route('stock', this)"><i class="fas fa-boxes"></i> المخزن</div>
+        <div class="nav-item admin-only" onclick="app.route('clients', this)"><i class="fas fa-users"></i> العملاء والموردين</div>
+        <div class="nav-item admin-only" onclick="app.route('expenses', this)"><i class="fas fa-wallet"></i> المصاريف</div>
+        <div class="nav-item admin-only" onclick="app.route('returns', this)"><i class="fas fa-undo"></i> المرتجعات</div>
+        <div class="nav-item" onclick="app.route('reports', this)"><i class="fas fa-chart-line"></i> التقارير</div>
+        <div class="nav-item" onclick="app.toggleTheme()"><i class="fas fa-moon"></i> الوضع الليلي</div>
+        <div class="nav-item" onclick="app.logout()" style="color:var(--danger); margin-top:20px;"><i class="fas fa-sign-out-alt"></i> خروج</div>
+    </aside>
+    <main class="main" id="viewPort"></main>
+</div>
 
-        async function route(page) {
-            const v = document.getElementById('view');
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            
-            if(page === 'dash') {
-                const r = await fetch('/api/stats'); const d = await r.json();
-                v.innerHTML = `
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:20px;">
-                        <div class="card"><h4>💰 صافي الأرباح</h4><h2 style="color:var(--s)">${d.profit} د.ل</h2></div>
-                        <div class="card"><h4>🛒 المبيعات</h4><h2>${d.rev} د.ل</h2></div>
-                        <div class="card"><h4>📉 المصاريف</h4><h2 style="color:var(--d)">${d.exp} د.ل</h2></div>
-                    </div>
-                    <div class="card" style="height:350px;"><canvas id="mainChart"></canvas></div>
-                `;
-                new Chart(document.getElementById('mainChart').getContext('2d'), {
-                    type: 'line',
-                    data: { labels: ['السابق', 'الحالي'], datasets: [{ label: 'المبيعات', data: [0, d.rev], borderColor: '#3b82f6', fill: true }] }
-                });
-            }
+<div id="printArea" style="display:none;"><div id="printDetails"></div><div id="qrPrint"></div></div>
 
-            if(page === 'pos') {
-                const r = await fetch('/api/products'); const ps = await r.json();
-                v.innerHTML = `
-                    <div class="pos-grid">
-                        <div class="card">
-                            <h3>🔍 اختر المنتجات</h3>
-                            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:10px;">
-                                ${ps.map(p => `<button class="btn btn-p" ${p.qty <=0 ? 'disabled':''} onclick="addToCart(${p.id},'${p.name}',${p.price})">${p.name}<br>${p.price} د.ل<br><small>مخزون: ${p.qty}</small></button>`).join('')}
-                            </div>
-                        </div>
-                        <div class="card">
-                            <h3>🛒 السلة</h3>
-                            <div id="cart-items"></div>
-                            <hr>
-                            <div style="display:flex; justify-content:space-between"><h4>الإجمالي:</h4><h4 id="total-price">0 د.ل</h4></div>
-                            <button class="btn btn-s" style="width:100%; height:50px;" onclick="checkout()">✅ تنفيذ البيع وطباعة QR</button>
-                            <div id="qrcode" style="margin-top:15px; display:flex; justify-content:center;"></div>
-                        </div>
-                    </div>
-                `;
-                renderCart();
-            }
+<script>
+// Firebase Config
+const firebaseConfig = {
+    apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
+    authDomain: "my-pos-system-11dee.firebaseapp.com",
+    databaseURL: "https://my-pos-system-11dee-default-rtdb.firebaseio.com",
+    projectId: "my-pos-system-11dee",
+    storageBucket: "my-pos-system-11dee.firebasestorage.app",
+    messagingSenderId: "565195477080",
+    appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d"
+};
 
-            if(page === 'stock') {
-                const r = await fetch('/api/products'); const ps = await r.json();
-                v.innerHTML = `
-                    <div class="card">
-                        <h3>➕ إضافة منتج جديد</h3>
-                        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
-                            <input id="pn" placeholder="اسم المنتج" required> <input id="pc" type="number" placeholder="التكلفة" required>
-                            <input id="pp" type="number" placeholder="سعر البيع" required> <input id="pq" type="number" placeholder="الكمية" required>
-                        </div>
-                        <button class="btn btn-s" onclick="saveP()">💾 إضافة للمخزن</button>
-                        <button class="btn btn-p" onclick="location.href='/api/export'">📥 تصدير Excel</button>
-                    </div>
-                    <div class="card">
-                        <h3>📦 حالة المخزون</h3>
-                        <table><thead><th>ID</th><th>المنتج</th><th>التكلفة</th><th>البيع</th><th>الكمية</th><th>إجراءات</th></thead>
-                        <tbody>${ps.map(p => `<tr class="${p.qty < 5 ? 'low-stock':''}">
-                            <td>${p.id}</td><td>${p.name}</td><td>${p.cost}</td><td>${p.price}</td><td>${p.qty}</td>
-                            <td><button class="btn btn-p" onclick="openEdit(${p.id},'${p.name}',${p.cost},${p.price},${p.qty})">✏️ تعديل</button>
-                            ${userRole==='admin' ? `<button class="btn btn-d" onclick="delP(${p.id})">🗑️ حذف</button>` : ''}</td>
-                         </tr>`).join('')}</tbody>
-                        </table>
-                    </div>
-                `;
-            }
-            
-            if(page === 'sales') {
-                const r = await fetch('/api/sales_history'); const sh = await r.json();
-                v.innerHTML = `
-                    <div class="card">
-                        <h3>📜 سجل المبيعات والمرتجعات</h3>
-                        <table><thead><th>رقم الفاتورة</th><th>التاريخ</th><th>الإجمالي</th><th>الحالة</th><th>إجراء</th></thead>
-                        <tbody>${sh.map(s => `<tr>
-                            <td>#${s.id}</td><td>${s.date}</td><td>${s.total} د.ل</td>
-                            <td>${s.is_return ? '<span style="color:red">مرتجع</span>':'<span style="color:green">تمت</span>'}</td>
-                            <td>${!s.is_return ? `<button class="btn btn-d" onclick="makeReturn(${s.id})">🔄 عمل مرتجع</button>` : '-'}</td>
-                         </tr>`).join('')}</tbody>
-                        </table>
-                    </div>
-                `;
-            }
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
 
-            if(page === 'contacts') {
-                const r = await fetch('/api/contacts'); const cs = await r.json();
-                v.innerHTML = `
-                    <div class="card">
-                        <h3>👥 العملاء والموردين</h3>
-                        <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:10px;">
-                            <input id="cname" placeholder="الاسم" required>
-                            <select id="ctype"><option value="عميل">عميل</option><option value="مورد">مورد</option></select>
-                            <button class="btn btn-s" onclick="addContact()">➕ إضافة</button>
-                        </div>
-                        <tr><thead><th>الاسم</th><th>النوع</th><th>الرصيد/الديون</th><th>تسديد</th><th>حذف</th></thead>
-                        <tbody>${cs.map(c => `<tr>
-                            <td>${c.name}</td><td>${c.type}</td><td style="color:${c.debt>0?'red':'green'}">${c.debt} د.ل</td>
-                            <td><button class="btn btn-s" onclick="payDebt(${c.id})">💰 تسديد</button></td>
-                            <td><button class="btn btn-d" onclick="deleteContact(${c.id})">🗑️ حذف</button></td>
-                         </tr>`).join('')}</tbody>
-                        </table>
-                    </div>
-                `;
-            }
+const app = {
+    user: null, role: 'staff', autoTimer: null,
+    data: { products: [], sales: [], contacts: [], expenses: [], returns: [] },
+    cart: [],
 
-            if(page === 'exp') {
-                const r = await fetch('/api/expenses'); const ex = await r.json();
-                v.innerHTML = `
-                    <div class="card">
-                        <h3>💸 المصاريف العامة</h3>
-                        <div style="display:grid; grid-template-columns:2fr 1fr auto; gap:10px;">
-                            <input id="etitle" placeholder="بيان المصروف" required>
-                            <input id="eamount" type="number" placeholder="المبلغ" required>
-                            <button class="btn btn-d" onclick="addExpense()">➕ إضافة مصروف</button>
-                        </div>
-                        <tr><thead><th>البيان</th><th>المبلغ</th><th>التاريخ</th><th>حذف</th></thead>
-                        <tbody>${ex.map(e => `<tr>
-                            <td>${e.title}</td><td>${e.amount} د.ل</td><td>${e.date}</td>
-                            <td><button class="btn btn-d" onclick="deleteExpense(${e.id})">🗑️ حذف</button></td>
-                         </tr>`).join('')}</tbody>
-                        </table>
-                    </div>
-                `;
-            }
-        }
+    toast(msg, type='success') {
+        let t = document.getElementById('toast');
+        t.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-circle'}"></i> ${msg}`;
+        t.style.background = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#f59e0b';
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 3000);
+    },
 
-        // --- وظائف السلة ---
-        function addToCart(id, name, price) {
-            const existing = cart.find(i => i.id === id);
-            if(existing) { existing.q++; } else { cart.push({id, name, price, q: 1}); }
-            renderCart();
-        }
+    async login() {
+        let e = document.getElementById('loginEmail').value, p = document.getElementById('loginPass').value;
+        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { this.toast(err.message, 'error'); }
+    },
+
+    async googleLogin() {
+        try { await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); } catch(err) { this.toast(err.message, 'error'); }
+    },
+
+    async register() {
+        let e = document.getElementById('regEmail').value, p = document.getElementById('regPass').value, n = document.getElementById('regName').value, r = document.getElementById('regRole').value;
+        try {
+            let res = await auth.createUserWithEmailAndPassword(e, p);
+            await res.user.updateProfile({ displayName: n });
+            await db.ref(`users/${res.user.uid}/role`).set(r);
+            this.toast("تم إنشاء الحساب بنجاح");
+        } catch(err) { this.toast(err.message, 'error'); }
+    },
+
+    logout() { auth.signOut(); if(this.autoTimer) clearInterval(this.autoTimer); location.reload(); },
+    showRegister() { document.getElementById('loginForm').style.display = 'none'; document.getElementById('registerForm').style.display = 'block'; },
+    showLogin() { document.getElementById('registerForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'block'; },
+    toggleTheme() { document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); },
+
+    async loadUserData() {
+        let roleSnap = await db.ref(`users/${this.user.uid}/role`).once('value');
+        this.role = roleSnap.val() || 'staff';
+        document.getElementById('userNameDisplay').innerText = this.user.displayName || this.user.email.split('@')[0];
+        document.getElementById('userRoleDisplay').innerText = this.role === 'admin' ? 'مدير النظام' : 'موظف مبيعات';
+        if(this.role !== 'admin') document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
         
-        function changeQty(id, delta) {
-            const item = cart.find(i => i.id === id);
-            if(item) {
-                item.q += delta;
-                if(item.q <= 0) cart = cart.filter(i => i.id !== id);
-                renderCart();
-            }
+        let dataSnap = await db.ref(`users/${this.user.uid}/data`).once('value');
+        let val = dataSnap.val() || {};
+        this.data = {
+            products: val.products || [],
+            sales: val.sales || [],
+            contacts: val.contacts || [],
+            expenses: val.expenses || [],
+            returns: val.returns || []
+        };
+        if(this.data.products.length === 0) {
+            this.data.products = [
+                { id: 1, name: "هاتف ذكي", price: 2500, cost: 1800, qty: 15, cat: "الكترونيات" },
+                { id: 2, name: "حاسوب محمول", price: 5200, cost: 4200, qty: 8, cat: "الكترونيات" },
+                { id: 3, name: "سماعة لاسلكية", price: 350, cost: 200, qty: 50, cat: "اكسسوارات" }
+            ];
         }
+        this.startAutoSave();
+        this.route('dash');
+    },
+
+    startAutoSave() {
+        if(this.autoTimer) clearInterval(this.autoTimer);
+        this.autoTimer = setInterval(() => this.saveData(), 15 * 60 * 1000);
+    },
+
+    async saveData() {
+        if(!this.user) return;
+        await db.ref(`users/${this.user.uid}/data`).set({
+            products: this.data.products,
+            sales: this.data.sales,
+            contacts: this.data.contacts,
+            expenses: this.data.expenses,
+            returns: this.data.returns
+        });
+        this.toast("💾 تم الحفظ التلقائي", 'info');
+    },
+
+    route(page, el) {
+        if(el) { document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); }
+        let v = document.getElementById('viewPort');
+        if(page === 'dash') this.renderDash(v);
+        if(page === 'pos') this.renderPOS(v);
+        if(page === 'stock') this.renderStock(v);
+        if(page === 'clients') this.renderClients(v);
+        if(page === 'expenses') this.renderExpenses(v);
+        if(page === 'returns') this.renderReturns(v);
+        if(page === 'reports') this.renderReports(v);
+    },
+
+    renderDash(v) {
+        let today = new Date().toLocaleDateString();
+        let salesToday = this.data.sales.filter(s => s.date && s.date.includes(today)).reduce((a,b)=>a+(b.total||0), 0);
+        let expensesToday = this.data.expenses.filter(e => e.date === today).reduce((a,b)=>a+(b.amount||0), 0);
+        let totalSales = this.data.sales.reduce((a,b)=>a+(b.total||0), 0);
+        let totalCost = this.data.sales.reduce((a,b)=>a+(b.totalCost||0), 0);
+        let totalExpenses = this.data.expenses.reduce((a,b)=>a+(b.amount||0), 0);
+        let netProfit = totalSales - totalCost - totalExpenses;
+        let lowStock = this.data.products.filter(p => (p.qty||0) < 5);
         
-        function renderCart() {
-            const list = document.getElementById('cart-items');
-            if(!list) return;
-            list.innerHTML = cart.map(i => `
-                <div class="cart-item">
-                    <span>${i.name}</span>
-                    <div class="qty-btns">
-                        <button class="btn btn-d" style="padding:2px 8px" onclick="changeQty(${i.id}, -1)">-</button>
-                        <span>${i.q}</span>
-                        <button class="btn btn-s" style="padding:2px 8px" onclick="changeQty(${i.id}, 1)">+</button>
+        v.innerHTML = `
+            <div class="grid-stats">
+                <div class="card" style="background:linear-gradient(135deg,#0d9488,#14b8a6); color:white;"><h4>📊 مبيعات اليوم</h4><h2>${salesToday.toFixed(2)}</h2></div>
+                <div class="card" style="background:linear-gradient(135deg,#ef4444,#f87171); color:white;"><h4>💰 مصاريف اليوم</h4><h2>${expensesToday.toFixed(2)}</h2></div>
+                <div class="card" style="background:linear-gradient(135deg,#f59e0b,#fbbf24); color:white;"><h4>⚠️ نواقص المخزن</h4><h2>${lowStock.length}</h2></div>
+                <div class="card" style="background:linear-gradient(135deg,#10b981,#34d399); color:white;"><h4>🏆 صافي الربح الكلي</h4><h2>${netProfit.toFixed(2)}</h2></div>
+            </div>
+            <div class="card"><h3>📈 الرسم البياني للمبيعات</h3><canvas id="salesChart" height="100"></canvas></div>
+            <div class="card"><h3>⚠️ تنبيهات المخزون المنخفض</h3>${lowStock.length ? `<div class="grid-stats">${lowStock.map(p => `<div class="card" style="border-right:3px solid var(--danger);">${p.name}<br><b>المتبقي: ${p.qty}</b></div>`).join('')}</div>` : '<p>✅ كل المنتجات متوفرة بكميات جيدة</p>'}</div>
+        `;
+        let ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: this.data.sales.slice(0,10).map(s => s.date),
+                datasets: [{ label: 'المبيعات', data: this.data.sales.slice(0,10).map(s => s.total), borderColor: '#3b82f6', tension: 0.4, fill: true }]
+            }
+        });
+    },
+
+    renderPOS(v) {
+        v.innerHTML = `
+            <div class="pos-grid">
+                <div class="card">
+                    <div style="display:flex; gap:10px; margin-bottom:15px;">
+                        <input type="text" id="posSearch" placeholder="🔍 بحث عن منتج..." onkeyup="app.filterPOS()">
+                        <select id="posCat" onchange="app.filterPOS()" style="width:150px;"><option value="">كل الفئات</option></select>
                     </div>
-                    <span>${(i.price * i.q).toFixed(2)}</span>
+                    <div id="posGrid" class="product-grid"></div>
                 </div>
-            `).join('');
-            document.getElementById('total-price').innerText = cart.reduce((s, i) => s + (i.price * i.q), 0).toFixed(2) + " د.ل";
-        }
+                <div class="card">
+                    <h3>🛒 سلة المشتريات <button class="btn btn-d" style="float:left; padding:5px 10px;" onclick="app.cart=[]; app.updateCart()">مسح</button></h3>
+                    <div id="cartItems" style="min-height:250px; margin:15px 0;"></div>
+                    <hr><h2>الإجمالي: <span id="cartTotal">0.00</span></h2>
+                    <button class="btn btn-s" style="width:100%; height:50px; margin-top:15px;" onclick="app.checkout()"><i class="fas fa-check-circle"></i> إتمام البيع وطباعة QR</button>
+                </div>
+            </div>
+        `;
+        this.loadCategories();
+        this.filterPOS();
+    },
 
-        async function checkout() {
-            if(cart.length === 0) return alert("السلة فارغة!");
-            const res = await fetch('/api/sales', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({items: cart}) });
-            if(res.ok) {
-                const data = await res.json();
-                document.getElementById('qrcode').innerHTML = "";
-                new QRCode(document.getElementById("qrcode"), { text: "Inv#"+data.id+" Total:"+data.total, width: 128, height: 128 });
-                alert("تم البيع بنجاح!"); cart = []; renderCart();
+    loadCategories() {
+        let cats = ['عام', ...new Set(this.data.products.map(p => p.cat || 'عام'))];
+        document.getElementById('posCat').innerHTML = '<option value="">كل الفئات</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+    },
+
+    filterPOS() {
+        let search = document.getElementById('posSearch')?.value.toLowerCase() || '';
+        let cat = document.getElementById('posCat')?.value || '';
+        let filtered = this.data.products.filter(p => {
+            let match = true;
+            if(search && !p.name.toLowerCase().includes(search)) match = false;
+            if(cat && p.cat !== cat) match = false;
+            return match;
+        });
+        document.getElementById('posGrid').innerHTML = filtered.map(p => `
+            <div class="prod-card" onclick="app.addToCart(${p.id})">
+                <b>${p.name}</b><br>
+                <span style="color:var(--accent)">${p.price} </span><br>
+                <small>متاح: ${p.qty}</small>
+            </div>
+        `).join('');
+        this.loadCategories();
+    },
+
+    addToCart(id) {
+        let p = this.data.products.find(x => x.id === id);
+        if(!p || p.qty <= 0) return this.toast("المنتج غير متوفر!", 'error');
+        let ex = this.cart.find(x => x.id === id);
+        if(ex) { if(ex.q < p.qty) ex.q++; else return this.toast("الكمية المطلوبة أكبر من المتوفرة!", 'error'); }
+        else this.cart.push({...p, q: 1});
+        this.updateCart();
+    },
+
+    updateCart() {
+        let cartDiv = document.getElementById('cartItems');
+        if(!cartDiv) return;
+        cartDiv.innerHTML = this.cart.map((it, i) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:5px; background:var(--bg); border-radius:8px;">
+                <span>${it.name}</span>
+                <div><button class="qty-btn" onclick="app.changeQty(${i}, -1)">-</button> ${it.q} <button class="qty-btn" onclick="app.changeQty(${i}, 1)">+</button></div>
+                <b>${(it.price * it.q).toFixed(2)} <i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="app.cart.splice(${i},1); app.updateCart();"></i></b>
+            </div>
+        `).join('');
+        document.getElementById('cartTotal').innerText = this.cart.reduce((a,b)=>a+(b.price*b.q),0).toFixed(2);
+    },
+
+    changeQty(i, v) {
+        let p = this.data.products.find(x => x.id === this.cart[i].id);
+        if(v === 1 && this.cart[i].q < p.qty) this.cart[i].q++;
+        else if(v === -1 && this.cart[i].q > 1) this.cart[i].q--;
+        else if(v === -1 && this.cart[i].q === 1) this.cart.splice(i,1);
+        this.updateCart();
+    },
+
+    async checkout() {
+        if(this.cart.length === 0) return this.toast("السلة فارغة!", 'error');
+        let total = this.cart.reduce((a,b)=>a+(b.price*b.q),0);
+        let totalCost = this.cart.reduce((a,b)=>a+((b.cost||0)*b.q),0);
+        let saleId = Date.now();
+        let sale = { id: saleId, total, totalCost, items: [...this.cart], date: new Date().toLocaleString() };
+        this.data.sales.unshift(sale);
+        this.cart.forEach(c => { let p = this.data.products.find(x => x.id === c.id); if(p) p.qty -= c.q; });
+        await this.saveData();
+        this.printInvoice(sale);
+        this.cart = [];
+        this.updateCart();
+        this.toast("تمت عملية البيع بنجاح!");
+    },
+
+    printInvoice(sale) {
+        let printDiv = document.getElementById('printArea');
+        printDiv.innerHTML = `<div style="text-align:center; font-family:'Cairo'; padding:20px;">
+            <h2 style="color:var(--accent)">GOLDEN ERP</h2>
+            <p>فاتورة مبيعات رقم: ${sale.id}</p>
+            <p>التاريخ: ${sale.date}</p><hr>
+            ${sale.items.map(i => `<p>${i.name} x ${i.q} = ${(i.price*i.q).toFixed(2)}</p>`).join('')}
+            <hr><h3>الإجمالي: ${sale.total.toFixed(2)}</h3>
+            <div id="qrCodePrint" style="display:flex; justify-content:center; margin-top:15px;"></div>
+            <p>شكراً لتسوقكم مع GOLDEN ERP</p>
+        </div>`;
+        new QRCode(document.getElementById("qrCodePrint"), { text: `GOLDEN-${sale.id}`, width: 120, height: 120 });
+        setTimeout(() => { window.print(); }, 500);
+    },
+
+    renderStock(v) {
+        v.innerHTML = `
+            <div class="card">
+                <div style="display:flex; justify-content:space-between;"><h3>📦 إدارة المخزون</h3><button class="btn btn-s" onclick="app.exportStock()"><i class="fas fa-file-excel"></i> تصدير Excel</button></div>
+                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap:10px; margin:15px 0;">
+                    <input id="pName" placeholder="اسم المنتج">
+                    <input id="pCat" placeholder="الفئة" value="عام">
+                    <input id="pCost" type="number" placeholder="التكلفة">
+                    <input id="pPrice" type="number" placeholder="السعر">
+                    <input id="pQty" type="number" placeholder="الكمية">
+                    <button class="btn btn-p" onclick="app.addProduct()">+ إضافة</button>
+                </div>
+                <input type="text" id="stockSearch" placeholder="🔍 بحث في المخزن..." onkeyup="app.filterStock()">
+                <table id="stockTable"><thead><th>المنتج</th><th>الفئة</th><th>التكلفة</th><th>السعر</th><th>الكمية</th><th>إجراءات</th></thead>
+                <tbody></tbody></table>
+            </div>`;
+        this.filterStock();
+    },
+
+    addProduct() {
+        let name = document.getElementById('pName').value;
+        let cat = document.getElementById('pCat').value;
+        let cost = Number(document.getElementById('pCost').value);
+        let price = Number(document.getElementById('pPrice').value);
+        let qty = Number(document.getElementById('pQty').value);
+        if(!name || !price) return this.toast("اسم المنتج والسعر مطلوبان!", 'error');
+        this.data.products.push({ id: Date.now(), name, cat, cost, price, qty: qty || 0 });
+        this.saveData();
+        this.filterStock();
+        this.toast("تم إضافة المنتج");
+    },
+
+    filterStock() {
+        let search = document.getElementById('stockSearch')?.value.toLowerCase() || '';
+        let filtered = this.data.products.filter(p => p.name.toLowerCase().includes(search));
+        document.querySelector('#stockTable tbody').innerHTML = filtered.map(p => `
+            <tr class="${p.qty < 5 ? 'low-stock' : ''}">
+                <td>${p.name}</td><td>${p.cat || 'عام'}</td><td>${p.cost}</td><td>${p.price}</td><td>${p.qty}</td>
+                <td><button class="btn btn-p" onclick="app.editProduct(${p.id})"><i class="fas fa-edit"></i></button> <button class="btn btn-d" onclick="app.deleteProduct(${p.id})"><i class="fas fa-trash"></i></button></td>
+            <tr>
+        `).join('');
+    },
+
+    editProduct(id) {
+        let p = this.data.products.find(x => x.id === id);
+        let nn = prompt("الاسم الجديد:", p.name);
+        let nc = prompt("الفئة الجديدة:", p.cat || 'عام');
+        let ncost = prompt("سعر التكلفة الجديد:", p.cost);
+        let np = prompt("سعر البيع الجديد:", p.price);
+        let nq = prompt("الكمية الجديدة:", p.qty);
+        if(nn) p.name = nn;
+        if(nc) p.cat = nc;
+        if(ncost) p.cost = Number(ncost);
+        if(np) p.price = Number(np);
+        if(nq) p.qty = Number(nq);
+        this.saveData();
+        this.filterStock();
+        this.toast("تم تعديل المنتج");
+    },
+
+    deleteProduct(id) {
+        if(confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
+            this.data.products = this.data.products.filter(p => p.id !== id);
+            this.saveData();
+            this.filterStock();
+            this.toast("تم حذف المنتج");
+        }
+    },
+
+    exportStock() {
+        let ws = XLSX.utils.json_to_sheet(this.data.products);
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "المخزن");
+        XLSX.writeFile(wb, `GOLDEN_stock_${Date.now()}.xlsx`);
+        this.toast("تم تصدير الملف");
+    },
+
+    renderClients(v) {
+        v.innerHTML = `
+            <div class="card">
+                <h3>👥 العملاء والموردين</h3>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <input id="clientName" placeholder="الاسم" style="flex:2;">
+                    <select id="clientType" style="flex:1;"><option value="عميل">عميل</option><option value="مورد">مورد</option></select>
+                    <button class="btn btn-p" onclick="app.addClient()">+ إضافة</button>
+                </div>
+                <input type="text" id="clientSearch" placeholder="🔍 بحث..." onkeyup="app.filterClients()" style="margin-top:15px;">
+                <table id="clientTable"><thead><th>الاسم</th><th>النوع</th><th>الرصيد</th><th>إجراءات</th></thead>
+                <tbody></tbody></table>
+            </div>`;
+        this.filterClients();
+    },
+
+    addClient() {
+        let name = document.getElementById('clientName').value;
+        let type = document.getElementById('clientType').value;
+        if(!name) return this.toast("أدخل الاسم!", 'error');
+        this.data.contacts.push({ id: Date.now(), name, type, debt: 0 });
+        this.saveData();
+        this.filterClients();
+        this.toast("تمت الإضافة");
+    },
+
+    filterClients() {
+        let search = document.getElementById('clientSearch')?.value.toLowerCase() || '';
+        let filtered = this.data.contacts.filter(c => c.name.toLowerCase().includes(search));
+        document.querySelector('#clientTable tbody').innerHTML = filtered.map(c => `
+            <tr>
+                <td>${c.name}</td><td>${c.type}</td><td>${c.debt || 0}</td>
+                <td><button class="btn btn-s" onclick="app.payClient(${c.id})">تسديد</button> <button class="btn btn-d" onclick="app.deleteClient(${c.id})">حذف</button></td>
+            </tr>
+        `).join('');
+    },
+
+    payClient(id) {
+        let c = this.data.contacts.find(x => x.id === id);
+        let amt = Number(prompt(`المبلغ المسدد لـ ${c.name} (الرصيد الحالي: ${c.debt || 0}):`));
+        if(amt && !isNaN(amt)) {
+            c.debt = (c.debt || 0) - amt;
+            this.saveData();
+            this.filterClients();
+            this.toast(`تم تسديد ${amt}`);
+        }
+    },
+
+    deleteClient(id) {
+        if(confirm("حذف هذا الحساب؟")) {
+            this.data.contacts = this.data.contacts.filter(c => c.id !== id);
+            this.saveData();
+            this.filterClients();
+            this.toast("تم الحذف");
+        }
+    },
+
+    renderExpenses(v) {
+        v.innerHTML = `
+            <div class="card">
+                <h3>💸 المصاريف</h3>
+                <div style="display:grid; grid-template-columns: 2fr 1fr auto; gap:10px;">
+                    <input id="expNote" placeholder="بيان المصروف">
+                    <input id="expAmount" type="number" placeholder="المبلغ">
+                    <button class="btn btn-d" onclick="app.addExpense()">+ إضافة</button>
+                </div>
+                <table id="expTable"><thead><th>التاريخ</th><th>البيان</th><th>المبلغ</th></thead>
+                <tbody>${this.data.expenses.map(e => `<td><td>${e.date}</td><td>${e.note}</td><td>${e.amount}</td></tr>`).join('')}</tbody></table>
+            </div>`;
+    },
+
+    addExpense() {
+        let note = document.getElementById('expNote').value;
+        let amount = Number(document.getElementById('expAmount').value);
+        if(!note || !amount) return this.toast("أدخل البيانات!", 'error');
+        this.data.expenses.unshift({ note, amount, date: new Date().toLocaleDateString() });
+        this.saveData();
+        this.renderExpenses(document.getElementById('viewPort'));
+        this.toast("تم تسجيل المصروف");
+    },
+
+    renderReturns(v) {
+        v.innerHTML = `
+            <div class="card">
+                <h3>↩️ المرتجعات</h3>
+                <div style="display:grid; grid-template-columns: 2fr 1fr auto; gap:10px;">
+                    <input id="returnProduct" placeholder="المنتج المرتجع">
+                    <input id="returnAmount" type="number" placeholder="المبلغ">
+                    <button class="btn btn-w" onclick="app.addReturn()">تسجيل</button>
+                </div>
+                <table id="returnTable"><thead><th>التاريخ</th><th>المنتج</th><th>المبلغ</th></thead>
+                <tbody>${this.data.returns.map(r => `<td><td>${r.date}</td><td>${r.product}</td><td>${r.amount}</td></tr>`).join('')}</tbody></table>
+            </div>`;
+    },
+
+    addReturn() {
+        let product = document.getElementById('returnProduct').value;
+        let amount = Number(document.getElementById('returnAmount').value);
+        if(!product || !amount) return this.toast("أدخل البيانات!", 'error');
+        this.data.returns.unshift({ product, amount, date: new Date().toLocaleDateString() });
+        this.saveData();
+        this.renderReturns(document.getElementById('viewPort'));
+        this.toast("تم تسجيل المرتجع");
+    },
+
+    renderReports(v) {
+        v.innerHTML = `
+            <div class="card">
+                <h3>📋 سجل المبيعات</h3>
+                <div class="table-wrap"><td><thead><th>رقم الفاتورة</th><th>التاريخ</th><th>الإجمالي</th><th>إجراء</th></thead>
+                <tbody>${this.data.sales.map(s => `
+                    <tr>
+                        <td>#${s.id}</td>
+                        <td>${s.date}</td>
+                        <td>${s.total.toFixed(2)}</td>
+                        <td><button class="btn btn-p" onclick="app.printInvoiceById(${s.id})">طباعة</button> <button class="btn btn-d" onclick="app.returnSale(${s.id})">إرجاع</button></td>
+                    </tr>`).join('')}</tbody>
+                </table>
+            </div>`;
+    },
+
+    printInvoiceById(id) {
+        let sale = this.data.sales.find(s => s.id == id);
+        if(sale) this.printInvoice(sale);
+        else this.toast("الفاتورة غير موجودة", 'error');
+    },
+
+    returnSale(id) {
+        if(confirm("هل تريد إرجاع هذه الفاتورة واسترجاع الكميات للمخزن؟")) {
+            let sale = this.data.sales.find(s => s.id == id);
+            if(sale && sale.items) {
+                sale.items.forEach(item => {
+                    let p = this.data.products.find(x => x.id === item.id);
+                    if(p) p.qty += item.q;
+                });
+                this.data.returns.unshift({ product: `فاتورة رقم ${id}`, amount: sale.total, date: new Date().toLocaleDateString() });
+                this.data.sales = this.data.sales.filter(s => s.id != id);
+                this.saveData();
+                this.renderReports(document.getElementById('viewPort'));
+                this.toast("تم إرجاع الفاتورة");
             }
         }
+    }
+};
 
-        // --- وظائف المخزن ---
-        function openEdit(id, name, cost, price, qty) {
-            document.getElementById('editId').value = id;
-            document.getElementById('editName').value = name;
-            document.getElementById('editCost').value = cost;
-            document.getElementById('editPrice').value = price;
-            document.getElementById('editQty').value = qty;
-            document.getElementById('editModal').style.display = 'flex';
-        }
-        
-        function closeModal() { document.getElementById('editModal').style.display = 'none'; }
-        
-        async function updateProduct() {
-            const id = document.getElementById('editId').value;
-            const data = { n: document.getElementById('editName').value, c: document.getElementById('editCost').value, p: document.getElementById('editPrice').value, q: document.getElementById('editQty').value };
-            await fetch(`/api/products/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-            closeModal(); route('stock');
-        }
-        
-        async function delP(id) { if(confirm("حذف المنتج نهائياً؟")) { await fetch(`/api/products/${id}`, {method:'DELETE'}); route('stock'); } }
-        
-        async function saveP() {
-            const data = { n: document.getElementById('pn').value, c: document.getElementById('pc').value, p: document.getElementById('pp').value, q: document.getElementById('pq').value };
-            await fetch('/api/products', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
-            route('stock');
-        }
-        
-        async function makeReturn(id) { if(confirm("هل تريد إرجاع هذه الفاتورة؟")) { await fetch(`/api/return/${id}`, {method:'POST'}); route('sales'); } }
-
-        // --- وظائف العملاء والمصاريف ---
-        async function addContact() {
-            const name = document.getElementById('cname').value;
-            const type = document.getElementById('ctype').value;
-            if(!name) return alert("أدخل الاسم!");
-            await fetch('/api/contacts', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, type}) });
-            route('contacts');
-        }
-        
-        async function payDebt(id) {
-            const amount = prompt("أدخل المبلغ المسدد:");
-            if(amount && !isNaN(amount)) {
-                await fetch(`/api/contacts/${id}/pay`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount: parseFloat(amount)}) });
-                route('contacts');
-            }
-        }
-        
-        async function deleteContact(id) { if(confirm("حذف هذا الحساب؟")) { await fetch(`/api/contacts/${id}`, {method:'DELETE'}); route('contacts'); } }
-        
-        async function addExpense() {
-            const title = document.getElementById('etitle').value;
-            const amount = document.getElementById('eamount').value;
-            if(!title || !amount) return alert("أدخل البيانات!");
-            await fetch('/api/expenses', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title, amount: parseFloat(amount)}) });
-            route('exp');
-        }
-        
-        async function deleteExpense(id) { if(confirm("حذف هذا المصروف؟")) { await fetch(`/api/expenses/${id}`, {method:'DELETE'}); route('exp'); } }
-
-        function updateRole() { userRole = document.getElementById('roleSelect').value; route('stock'); }
-        function toggleDark() { document.body.classList.toggle('dark-mode'); }
-        
-        window.onload = () => route('dash');
-    </script>
+// Start the app
+auth.onAuthStateChanged(user => {
+    if(user) {
+        app.user = user;
+        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('appUI').style.display = 'block';
+        app.loadUserData();
+    } else {
+        document.getElementById('authScreen').style.display = 'flex';
+        document.getElementById('appUI').style.display = 'none';
+    }
+});
+</script>
 </body>
 </html>
-"""
-
-# ==================== APIs ====================
-
-@app.route('/')
-def index(): 
-    return render_template_string(UI)
-
-@app.route('/api/stats')
-def stats():
-    rev = db.session.query(db.func.sum(Sale.total)).filter(Sale.is_return == False).scalar() or 0
-    profit = db.session.query(db.func.sum(Sale.profit)).filter(Sale.is_return == False).scalar() or 0
-    exp = db.session.query(db.func.sum(Expense.amount)).scalar() or 0
-    return jsonify({"rev": round(rev, 2), "profit": round(profit - exp, 2), "exp": round(exp, 2)})
-
-@app.route('/api/products', methods=['GET', 'POST'])
-def handle_products():
-    if request.method == 'POST':
-        d = request.json
-        db.session.add(Product(name=d['n'], cost=float(d['c']), price=float(d['p']), qty=int(d['q'])))
-        db.session.commit()
-    return jsonify([{'id':p.id,'name':p.name,'cost':p.cost,'price':p.price,'qty':p.qty} for p in Product.query.all()])
-
-@app.route('/api/products/<int:id>', methods=['PUT', 'DELETE'])
-def update_product(id):
-    p = Product.query.get(id)
-    if request.method == 'PUT':
-        d = request.json
-        p.name=d['n']; p.cost=float(d['c']); p.price=float(d['p']); p.qty=int(d['q'])
-    else:
-        db.session.delete(p)
-    db.session.commit()
-    return jsonify({"status": "ok"})
-
-@app.route('/api/sales', methods=['POST'])
-def add_sale():
-    d = request.json
-    total = 0
-    profit = 0
-    for i in d['items']:
-        p = Product.query.get(i['id'])
-        if p and p.qty >= i['q']:
-            p.qty -= i['q']
-            total += p.price * i['q']
-            profit += (p.price - p.cost) * i['q']
-    new_sale = Sale(items=json.dumps(d['items']), total=total, profit=profit)
-    db.session.add(new_sale)
-    db.session.commit()
-    return jsonify({"id": new_sale.id, "total": total})
-
-@app.route('/api/sales_history')
-def sales_history():
-    return jsonify([{'id':s.id, 'total':s.total, 'is_return':s.is_return, 'date':s.date.strftime('%Y-%m-%d %H:%M')} for s in Sale.query.order_by(Sale.id.desc()).all()])
-
-@app.route('/api/return/<int:id>', methods=['POST'])
-def return_sale(id):
-    s = Sale.query.get(id)
-    if not s or s.is_return:
-        return jsonify({"error": "Already returned"}), 400
-    items = json.loads(s.items)
-    for i in items:
-        p = Product.query.get(i['id'])
-        if p:
-            p.qty += i['q']
-    s.is_return = True
-    db.session.commit()
-    return jsonify({"status": "success"})
-
-@app.route('/api/export')
-def export_excel():
-    df = pd.DataFrame([{'المنتج':p.name,'التكلفة':p.cost,'البيع':p.price,'المخزون':p.qty} for p in Product.query.all()])
-    out = io.BytesIO()
-    with pd.ExcelWriter(out, engine='xlsxwriter') as w:
-        df.to_excel(w, index=False)
-    out.seek(0)
-    return send_file(out, mimetype="application/vnd.ms-excel", as_attachment=True, download_name="Golden_Stock.xlsx")
-
-@app.route('/api/contacts', methods=['GET', 'POST'])
-def handle_contacts():
-    if request.method == 'POST':
-        d = request.json
-        db.session.add(Contact(name=d['name'], type=d['type']))
-        db.session.commit()
-    return jsonify([{'id':c.id, 'name':c.name, 'type':c.type, 'debt':c.debt} for c in Contact.query.all()])
-
-@app.route('/api/contacts/<int:id>/pay', methods=['PUT'])
-def pay_contact_debt(id):
-    c = Contact.query.get(id)
-    if c:
-        data = request.json
-        c.debt -= data['amount']
-        db.session.commit()
-    return jsonify({"status": "ok"})
-
-@app.route('/api/contacts/<int:id>', methods=['DELETE'])
-def delete_contact(id):
-    c = Contact.query.get(id)
-    if c:
-        db.session.delete(c)
-        db.session.commit()
-    return jsonify({"status": "ok"})
-
-@app.route('/api/expenses', methods=['GET', 'POST'])
-def handle_expenses():
-    if request.method == 'POST':
-        d = request.json
-        db.session.add(Expense(title=d['title'], amount=d['amount']))
-        db.session.commit()
-    return jsonify([{'id':e.id, 'title':e.title, 'amount':e.amount, 'date':e.date.strftime('%Y-%m-%d')} for e in Expense.query.all()])
-
-@app.route('/api/expenses/<int:id>', methods=['DELETE'])
-def delete_expense(id):
-    e = Expense.query.get(id)
-    if e:
-        db.session.delete(e)
-        db.session.commit()
-    return jsonify({"status": "ok"})
-
-if __name__ == '__main__':
-    app.run(debug=True, port=8080)
