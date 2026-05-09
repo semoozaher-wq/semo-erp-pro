@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>GOLDEN ERP V4.0 | النظام المحاسبي المتكامل الكامل</title>
+    <title>GOLDEN ERP V6.0 | النظام المتكامل الكامل</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -13,273 +13,66 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Cairo', sans-serif;
-        }
-
-        :root {
-            --primary: #0f172a;
-            --accent: #3b82f6;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #1e293b;
-            --border: #e2e8f0;
-        }
-
-        [data-theme="dark"] {
-            --primary: #f8fafc;
-            --accent: #60a5fa;
-            --bg: #020617;
-            --card: #1e293b;
-            --text: #f1f5f9;
-            --border: #334155;
-        }
-
-        body {
-            background: var(--bg);
-            color: var(--text);
-            transition: 0.3s;
-        }
-
-        .sidebar {
-            width: 270px;
-            background: var(--primary);
-            color: white;
-            position: fixed;
-            right: 0;
-            height: 100vh;
-            padding: 20px;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .main {
-            margin-right: 270px;
-            padding: 25px;
-            min-height: 100vh;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            border-radius: 12px;
-            cursor: pointer;
-            color: #94a3b8;
-            margin-bottom: 5px;
-            transition: 0.2s;
-        }
-
-        .nav-item.active,
-        .nav-item:hover {
-            background: var(--accent);
-            color: white;
-        }
-
-        .card {
-            background: var(--card);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .grid-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.2s;
-        }
-
-        .btn-p {
-            background: var(--accent);
-            color: white;
-        }
-
-        .btn-s {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-d {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-w {
-            background: var(--warning);
-            color: white;
-        }
-
-        input,
-        select {
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            width: 100%;
-            margin-bottom: 10px;
-            background: var(--card);
-            color: var(--text);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        th,
-        td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
-            text-align: center;
-        }
-
-        .qty-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            border: 1px solid var(--border);
-            cursor: pointer;
-            background: var(--card);
-        }
-
-        .pos-grid {
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 20px;
-        }
-
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 12px;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        .prod-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            padding: 12px;
-            border-radius: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .prod-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--accent);
-        }
-
-        .low-stock {
-            background: #fee2e2 !important;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: var(--success);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 10px;
-            z-index: 9999;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(-100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .menu-toggle {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--accent);
-            color: white;
-            border: none;
-            cursor: pointer;
-            z-index: 1001;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(100%);
-                width: 260px;
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .main {
-                margin-right: 0;
-            }
-            .pos-grid {
-                grid-template-columns: 1fr;
-            }
-            .menu-toggle {
-                display: flex;
-            }
-        }
-
-        @media print {
-            .sidebar,
-            .btn,
-            .menu-toggle,
-            .no-print {
-                display: none !important;
-            }
-            .main {
-                margin: 0;
-                padding: 0;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        :root { --primary: #0f172a; --accent: #3b82f6; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --border: #e2e8f0; }
+        [data-theme="dark"] { --primary: #f8fafc; --accent: #60a5fa; --bg: #020617; --card: #1e293b; --text: #f1f5f9; --border: #334155; }
+        body { background: var(--bg); color: var(--text); transition: 0.3s; overflow-x: hidden; }
+        .sidebar { width: 270px; background: var(--primary); color: white; position: fixed; right: 0; height: 100vh; padding: 20px; z-index: 1000; overflow-y: auto; }
+        .main { margin-right: 270px; padding: 25px; min-height: 100vh; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; cursor: pointer; color: #94a3b8; margin-bottom: 5px; transition: 0.2s; }
+        .nav-item.active, .nav-item:hover { background: var(--accent); color: white; }
+        .card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .btn { padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-p { background: var(--accent); color: white; }
+        .btn-s { background: var(--success); color: white; }
+        .btn-d { background: var(--danger); color: white; }
+        .btn-w { background: var(--warning); color: white; }
+        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; width: 100%; margin-bottom: 10px; background: var(--card); color: var(--text); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; border-bottom: 1px solid var(--border); text-align: center; }
+        .qty-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); cursor: pointer; background: var(--card); }
+        .pos-grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; max-height: 60vh; overflow-y: auto; }
+        .prod-card { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .prod-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+        .low-stock { background: #fee2e2 !important; }
+        .toast { position: fixed; bottom: 20px; left: 20px; background: var(--success); color: white; padding: 12px 24px; border-radius: 10px; z-index: 9999; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .menu-toggle { position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--accent); color: white; border: none; cursor: pointer; z-index: 1001; display: none; align-items: center; justify-content: center; }
+        #aiChat { position: fixed; bottom: 85px; left: 20px; width: 320px; background: var(--card); border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); border: 1px solid var(--border); z-index: 1002; display: none; flex-direction: column; }
+        .ai-header { background: var(--accent); color: white; padding: 12px; border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; cursor: pointer; }
+        .ai-messages { max-height: 300px; overflow-y: auto; padding: 10px; font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
+        .ai-message { background: var(--bg); padding: 8px 12px; border-radius: 12px; align-self: flex-start; max-width: 85%; }
+        .user-message { background: var(--accent); color: white; padding: 8px 12px; border-radius: 12px; align-self: flex-end; }
+        .ai-input { display: flex; padding: 10px; border-top: 1px solid var(--border); gap: 8px; }
+        .ai-input input { flex: 1; padding: 8px; border-radius: 20px; border: 1px solid var(--border); background: var(--card); color: var(--text); }
+        .ai-float-btn { position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--accent); color: white; border: none; cursor: pointer; z-index: 1001; font-size: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        @media (max-width: 768px) { .sidebar { transform: translateX(100%); width: 260px; } .sidebar.open { transform: translateX(0); } .main { margin-right: 0; } .pos-grid { grid-template-columns: 1fr; } .menu-toggle, .ai-float-btn { display: flex; } }
+        @media print { .sidebar, .btn, .menu-toggle, .ai-float-btn, #aiChat, .no-print { display: none !important; } .main { margin: 0; padding: 0; } }
     </style>
 </head>
 <body>
 
 <div id="toast" class="toast" style="display:none;"></div>
 <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+<button class="ai-float-btn" onclick="app.toggleAI()"><i class="fas fa-robot"></i></button>
+<div id="aiChat">
+    <div class="ai-header" onclick="app.toggleAI()"><span>🤖 المساعد الذكي AI</span> <i class="fas fa-times"></i></div>
+    <div class="ai-messages" id="aiMessages">
+        <div class="ai-message">مرحباً! أنا المساعد الذكي. اسألني عن الأرباح، المخزون، أو نصائح مالية.</div>
+    </div>
+    <div class="ai-input">
+        <input type="text" id="aiQuestion" placeholder="اسألني...">
+        <button class="btn btn-p" style="padding: 6px 12px;" onclick="app.askAI()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
 
 <!-- شاشة تسجيل الدخول -->
 <div id="authScreen" style="position:fixed; inset:0; background:var(--primary); z-index:9999; display:flex; align-items:center; justify-content:center;">
     <div class="card" style="width:90%; max-width:420px; text-align:center;">
-        <h1 style="color:var(--accent); margin-bottom:10px;">GOLDEN ERP V4.0</h1>
-        <p style="margin-bottom:20px;">النظام المحاسبي المتكامل - حفظ سحابي</p>
+        <h1 style="color:var(--accent); margin-bottom:10px;">GOLDEN ERP V6.0</h1>
+        <p style="margin-bottom:20px;">النظام المحاسبي المتكامل الكامل</p>
         <div id="loginForm">
             <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
             <input type="password" id="loginPass" placeholder="كلمة المرور">
@@ -321,620 +114,159 @@
 <div id="printArea" style="display:none;"><div id="printDetails"></div><div id="qrPrint"></div></div>
 
 <script>
-    // Firebase Config
-    const firebaseConfig = {
-        apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
-        authDomain: "my-pos-system-11dee.firebaseapp.com",
-        databaseURL: "https://my-pos-system-11dee-default-rtdb.firebaseio.com",
-        projectId: "my-pos-system-11dee",
-        storageBucket: "my-pos-system-11dee.firebasestorage.app",
-        messagingSenderId: "565195477080",
-        appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d"
-    };
+const firebaseConfig = {
+    apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
+    authDomain: "my-pos-system-11dee.firebaseapp.com",
+    databaseURL: "https://my-pos-system-11dee-default-rtdb.firebaseio.com",
+    projectId: "my-pos-system-11dee",
+    storageBucket: "my-pos-system-11dee.firebasestorage.app",
+    messagingSenderId: "565195477080",
+    appId: "1:565195477080:web:1ffa21a34e28b47dddfa2d"
+};
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
 
-    const app = {
-        user: null, role: 'staff', autoTimer: null,
-        data: { products: [], sales: [], contacts: [], expenses: [], returns: [] },
-        cart: [],
+const app = {
+    user: null, role: 'staff', autoTimer: null,
+    data: { products: [], sales: [], contacts: [], expenses: [], returns: [] },
+    cart: [],
 
-        toast(msg, type = 'success') {
-            let t = document.getElementById('toast');
-            t.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${msg}`;
-            t.style.background = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#f59e0b';
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 3000);
-        },
+    toast(msg, type='success') {
+        let t = document.getElementById('toast');
+        t.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-circle'}"></i> ${msg}`;
+        t.style.background = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#f59e0b';
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 4000);
+    },
 
-        async login() {
-            let e = document.getElementById('loginEmail').value, p = document.getElementById('loginPass').value;
-            try { await auth.signInWithEmailAndPassword(e, p); } catch (err) { this.toast(err.message, 'error'); }
-        },
+    async login() { let e = document.getElementById('loginEmail').value, p = document.getElementById('loginPass').value; try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { this.toast(err.message, 'error'); } },
+    async googleLogin() { try { await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); } catch(err) { this.toast(err.message, 'error'); } },
+    async register() { let e = document.getElementById('regEmail').value, p = document.getElementById('regPass').value, n = document.getElementById('regName').value, r = document.getElementById('regRole').value; try { let res = await auth.createUserWithEmailAndPassword(e, p); await res.user.updateProfile({ displayName: n }); await db.ref(`roles/${res.user.uid}`).set(r); this.toast("تم إنشاء الحساب بنجاح"); } catch(err) { this.toast(err.message, 'error'); } },
+    logout() { auth.signOut(); if(this.autoTimer) clearInterval(this.autoTimer); location.reload(); },
+    showRegister() { document.getElementById('loginForm').style.display = 'none'; document.getElementById('registerForm').style.display = 'block'; },
+    showLogin() { document.getElementById('registerForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'block'; },
+    toggleTheme() { document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); },
 
-        async googleLogin() {
-            try { await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); } catch (err) { this.toast(err.message, 'error'); }
-        },
+    async loadUserData() {
+        let roleSnap = await db.ref(`roles/${this.user.uid}`).once('value');
+        this.role = roleSnap.val() || 'staff';
+        document.getElementById('userNameDisplay').innerText = this.user.displayName || this.user.email.split('@')[0];
+        document.getElementById('userRoleDisplay').innerText = this.role === 'admin' ? 'مدير النظام' : 'موظف مبيعات';
+        if(this.role !== 'admin') document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        else document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
+        let dataSnap = await db.ref(`data/${this.user.uid}`).once('value');
+        let val = dataSnap.val() || {};
+        this.data = { products: val.products || [], sales: val.sales || [], contacts: val.contacts || [], expenses: val.expenses || [], returns: val.returns || [] };
+        if(this.data.products.length === 0) this.data.products = [{ id: 1, name: "هاتف ذكي", price: 2500, cost: 1800, qty: 15, cat: "الكترونيات" }, { id: 2, name: "حاسوب محمول", price: 5200, cost: 4200, qty: 8, cat: "الكترونيات" }, { id: 3, name: "سماعة لاسلكية", price: 350, cost: 200, qty: 50, cat: "اكسسوارات" }];
+        this.startAutoSave();
+        this.route('dash');
+    },
 
-        async register() {
-            let e = document.getElementById('regEmail').value, p = document.getElementById('regPass').value, n = document.getElementById('regName').value, r = document.getElementById('regRole').value;
-            try {
-                let res = await auth.createUserWithEmailAndPassword(e, p);
-                await res.user.updateProfile({ displayName: n });
-                await db.ref(`roles/${res.user.uid}`).set(r);
-                this.toast("تم إنشاء الحساب بنجاح");
-            } catch (err) { this.toast(err.message, 'error'); }
-        },
+    startAutoSave() { if(this.autoTimer) clearInterval(this.autoTimer); this.autoTimer = setInterval(() => this.saveData(), 15 * 60 * 1000); },
+    async saveData() { if(!this.user) return; await db.ref(`data/${this.user.uid}`).set({ products: this.data.products, sales: this.data.sales, contacts: this.data.contacts, expenses: this.data.expenses, returns: this.data.returns }); this.toast("💾 تم الحفظ التلقائي", 'info'); },
 
-        logout() { auth.signOut(); if (this.autoTimer) clearInterval(this.autoTimer); location.reload(); },
-        showRegister() { document.getElementById('loginForm').style.display = 'none'; document.getElementById('registerForm').style.display = 'block'; },
-        showLogin() { document.getElementById('registerForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'block'; },
-        toggleTheme() { document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); },
+    route(page, el) {
+        if(el) { document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); }
+        let v = document.getElementById('viewPort');
+        if(page === 'dash') this.renderDash(v);
+        if(page === 'pos') this.renderPOS(v);
+        if(page === 'stock') this.renderStock(v);
+        if(page === 'clients') this.renderClients(v);
+        if(page === 'expenses') this.renderExpenses(v);
+        if(page === 'returns') this.renderReturns(v);
+        if(page === 'reports') this.renderReports(v);
+    },
 
-        async loadUserData() {
-            let roleSnap = await db.ref(`roles/${this.user.uid}`).once('value');
-            this.role = roleSnap.val() || 'staff';
-            document.getElementById('userNameDisplay').innerText = this.user.displayName || this.user.email.split('@')[0];
-            document.getElementById('userRoleDisplay').innerText = this.role === 'admin' ? 'مدير النظام' : 'موظف مبيعات';
-            if (this.role !== 'admin') document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-            else document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
+    renderDash(v) {
+        let today = new Date().toLocaleDateString();
+        let salesToday = this.data.sales.filter(s => s.date && s.date.includes(today)).reduce((a,b)=>a+(b.total||0), 0);
+        let expensesToday = this.data.expenses.filter(e => e.date === today).reduce((a,b)=>a+(b.amount||0), 0);
+        let totalSales = this.data.sales.reduce((a,b)=>a+(b.total||0), 0);
+        let totalCost = this.data.sales.reduce((a,b)=>a+(b.totalCost||0), 0);
+        let totalExpenses = this.data.expenses.reduce((a,b)=>a+(b.amount||0), 0);
+        let netProfit = totalSales - totalCost - totalExpenses;
+        let lowStock = this.data.products.filter(p => (p.qty||0) < 5);
+        v.innerHTML = `<div class="grid-stats"><div class="card" style="background:linear-gradient(135deg,#0d9488,#14b8a6); color:white;"><h4>📊 مبيعات اليوم</h4><h2>${salesToday.toFixed(2)}</h2></div><div class="card" style="background:linear-gradient(135deg,#ef4444,#f87171); color:white;"><h4>💰 مصاريف اليوم</h4><h2>${expensesToday.toFixed(2)}</h2></div><div class="card" style="background:linear-gradient(135deg,#f59e0b,#fbbf24); color:white;"><h4>⚠️ نواقص المخزن</h4><h2>${lowStock.length}</h2></div><div class="card" style="background:linear-gradient(135deg,#10b981,#34d399); color:white;"><h4>🏆 صافي الربح الكلي</h4><h2>${netProfit.toFixed(2)}</h2></div></div><div class="card"><h3>📈 الرسم البياني للمبيعات</h3><canvas id="salesChart" height="100"></canvas></div><div class="card"><h3>⚠️ تنبيهات المخزون المنخفض</h3>${lowStock.length ? `<div class="grid-stats">${lowStock.map(p => `<div class="card" style="border-right:3px solid var(--danger);">${p.name}<br><b>المتبقي: ${p.qty}</b></div>`).join('')}</div>` : '<p>✅ كل المنتجات متوفرة بكميات جيدة</p>'}</div>`;
+        let ctx = document.getElementById('salesChart'); if(ctx) new Chart(ctx, { type: 'line', data: { labels: this.data.sales.slice(0,10).map(s => s.date), datasets: [{ label: 'المبيعات', data: this.data.sales.slice(0,10).map(s => s.total), borderColor: '#3b82f6', tension: 0.4, fill: true }] } });
+    },
 
-            let dataSnap = await db.ref(`data/${this.user.uid}`).once('value');
-            let val = dataSnap.val() || {};
-            this.data = {
-                products: val.products || [],
-                sales: val.sales || [],
-                contacts: val.contacts || [],
-                expenses: val.expenses || [],
-                returns: val.returns || []
-            };
-            if (this.data.products.length === 0) {
-                this.data.products = [
-                    { id: 1, name: "هاتف ذكي", price: 2500, cost: 1800, qty: 15, cat: "الكترونيات" },
-                    { id: 2, name: "حاسوب محمول", price: 5200, cost: 4200, qty: 8, cat: "الكترونيات" },
-                    { id: 3, name: "سماعة لاسلكية", price: 350, cost: 200, qty: 50, cat: "اكسسوارات" }
-                ];
-            }
-            this.startAutoSave();
-            this.route('dash');
-        },
+    renderPOS(v) {
+        v.innerHTML = `<div class="pos-grid"><div class="card"><div style="display:flex; gap:10px; margin-bottom:15px;"><input type="text" id="posSearch" placeholder="🔍 بحث عن منتج..." onkeyup="app.filterPOS()"><select id="posCat" onchange="app.filterPOS()" style="width:150px;"><option value="">كل الفئات</option></select></div><div id="posGrid" class="product-grid"></div></div><div class="card"><h3>🛒 سلة المشتريات <button class="btn btn-d" style="float:left; padding:5px 10px;" onclick="app.cart=[]; app.updateCart()">مسح</button></h3><div id="cartItems" style="min-height:250px; margin:15px 0;"></div><hr><h2>الإجمالي: <span id="cartTotal">0.00</span></h2><button class="btn btn-s" style="width:100%; height:50px; margin-top:15px;" onclick="app.checkout()"><i class="fas fa-check-circle"></i> إتمام البيع وطباعة QR</button></div></div>`;
+        this.loadCategories(); this.filterPOS();
+    },
+    loadCategories() { let cats = ['عام', ...new Set(this.data.products.map(p => p.cat || 'عام'))]; let catSelect = document.getElementById('posCat'); if(catSelect) catSelect.innerHTML = '<option value="">كل الفئات</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join(''); },
+    filterPOS() { let search = document.getElementById('posSearch')?.value.toLowerCase() || ''; let cat = document.getElementById('posCat')?.value || ''; let filtered = this.data.products.filter(p => { let match = true; if(search && !p.name.toLowerCase().includes(search)) match = false; if(cat && p.cat !== cat) match = false; return match; }); let grid = document.getElementById('posGrid'); if(grid) grid.innerHTML = filtered.map(p => `<div class="prod-card" onclick="app.addToCart(${p.id})"><b>${p.name}</b><br><span style="color:var(--accent)">${p.price}</span><br><small>متاح: ${p.qty}</small></div>`).join(''); },
+    addToCart(id) { let p = this.data.products.find(x => x.id === id); if(!p || p.qty <= 0) return this.toast("المنتج غير متوفر!", 'error'); let ex = this.cart.find(x => x.id === id); if(ex) { if(ex.q < p.qty) ex.q++; else return this.toast("الكمية المطلوبة أكبر من المتوفرة!", 'error'); } else this.cart.push({...p, q: 1}); this.updateCart(); },
+    updateCart() { let cartDiv = document.getElementById('cartItems'); if(!cartDiv) return; cartDiv.innerHTML = this.cart.map((it, i) => `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:5px; background:var(--bg); border-radius:8px;"><span>${it.name}</span><div><button class="qty-btn" onclick="app.changeQty(${i}, -1)">-</button> ${it.q} <button class="qty-btn" onclick="app.changeQty(${i}, 1)">+</button></div><b>${(it.price * it.q).toFixed(2)} <i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="app.cart.splice(${i},1); app.updateCart();"></i></b></div>`).join(''); let total = this.cart.reduce((a,b)=>a+(b.price*b.q),0); let totalSpan = document.getElementById('cartTotal'); if(totalSpan) totalSpan.innerText = total.toFixed(2); },
+    changeQty(i, v) { let p = this.data.products.find(x => x.id === this.cart[i].id); if(v === 1 && this.cart[i].q < p.qty) this.cart[i].q++; else if(v === -1 && this.cart[i].q > 1) this.cart[i].q--; else if(v === -1 && this.cart[i].q === 1) this.cart.splice(i,1); this.updateCart(); },
+    async checkout() { if(this.cart.length === 0) return this.toast("السلة فارغة!", 'error'); let total = this.cart.reduce((a,b)=>a+(b.price*b.q),0); let totalCost = this.cart.reduce((a,b)=>a+((b.cost||0)*b.q),0); let saleId = Date.now(); let sale = { id: saleId, total, totalCost, items: [...this.cart], date: new Date().toLocaleString() }; this.data.sales.unshift(sale); this.cart.forEach(c => { let p = this.data.products.find(x => x.id === c.id); if(p) p.qty -= c.q; }); await this.saveData(); this.printInvoice(sale); this.cart = []; this.updateCart(); this.toast("تمت عملية البيع بنجاح!"); },
+    printInvoice(sale) { let printDiv = document.getElementById('printArea'); printDiv.innerHTML = `<div style="text-align:center; font-family:'Cairo'; padding:20px;"><h2 style="color:var(--accent)">GOLDEN ERP</h2><p>فاتورة مبيعات رقم: ${sale.id}</p><p>التاريخ: ${sale.date}</p><hr>${sale.items.map(i => `<p>${i.name} x ${i.q} = ${(i.price*i.q).toFixed(2)}</p>`).join('')}<hr><h3>الإجمالي: ${sale.total.toFixed(2)}</h3><div id="qrCodePrint" style="display:flex; justify-content:center; margin-top:15px;"></div><p>شكراً لتسوقكم مع GOLDEN ERP</p></div>`; new QRCode(document.getElementById("qrCodePrint"), { text: `GOLDEN-${sale.id}`, width: 120, height: 120 }); setTimeout(() => { window.print(); }, 500); },
 
-        startAutoSave() {
-            if (this.autoTimer) clearInterval(this.autoTimer);
-            this.autoTimer = setInterval(() => this.saveData(), 15 * 60 * 1000);
-        },
+    renderStock(v) { v.innerHTML = `<div class="card"><div style="display:flex; justify-content:space-between;"><h3>📦 إدارة المخزون</h3><button class="btn btn-s" onclick="app.exportStock()"><i class="fas fa-file-excel"></i> تصدير Excel</button></div><div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap:10px; margin:15px 0;"><input id="pName" placeholder="اسم المنتج"><input id="pCat" placeholder="الفئة" value="عام"><input id="pCost" type="number" placeholder="التكلفة"><input id="pPrice" type="number" placeholder="السعر"><input id="pQty" type="number" placeholder="الكمية"><button class="btn btn-p" onclick="app.addProduct()">+ إضافة</button></div><input type="text" id="stockSearch" placeholder="🔍 بحث في المخزن..." onkeyup="app.filterStock()"><table id="stockTable"><thead><th>المنتج</th><th>الفئة</th><th>التكلفة</th><th>السعر</th><th>الكمية</th><th>إجراءات</th></thead><tbody></tbody></table></div>`; this.filterStock(); },
+    addProduct() { let name = document.getElementById('pName').value, cat = document.getElementById('pCat').value, cost = Number(document.getElementById('pCost').value), price = Number(document.getElementById('pPrice').value), qty = Number(document.getElementById('pQty').value); if(!name || !price) return this.toast("اسم المنتج والسعر مطلوبان!", 'error'); this.data.products.push({ id: Date.now(), name, cat, cost, price, qty: qty || 0 }); this.saveData(); this.filterStock(); this.toast("تم إضافة المنتج"); },
+    filterStock() { let search = document.getElementById('stockSearch')?.value.toLowerCase() || ''; let filtered = this.data.products.filter(p => p.name.toLowerCase().includes(search)); let tbody = document.querySelector('#stockTable tbody'); if(tbody) tbody.innerHTML = filtered.map(p => `<tr class="${p.qty < 5 ? 'low-stock' : ''}"><td>${p.name}</td><td>${p.cat || 'عام'}</td><td>${p.cost}</td><td>${p.price}</td><td>${p.qty}</td><td><button class="btn btn-p" onclick="app.editProduct(${p.id})"><i class="fas fa-edit"></i></button> <button class="btn btn-d" onclick="app.deleteProduct(${p.id})"><i class="fas fa-trash"></i></button></td><table>`).join(''); },
+    editProduct(id) { let p = this.data.products.find(x => x.id === id); let nn = prompt("الاسم الجديد:", p.name), nc = prompt("الفئة الجديدة:", p.cat || 'عام'), ncost = prompt("سعر التكلفة الجديد:", p.cost), np = prompt("سعر البيع الجديد:", p.price), nq = prompt("الكمية الجديدة:", p.qty); if(nn) p.name = nn; if(nc) p.cat = nc; if(ncost) p.cost = Number(ncost); if(np) p.price = Number(np); if(nq) p.qty = Number(nq); this.saveData(); this.filterStock(); this.toast("تم تعديل المنتج"); },
+    deleteProduct(id) { if(confirm("هل أنت متأكد من حذف هذا المنتج؟")) { this.data.products = this.data.products.filter(p => p.id !== id); this.saveData(); this.filterStock(); this.toast("تم حذف المنتج"); } },
+    exportStock() { let ws = XLSX.utils.json_to_sheet(this.data.products); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "المخزن"); XLSX.writeFile(wb, `GOLDEN_stock_${Date.now()}.xlsx`); this.toast("تم تصدير الملف"); },
 
-        async saveData() {
-            if (!this.user) return;
-            await db.ref(`data/${this.user.uid}`).set({
-                products: this.data.products,
-                sales: this.data.sales,
-                contacts: this.data.contacts,
-                expenses: this.data.expenses,
-                returns: this.data.returns
-            });
-            this.toast("💾 تم الحفظ التلقائي", 'info');
-        },
+    renderClients(v) { v.innerHTML = `<div class="card"><h3>👥 العملاء والموردين</h3><div style="display:flex; gap:10px; flex-wrap:wrap;"><input id="clientName" placeholder="الاسم" style="flex:2;"><select id="clientType" style="flex:1;"><option value="عميل">عميل</option><option value="مورد">مورد</option></select><button class="btn btn-p" onclick="app.addClient()">+ إضافة</button></div><input type="text" id="clientSearch" placeholder="🔍 بحث..." onkeyup="app.filterClients()" style="margin-top:15px;"><table id="clientTable"><thead><th>الاسم</th><th>النوع</th><th>الرصيد</th><th>إجراءات</th></thead><tbody></tbody></table></div>`; this.filterClients(); },
+    addClient() { let name = document.getElementById('clientName').value, type = document.getElementById('clientType').value; if(!name) return this.toast("أدخل الاسم!", 'error'); this.data.contacts.push({ id: Date.now(), name, type, debt: 0 }); this.saveData(); this.filterClients(); this.toast("تمت الإضافة"); },
+    editClient(id) { let c = this.data.contacts.find(x => x.id === id); let nn = prompt("الاسم الجديد:", c.name); if(nn) { c.name = nn; this.saveData(); this.filterClients(); this.toast("تم تعديل العميل"); } },
+    filterClients() { let search = document.getElementById('clientSearch')?.value.toLowerCase() || ''; let filtered = this.data.contacts.filter(c => c.name.toLowerCase().includes(search)); let tbody = document.querySelector('#clientTable tbody'); if(tbody) tbody.innerHTML = filtered.map(c => `<tr><td>${c.name}</td><td>${c.type}</td><td>${c.debt || 0}</td><td><button class="btn btn-p" onclick="app.editClient(${c.id})">تعديل</button> <button class="btn btn-s" onclick="app.payClient(${c.id})">تسديد</button> <button class="btn btn-d" onclick="app.deleteClient(${c.id})">حذف</button></td></tr>`).join(''); },
+    payClient(id) { let c = this.data.contacts.find(x => x.id === id); let amt = Number(prompt(`المبلغ المسدد لـ ${c.name} (الرصيد الحالي: ${c.debt || 0}):`)); if(amt && !isNaN(amt)) { c.debt = (c.debt || 0) - amt; this.saveData(); this.filterClients(); this.toast(`تم تسديد ${amt}`); } },
+    deleteClient(id) { if(confirm("حذف هذا الحساب؟")) { this.data.contacts = this.data.contacts.filter(c => c.id !== id); this.saveData(); this.filterClients(); this.toast("تم الحذف"); } },
 
-        route(page, el) {
-            if (el) { document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); }
-            let v = document.getElementById('viewPort');
-            if (page === 'dash') this.renderDash(v);
-            if (page === 'pos') this.renderPOS(v);
-            if (page === 'stock') this.renderStock(v);
-            if (page === 'clients') this.renderClients(v);
-            if (page === 'expenses') this.renderExpenses(v);
-            if (page === 'returns') this.renderReturns(v);
-            if (page === 'reports') this.renderReports(v);
-        },
+    renderExpenses(v) { v.innerHTML = `<div class="card"><h3>💸 المصاريف</h3><div style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:10px;"><input id="expNote" placeholder="بيان المصروف"><input id="expAmount" type="number" placeholder="المبلغ"><button class="btn btn-d" onclick="app.addExpense()">إضافة</button></div><table id="expTable"><thead><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th>تعديل</th><th>حذف</th></thead><tbody></tbody></table></div>`; this.filterExpenses(); },
+    filterExpenses() { let tbody = document.querySelector('#expTable tbody'); if(tbody) tbody.innerHTML = this.data.expenses.map((e, i) => `<tr><td>${e.date}</td><td>${e.note}</td><td>${e.amount}</td><td><button class="btn btn-p" onclick="app.editExpense(${i})">تعديل</button></td><td><button class="btn btn-d" onclick="app.deleteExpense(${i})">حذف</button></td></tr>`).join(''); },
+    addExpense() { let note = document.getElementById('expNote').value, amount = Number(document.getElementById('expAmount').value); if(!note || !amount) return this.toast("أدخل البيانات!", 'error'); this.data.expenses.unshift({ note, amount, date: new Date().toLocaleDateString() }); this.saveData(); this.filterExpenses(); this.toast("تم تسجيل المصروف"); },
+    editExpense(i) { let e = this.data.expenses[i]; let nn = prompt("البيان الجديد:", e.note), na = prompt("المبلغ الجديد:", e.amount); if(nn) e.note = nn; if(na) e.amount = Number(na); this.saveData(); this.filterExpenses(); this.toast("تم تعديل المصروف"); },
+    deleteExpense(i) { if(confirm("حذف هذا المصروف؟")) { this.data.expenses.splice(i, 1); this.saveData(); this.filterExpenses(); this.toast("تم حذف المصروف"); } },
 
-        renderDash(v) {
-            let today = new Date().toLocaleDateString();
-            let salesToday = this.data.sales.filter(s => s.date && s.date.includes(today)).reduce((a, b) => a + (b.total || 0), 0);
-            let expensesToday = this.data.expenses.filter(e => e.date === today).reduce((a, b) => a + (b.amount || 0), 0);
-            let totalSales = this.data.sales.reduce((a, b) => a + (b.total || 0), 0);
-            let totalCost = this.data.sales.reduce((a, b) => a + (b.totalCost || 0), 0);
-            let totalExpenses = this.data.expenses.reduce((a, b) => a + (b.amount || 0), 0);
-            let netProfit = totalSales - totalCost - totalExpenses;
-            let lowStock = this.data.products.filter(p => (p.qty || 0) < 5);
+    renderReturns(v) { v.innerHTML = `<div class="card"><h3>↩️ المرتجعات</h3><div style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:10px;"><input id="returnProduct" placeholder="المنتج المرتجع"><input id="returnAmount" type="number" placeholder="المبلغ"><button class="btn btn-w" onclick="app.addReturn()">تسجيل</button></div><table id="returnTable"><thead><th>التاريخ</th><th>المنتج</th><th>المبلغ</th><th>تعديل</th><th>حذف</th></thead><tbody></tbody></table></div>`; this.filterReturns(); },
+    filterReturns() { let tbody = document.querySelector('#returnTable tbody'); if(tbody) tbody.innerHTML = this.data.returns.map((r, i) => `<tr><td>${r.date}</td><td>${r.product}</td><td>${r.amount}</td><td><button class="btn btn-p" onclick="app.editReturn(${i})">تعديل</button></td><td><button class="btn btn-d" onclick="app.deleteReturn(${i})">حذف</button></td></tr>`).join(''); },
+    addReturn() { let product = document.getElementById('returnProduct').value, amount = Number(document.getElementById('returnAmount').value); if(!product || !amount) return this.toast("أدخل البيانات!", 'error'); this.data.returns.unshift({ product, amount, date: new Date().toLocaleDateString() }); this.saveData(); this.filterReturns(); this.toast("تم تسجيل المرتجع"); },
+    editReturn(i) { let r = this.data.returns[i]; let np = prompt("المنتج الجديد:", r.product), na = prompt("المبلغ الجديد:", r.amount); if(np) r.product = np; if(na) r.amount = Number(na); this.saveData(); this.filterReturns(); this.toast("تم تعديل المرتجع"); },
+    deleteReturn(i) { if(confirm("حذف هذا المرتجع؟")) { this.data.returns.splice(i, 1); this.saveData(); this.filterReturns(); this.toast("تم حذف المرتجع"); } },
 
-            v.innerHTML = `
-            <div class="grid-stats">
-                <div class="card" style="background:linear-gradient(135deg,#0d9488,#14b8a6); color:white;"><h4>📊 مبيعات اليوم</h4><h2>${salesToday.toFixed(2)}</h2></div>
-                <div class="card" style="background:linear-gradient(135deg,#ef4444,#f87171); color:white;"><h4>💰 مصاريف اليوم</h4><h2>${expensesToday.toFixed(2)}</h2></div>
-                <div class="card" style="background:linear-gradient(135deg,#f59e0b,#fbbf24); color:white;"><h4>⚠️ نواقص المخزن</h4><h2>${lowStock.length}</h2></div>
-                <div class="card" style="background:linear-gradient(135deg,#10b981,#34d399); color:white;"><h4>🏆 صافي الربح الكلي</h4><h2>${netProfit.toFixed(2)}</h2></div>
-            </div>
-            <div class="card"><h3>📈 الرسم البياني للمبيعات</h3><canvas id="salesChart" height="100"></canvas></div>
-            <div class="card"><h3>⚠️ تنبيهات المخزون المنخفض</h3>${lowStock.length ? `<div class="grid-stats">${lowStock.map(p => `<div class="card" style="border-right:3px solid var(--danger);">${p.name}<br><b>المتبقي: ${p.qty}</b></div>`).join('')}</div>` : '<p>✅ كل المنتجات متوفرة بكميات جيدة</p>'}</div>
-        `;
-            let ctx = document.getElementById('salesChart');
-            if (ctx) new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: this.data.sales.slice(0, 10).map(s => s.date),
-                    datasets: [{ label: 'المبيعات', data: this.data.sales.slice(0, 10).map(s => s.total), borderColor: '#3b82f6', tension: 0.4, fill: true }]
-                }
-            });
-        },
+    renderReports(v) { v.innerHTML = `<div class="card"><h3>📋 سجل المبيعات</h3><div class="table-wrap"><table><thead><th>رقم الفاتورة</th><th>التاريخ</th><th>الإجمالي</th><th>إجراء</th></thead><tbody id="salesTableBody"></tbody></tr></div></div>`; this.updateSalesTable(); },
+    updateSalesTable() { let tbody = document.getElementById('salesTableBody'); if(tbody) tbody.innerHTML = this.data.sales.map(s => `<tr><td>#${s.id}</td><td>${s.date}</td><td>${s.total.toFixed(2)}</td><td><button class="btn btn-p" onclick="app.printInvoiceById(${s.id})">طباعة</button> <button class="btn btn-d" onclick="app.returnSale(${s.id})">إرجاع</button></td></tr>`).join(''); },
+    printInvoiceById(id) { let sale = this.data.sales.find(s => s.id == id); if(sale) this.printInvoice(sale); else this.toast("الفاتورة غير موجودة", 'error'); },
+    returnSale(id) { if(confirm("هل تريد إرجاع هذه الفاتورة واسترجاع الكميات للمخزن؟")) { let sale = this.data.sales.find(s => s.id == id); if(sale && sale.items) { sale.items.forEach(item => { let p = this.data.products.find(x => x.id === item.id); if(p) p.qty += item.q; }); this.data.returns.unshift({ product: `فاتورة رقم ${id}`, amount: sale.total, date: new Date().toLocaleDateString() }); this.data.sales = this.data.sales.filter(s => s.id != id); this.saveData(); this.updateSalesTable(); this.filterReturns(); this.toast("تم إرجاع الفاتورة"); } } },
 
-        renderPOS(v) {
-            v.innerHTML = `
-            <div class="pos-grid">
-                <div class="card">
-                    <div style="display:flex; gap:10px; margin-bottom:15px;">
-                        <input type="text" id="posSearch" placeholder="🔍 بحث عن منتج..." onkeyup="app.filterPOS()">
-                        <select id="posCat" onchange="app.filterPOS()" style="width:150px;"><option value="">كل الفئات</option></select>
-                    </div>
-                    <div id="posGrid" class="product-grid"></div>
-                </div>
-                <div class="card">
-                    <h3>🛒 سلة المشتريات <button class="btn btn-d" style="float:left; padding:5px 10px;" onclick="app.cart=[]; app.updateCart()">مسح</button></h3>
-                    <div id="cartItems" style="min-height:250px; margin:15px 0;"></div>
-                    <hr><h2>الإجمالي: <span id="cartTotal">0.00</span></h2>
-                    <button class="btn btn-s" style="width:100%; height:50px; margin-top:15px;" onclick="app.checkout()"><i class="fas fa-check-circle"></i> إتمام البيع وطباعة QR</button>
-                </div>
-            </div>
-        `;
-            this.loadCategories();
-            this.filterPOS();
-        },
+    toggleAI() { let ai = document.getElementById('aiChat'); ai.style.display = ai.style.display === 'flex' ? 'none' : 'flex'; },
+    askAI() {
+        let q = document.getElementById('aiQuestion').value.trim().toLowerCase();
+        let msgDiv = document.getElementById('aiMessages');
+        msgDiv.innerHTML += `<div class="user-message">${q}</div>`;
+        let totalSales = this.data.sales.reduce((a,b)=>a+(b.total||0),0);
+        let totalExp = this.data.expenses.reduce((a,b)=>a+(b.amount||0),0);
+        let profit = totalSales - totalExp;
+        let lowStock = this.data.products.filter(p => p.qty < 5);
+        let reply = "";
+        if(q.includes("ربح") || q.includes("أرباح")) reply = `💰 صافي الربح الحالي: ${profit.toFixed(2)}. المبيعات: ${totalSales.toFixed(2)}, المصاريف: ${totalExp.toFixed(2)}.`;
+        else if(q.includes("مخزون") || q.includes("منتج ناقص")) reply = `📦 عدد المنتجات التي أوشكت على النفاد: ${lowStock.length}. ${lowStock.map(p => p.name).join(', ')}.`;
+        else if(q.includes("نصيحة")) reply = `💡 نصيحة مالية: ${profit > 0 ? "أرباحك ممتازة! حاول تقليل المصاريف لزيادة صافي الربح." : "يُنصح بمراجعة المصاريف الثابتة وزيادة المبيعات لتحسين الأرباح."}`;
+        else if(q.includes("مبيعات")) reply = `📊 إجمالي المبيعات المسجلة: ${totalSales.toFixed(2)}.`;
+        else reply = "🤖 أنا هنا لمساعدتك! اسأل عن الأرباح، المخزون، أو نصائح مالية.";
+        msgDiv.innerHTML += `<div class="ai-message">${reply}</div>`;
+        msgDiv.scrollTop = msgDiv.scrollHeight;
+        document.getElementById('aiQuestion').value = '';
+    }
+};
 
-        loadCategories() {
-            let cats = ['عام', ...new Set(this.data.products.map(p => p.cat || 'عام'))];
-            let catSelect = document.getElementById('posCat');
-            if (catSelect) catSelect.innerHTML = '<option value="">كل الفئات</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
-        },
-
-        filterPOS() {
-            let search = document.getElementById('posSearch')?.value.toLowerCase() || '';
-            let cat = document.getElementById('posCat')?.value || '';
-            let filtered = this.data.products.filter(p => {
-                let match = true;
-                if (search && !p.name.toLowerCase().includes(search)) match = false;
-                if (cat && p.cat !== cat) match = false;
-                return match;
-            });
-            let grid = document.getElementById('posGrid');
-            if (grid) grid.innerHTML = filtered.map(p => `
-            <div class="prod-card" onclick="app.addToCart(${p.id})">
-                <b>${p.name}</b><br>
-                <span style="color:var(--accent)">${p.price}</span><br>
-                <small>متاح: ${p.qty}</small>
-            </div>
-        `).join('');
-        },
-
-        addToCart(id) {
-            let p = this.data.products.find(x => x.id === id);
-            if (!p || p.qty <= 0) return this.toast("المنتج غير متوفر!", 'error');
-            let ex = this.cart.find(x => x.id === id);
-            if (ex) { if (ex.q < p.qty) ex.q++; else return this.toast("الكمية المطلوبة أكبر من المتوفرة!", 'error'); }
-            else this.cart.push({ ...p, q: 1 });
-            this.updateCart();
-        },
-
-        updateCart() {
-            let cartDiv = document.getElementById('cartItems');
-            if (!cartDiv) return;
-            cartDiv.innerHTML = this.cart.map((it, i) => `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:5px; background:var(--bg); border-radius:8px;">
-                <span>${it.name}</span>
-                <div><button class="qty-btn" onclick="app.changeQty(${i}, -1)">-</button> ${it.q} <button class="qty-btn" onclick="app.changeQty(${i}, 1)">+</button></div>
-                <b>${(it.price * it.q).toFixed(2)} <i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="app.cart.splice(${i},1); app.updateCart();"></i></b>
-            </div>
-        `).join('');
-            let total = this.cart.reduce((a, b) => a + (b.price * b.q), 0);
-            let totalSpan = document.getElementById('cartTotal');
-            if (totalSpan) totalSpan.innerText = total.toFixed(2);
-        },
-
-        changeQty(i, v) {
-            let p = this.data.products.find(x => x.id === this.cart[i].id);
-            if (v === 1 && this.cart[i].q < p.qty) this.cart[i].q++;
-            else if (v === -1 && this.cart[i].q > 1) this.cart[i].q--;
-            else if (v === -1 && this.cart[i].q === 1) this.cart.splice(i, 1);
-            this.updateCart();
-        },
-
-        async checkout() {
-            if (this.cart.length === 0) return this.toast("السلة فارغة!", 'error');
-            let total = this.cart.reduce((a, b) => a + (b.price * b.q), 0);
-            let totalCost = this.cart.reduce((a, b) => a + ((b.cost || 0) * b.q), 0);
-            let saleId = Date.now();
-            let sale = { id: saleId, total, totalCost, items: [...this.cart], date: new Date().toLocaleString() };
-            this.data.sales.unshift(sale);
-            this.cart.forEach(c => { let p = this.data.products.find(x => x.id === c.id); if (p) p.qty -= c.q; });
-            await this.saveData();
-            this.printInvoice(sale);
-            this.cart = [];
-            this.updateCart();
-            this.toast("تمت عملية البيع بنجاح!");
-        },
-
-        printInvoice(sale) {
-            let printDiv = document.getElementById('printArea');
-            printDiv.innerHTML = `<div style="text-align:center; font-family:'Cairo'; padding:20px;">
-            <h2 style="color:var(--accent)">GOLDEN ERP</h2>
-            <p>فاتورة مبيعات رقم: ${sale.id}</p>
-            <p>التاريخ: ${sale.date}</p><hr>
-            ${sale.items.map(i => `<p>${i.name} x ${i.q} = ${(i.price * i.q).toFixed(2)}</p>`).join('')}
-            <hr><h3>الإجمالي: ${sale.total.toFixed(2)}</h3>
-            <div id="qrCodePrint" style="display:flex; justify-content:center; margin-top:15px;"></div>
-            <p>شكراً لتسوقكم مع GOLDEN ERP</p>
-        </div>`;
-            new QRCode(document.getElementById("qrCodePrint"), { text: `GOLDEN-${sale.id}`, width: 120, height: 120 });
-            setTimeout(() => { window.print(); }, 500);
-        },
-
-        renderStock(v) {
-            v.innerHTML = `
-            <div class="card">
-                <div style="display:flex; justify-content:space-between;"><h3>📦 إدارة المخزون</h3><button class="btn btn-s" onclick="app.exportStock()"><i class="fas fa-file-excel"></i> تصدير Excel</button></div>
-                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap:10px; margin:15px 0;">
-                    <input id="pName" placeholder="اسم المنتج">
-                    <input id="pCat" placeholder="الفئة" value="عام">
-                    <input id="pCost" type="number" placeholder="التكلفة">
-                    <input id="pPrice" type="number" placeholder="السعر">
-                    <input id="pQty" type="number" placeholder="الكمية">
-                    <button class="btn btn-p" onclick="app.addProduct()">+ إضافة</button>
-                </div>
-                <input type="text" id="stockSearch" placeholder="🔍 بحث في المخزن..." onkeyup="app.filterStock()">
-                <table>
-                    <thead>
-                        <th>المنتج</th>
-                        <th>الفئة</th>
-                        <th>التكلفة</th>
-                        <th>السعر</th>
-                        <th>الكمية</th>
-                        <th>إجراءات</th>
-                    </thead>
-                    <tbody id="stockTableBody"></tbody>
-                </table>
-            </div>
-        `;
-            this.filterStock();
-        },
-
-        addProduct() {
-            let name = document.getElementById('pName').value;
-            let cat = document.getElementById('pCat').value;
-            let cost = Number(document.getElementById('pCost').value);
-            let price = Number(document.getElementById('pPrice').value);
-            let qty = Number(document.getElementById('pQty').value);
-            if (!name || !price) return this.toast("اسم المنتج والسعر مطلوبان!", 'error');
-            this.data.products.push({ id: Date.now(), name, cat, cost, price, qty: qty || 0 });
-            this.saveData();
-            this.filterStock();
-            this.toast("تم إضافة المنتج");
-        },
-
-        filterStock() {
-            let search = document.getElementById('stockSearch')?.value.toLowerCase() || '';
-            let filtered = this.data.products.filter(p => p.name.toLowerCase().includes(search));
-            let tbody = document.getElementById('stockTableBody');
-            if (tbody) tbody.innerHTML = filtered.map(p => `
-            <tr class="${p.qty < 5 ? 'low-stock' : ''}">
-                <td>${p.name}</td>
-                <td>${p.cat || 'عام'}</td>
-                <td>${p.cost}</td>
-                <td>${p.price}</td>
-                <td>${p.qty}</td>
-                <td><button class="btn btn-p" onclick="app.editProduct(${p.id})"><i class="fas fa-edit"></i></button> <button class="btn btn-d" onclick="app.deleteProduct(${p.id})"><i class="fas fa-trash"></i></button></td>
-            </tr>
-        `).join('');
-        },
-
-        editProduct(id) {
-            let p = this.data.products.find(x => x.id === id);
-            let nn = prompt("الاسم الجديد:", p.name);
-            let nc = prompt("الفئة الجديدة:", p.cat || 'عام');
-            let ncost = prompt("سعر التكلفة الجديد:", p.cost);
-            let np = prompt("سعر البيع الجديد:", p.price);
-            let nq = prompt("الكمية الجديدة:", p.qty);
-            if (nn) p.name = nn;
-            if (nc) p.cat = nc;
-            if (ncost) p.cost = Number(ncost);
-            if (np) p.price = Number(np);
-            if (nq) p.qty = Number(nq);
-            this.saveData();
-            this.filterStock();
-            this.toast("تم تعديل المنتج");
-        },
-
-        deleteProduct(id) {
-            if (confirm("هل أنت متأكد من حذف هذا المنتج?")) {
-                this.data.products = this.data.products.filter(p => p.id !== id);
-                this.saveData();
-                this.filterStock();
-                this.toast("تم حذف المنتج");
-            }
-        },
-
-        exportStock() {
-            let ws = XLSX.utils.json_to_sheet(this.data.products);
-            let wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "المخزن");
-            XLSX.writeFile(wb, `GOLDEN_stock_${Date.now()}.xlsx`);
-            this.toast("تم تصدير الملف");
-        },
-
-        renderClients(v) {
-            v.innerHTML = `
-            <div class="card">
-                <h3>👥 العملاء والموردين</h3>
-                <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <input id="clientName" placeholder="الاسم" style="flex:2;">
-                    <select id="clientType" style="flex:1;"><option value="عميل">عميل</option><option value="مورد">مورد</option></select>
-                    <button class="btn btn-p" onclick="app.addClient()">+ إضافة</button>
-                </div>
-                <input type="text" id="clientSearch" placeholder="🔍 بحث..." onkeyup="app.filterClients()" style="margin-top:15px;">
-                <table>
-                    <thead>
-                        <th>الاسم</th>
-                        <th>النوع</th>
-                        <th>الرصيد</th>
-                        <th>إجراءات</th>
-                    </thead>
-                    <tbody id="clientTableBody"></tbody>
-                </table>
-            </div>
-        `;
-            this.filterClients();
-        },
-
-        addClient() {
-            let name = document.getElementById('clientName').value;
-            let type = document.getElementById('clientType').value;
-            if (!name) return this.toast("أدخل الاسم!", 'error');
-            this.data.contacts.push({ id: Date.now(), name, type, debt: 0 });
-            this.saveData();
-            this.filterClients();
-            this.toast("تمت الإضافة");
-        },
-
-        editClient(id) {
-            let c = this.data.contacts.find(x => x.id === id);
-            let nn = prompt("الاسم الجديد:", c.name);
-            if (nn) { c.name = nn; this.saveData(); this.filterClients(); this.toast("تم تعديل العميل"); }
-        },
-
-        filterClients() {
-            let search = document.getElementById('clientSearch')?.value.toLowerCase() || '';
-            let filtered = this.data.contacts.filter(c => c.name.toLowerCase().includes(search));
-            let tbody = document.getElementById('clientTableBody');
-            if (tbody) tbody.innerHTML = filtered.map(c => `
-            <tr>
-                <td>${c.name}</td>
-                <td>${c.type}</td>
-                <td>${c.debt || 0}</td>
-                <td><button class="btn btn-p" onclick="app.editClient(${c.id})">تعديل</button> <button class="btn btn-s" onclick="app.payClient(${c.id})">تسديد</button> <button class="btn btn-d" onclick="app.deleteClient(${c.id})">حذف</button></td>
-            </tr>
-        `).join('');
-        },
-
-        payClient(id) {
-            let c = this.data.contacts.find(x => x.id === id);
-            let amt = Number(prompt(`المبلغ المسدد لـ ${c.name} (الرصيد الحالي: ${c.debt || 0}):`));
-            if (amt && !isNaN(amt)) {
-                c.debt = (c.debt || 0) - amt;
-                this.saveData();
-                this.filterClients();
-                this.toast(`تم تسديد ${amt}`);
-            }
-        },
-
-        deleteClient(id) {
-            if (confirm("حذف هذا الحساب؟")) {
-                this.data.contacts = this.data.contacts.filter(c => c.id !== id);
-                this.saveData();
-                this.filterClients();
-                this.toast("تم الحذف");
-            }
-        },
-
-        renderExpenses(v) {
-            v.innerHTML = `
-            <div class="card">
-                <h3>💸 المصاريف</h3>
-                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:10px;">
-                    <input id="expNote" placeholder="بيان المصروف">
-                    <input id="expAmount" type="number" placeholder="المبلغ">
-                    <button class="btn btn-d" onclick="app.addExpense()">إضافة</button>
-                </div>
-                <table>
-                    <thead>
-                        <th>التاريخ</th>
-                        <th>البيان</th>
-                        <th>المبلغ</th>
-                        <th>تعديل</th>
-                        <th>حذف</th>
-                    </thead>
-                    <tbody id="expTableBody"></tbody>
-                </table>
-            </div>
-        `;
-            this.filterExpenses();
-        },
-
-        filterExpenses() {
-            let tbody = document.getElementById('expTableBody');
-            if (tbody) tbody.innerHTML = this.data.expenses.map((e, i) => `
-            <tr>
-                <td>${e.date}</td>
-                <td>${e.note}</td>
-                <td>${e.amount}</td>
-                <td><button class="btn btn-p" onclick="app.editExpense(${i})">تعديل</button></td>
-                <td><button class="btn btn-d" onclick="app.deleteExpense(${i})">حذف</button></td>
-            </tr>
-        `).join('');
-        },
-
-        addExpense() {
-            let note = document.getElementById('expNote').value;
-            let amount = Number(document.getElementById('expAmount').value);
-            if (!note || !amount) return this.toast("أدخل البيانات!", 'error');
-            this.data.expenses.unshift({ note, amount, date: new Date().toLocaleDateString() });
-            this.saveData();
-            this.filterExpenses();
-            this.toast("تم تسجيل المصروف");
-        },
-
-        editExpense(i) {
-            let e = this.data.expenses[i];
-            let nn = prompt("البيان الجديد:", e.note);
-            let na = prompt("المبلغ الجديد:", e.amount);
-            if (nn) e.note = nn;
-            if (na) e.amount = Number(na);
-            this.saveData();
-            this.filterExpenses();
-            this.toast("تم تعديل المصروف");
-        },
-
-        deleteExpense(i) {
-            if (confirm("حذف هذا المصروف؟")) {
-                this.data.expenses.splice(i, 1);
-                this.saveData();
-                this.filterExpenses();
-                this.toast("تم حذف المصروف");
-            }
-        },
-
-        renderReturns(v) {
-            v.innerHTML = `
-            <div class="card">
-                <h3>↩️ المرتجعات</h3>
-                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:10px;">
-                    <input id="returnProduct" placeholder="المنتج المرتجع">
-                    <input id="returnAmount" type="number" placeholder="المبلغ">
-                    <button class="btn btn-w" onclick="app.addReturn()">تسجيل</button>
-                </div>
-                <tr>
-                    <thead>
-                        <th>التاريخ</th>
-                        <th>المنتج</th>
-                        <th>المبلغ</th>
-                        <th>تعديل</th>
-                        <th>حذف</th>
-                    </thead>
-                    <tbody id="returnTableBody"></tbody>
-                </table>
-            </div>
-        `;
-            this.filterReturns();
-        },
-
-        filterReturns() {
-            let tbody = document.getElementById('returnTableBody');
-            if (tbody) tbody.innerHTML = this.data.returns.map((r, i) => `
-            <tr>
-                <td>${r.date}</td>
-                <td>${r.product}</td>
-                <td>${r.amount}</td>
-                <td><button class="btn btn-p" onclick="app.editReturn(${i})">تعديل</button></td>
-                <td><button class="btn btn-d" onclick="app.deleteReturn(${i})">حذف</button></td>
-            </tr>
-        `).join('');
-        },
-
-        addReturn() {
-            let product = document.getElementById('returnProduct').value;
-            let amount = Number(document.getElementById('returnAmount').value);
-            if (!product || !amount) return this.toast("أدخل البيانات!", 'error');
-            this.data.returns.unshift({ product, amount, date: new Date().toLocaleDateString() });
-            this.saveData();
-            this.filterReturns();
-            this.toast("تم تسجيل المرتجع");
-        },
-
-        editReturn(i) {
-            let r = this.data.returns[i];
-            let np = prompt("المنتج الجديد:", r.product);
-            let na = prompt("المبلغ الجديد:", r.amount);
-            if (np) r.product = np;
-            if (na) r.amount = Number(na);
-            this.saveData();
-            this.filterReturns();
-            this.toast("تم تعديل المرتجع");
-        },
-
-        deleteReturn(i) {
-            if (confirm("حذف هذا المرتجع؟")) {
-                this.data.returns.splice(i, 1);
-                this.saveData();
-                this.filterReturns();
-                this.toast("تم حذف المرتجع");
-            }
-        },
-
-        renderReports(v) {
-            v.innerHTML = `
-            <div class="card">
-                <h3>📋 سجل المبيعات</h3>
-                <div class="table-wrap"><table>
-                    <thead>
-                        <th>رقم الفاتورة</th>
-                        <th>التاريخ</th>
-                        <th>الإجمالي</th>
-                        <th>إجراء</th>
-                    </thead>
-                    <tbody id="salesTableBody"></tbody>
-                </table>
-            </div>
-        `;
-            this.updateSalesTable();
-        },
-
-        updateSalesTable() {
-            let tbody = document.getElementById('salesTableBody');
-            if (tbody) tbody.innerHTML = this.data.sales.map(s => `
-            <tr>
-                <td>#${s.id}</td>
-                <td>${s.date}</td>
-                <td>${s.total.toFixed(2)}</td>
-                <td><button class="btn btn-p" onclick="app.printInvoiceById(${s.id})">طباعة</button> <button class="btn btn-d" onclick="app.returnSale(${s.id})">إرجاع</button></td>
-            </tr>
-        `).join('');
-        },
-
-        printInvoiceById(id) {
-            let sale = this.data.sales.find(s => s.id == id);
-            if (sale) this.printInvoice(sale);
-            else this.toast("الفاتورة غير موجودة", 'error');
-        },
-
-        returnSale(id) {
-            if (confirm("هل تريد إرجاع هذه الفاتورة واسترجاع الكميات للمخزن؟")) {
-                let sale = this.data.sales.find(s => s.id == id);
-                if (sale && sale.items) {
-                    sale.items.forEach(item => {
-                        let p = this.data.products.find(x => x.id === item.id);
-                        if (p) p.qty += item.q;
-                    });
-                    this.data.returns.unshift({ product: `فاتورة رقم ${id}`, amount: sale.total, date: new Date().toLocaleDateString() });
-                    this.data.sales = this.data.sales.filter(s => s.id != id);
-                    this.saveData();
-                    this.updateSalesTable();
-                    this.filterReturns();
-                    this.toast("تم إرجاع الفاتورة");
-                }
-            }
-        }
-    };
-
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            app.user = user;
-            document.getElementById('authScreen').style.display = 'none';
-            document.getElementById('appUI').style.display = 'block';
-            app.loadUserData();
-        } else {
-            document.getElementById('authScreen').style.display = 'flex';
-            document.getElementById('appUI').style.display = 'none';
-        }
-    });
+auth.onAuthStateChanged(user => {
+    if(user) {
+        app.user = user;
+        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('appUI').style.display = 'block';
+        app.loadUserData();
+    } else {
+        document.getElementById('authScreen').style.display = 'flex';
+        document.getElementById('appUI').style.display = 'none';
+    }
+});
 </script>
 </body>
 </html>
