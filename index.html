@@ -2,9 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>GOLDEN ERP | 150+ ميزة كاملة (الجزء الأول)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <title>GOLDEN ERP FULL | 120+ ميزة</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -17,40 +16,43 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Cairo', sans-serif;
+            font-family: 'Cairo', 'Segoe UI', system-ui;
         }
-
         :root {
             --primary: #0f172a;
+            --primary-light: #1e293b;
             --accent: #3b82f6;
+            --accent-dark: #2563eb;
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
+            --info: #8b5cf6;
             --dark-bg: #f8fafc;
             --card-bg: #ffffff;
-            --text-dark: #1e293b;
-            --text-light: #64748b;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
             --border: #e2e8f0;
         }
-
         [data-theme="dark"] {
-            --primary: #f1f5f9;
+            --primary: #e2e8f0;
+            --primary-light: #cbd5e1;
             --dark-bg: #0f172a;
             --card-bg: #1e293b;
             --text-dark: #f1f5f9;
-            --text-light: #94a3b8;
+            --text-muted: #94a3b8;
             --border: #334155;
         }
-
         body {
             background: var(--dark-bg);
             color: var(--text-dark);
-            transition: 0.3s;
-            overflow-x: hidden;
+            transition: all 0.3s;
         }
-
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+        }
         .sidebar {
-            width: 270px;
+            width: 280px;
             background: linear-gradient(180deg, #0f172a 0%, #0f0f1a 100%);
             color: white;
             position: fixed;
@@ -61,13 +63,11 @@
             z-index: 1000;
             overflow-y: auto;
         }
-
-        .main {
-            margin-right: 270px;
+        .main-content {
+            flex: 1;
+            margin-right: 280px;
             padding: 25px;
-            min-height: 100vh;
         }
-
         .nav-item {
             display: flex;
             align-items: center;
@@ -75,37 +75,32 @@
             padding: 12px 16px;
             border-radius: 12px;
             cursor: pointer;
-            color: #94a3b8;
-            margin-bottom: 8px;
-            transition: 0.3s;
+            transition: 0.2s;
+            margin-bottom: 6px;
+            color: #cbd5e1;
         }
-
         .nav-item i {
             width: 24px;
         }
-
-        .nav-item.active,
-        .nav-item:hover {
+        .nav-item.active, .nav-item:hover {
             background: var(--accent);
             color: white;
         }
-
         .card {
             background: var(--card-bg);
             border-radius: 20px;
             padding: 24px;
             margin-bottom: 24px;
             border: 1px solid var(--border);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: 0.2s;
         }
-
-        .grid-stats {
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
             margin-bottom: 25px;
         }
-
         .btn {
             padding: 10px 20px;
             border-radius: 12px;
@@ -117,156 +112,105 @@
             gap: 8px;
             transition: 0.2s;
         }
-
-        .btn-p {
+        .btn-primary {
             background: var(--accent);
             color: white;
         }
-
-        .btn-s {
+        .btn-success {
             background: var(--success);
             color: white;
         }
-
-        .btn-d {
+        .btn-danger {
             background: var(--danger);
             color: white;
         }
-
-        .btn-w {
+        .btn-warning {
             background: var(--warning);
             color: white;
         }
-
-        input,
-        select,
-        textarea {
+        input, select, textarea {
+            width: 100%;
             padding: 12px;
             border: 2px solid var(--border);
-            border-radius: 12px;
-            width: 100%;
-            margin-bottom: 12px;
+            border-radius: 14px;
             background: var(--card-bg);
             color: var(--text-dark);
+            margin-bottom: 12px;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
         }
-
         th {
             background: var(--dark-bg);
             padding: 14px;
             font-weight: 700;
         }
-
         td {
             padding: 12px;
             border-bottom: 1px solid var(--border);
             text-align: center;
         }
-
-        .pos-grid {
+        .pos-layout {
             display: grid;
-            grid-template-columns: 1fr 400px;
+            grid-template-columns: 1fr 420px;
             gap: 24px;
         }
-
         .product-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 15px;
+            gap: 16px;
             max-height: 65vh;
             overflow-y: auto;
+            padding: 5px;
         }
-
-        .prod-card {
+        .product-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
+            border-radius: 18px;
             padding: 15px;
-            border-radius: 16px;
             text-align: center;
             cursor: pointer;
             transition: 0.2s;
         }
-
-        .prod-card:hover {
+        .product-card:hover {
             transform: translateY(-4px);
             border-color: var(--accent);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
-
+        .cart-item {
+            background: var(--dark-bg);
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
         .toast {
             position: fixed;
-            bottom: 25px;
-            left: 25px;
+            bottom: 30px;
+            left: 30px;
             background: var(--success);
             color: white;
             padding: 12px 24px;
             border-radius: 40px;
             z-index: 10000;
             display: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: fadeInUp 0.3s;
         }
-
-        .menu-toggle {
-            position: fixed;
-            bottom: 25px;
-            left: 25px;
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: var(--accent);
-            color: white;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1001;
-            cursor: pointer;
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
-
-        #aiChat {
-            position: fixed;
-            bottom: 95px;
-            left: 25px;
-            width: 340px;
-            background: var(--card-bg);
-            border-radius: 20px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            display: none;
-            flex-direction: column;
-            z-index: 1002;
-            border: 1px solid var(--border);
-        }
-
-        .ai-header {
-            background: var(--accent);
-            color: white;
-            padding: 15px;
-            border-radius: 20px 20px 0 0;
-            display: flex;
-            justify-content: space-between;
-            cursor: pointer;
-        }
-
-        .ai-messages {
-            max-height: 320px;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .ai-input {
-            display: flex;
-            padding: 15px;
-            border-top: 1px solid var(--border);
-            gap: 10px;
-        }
-
-        @media (max-width: 800px) {
+        @media (max-width: 900px) {
             .sidebar {
                 transform: translateX(100%);
                 width: 280px;
@@ -274,89 +218,61 @@
             .sidebar.open {
                 transform: translateX(0);
             }
-            .main {
+            .main-content {
                 margin-right: 0;
             }
-            .pos-grid {
+            .pos-layout {
                 grid-template-columns: 1fr;
-            }
-            .menu-toggle {
-                display: flex;
-            }
-        }
-
-        @media print {
-            .sidebar,
-            .btn,
-            .menu-toggle {
-                display: none !important;
-            }
-            .main {
-                margin: 0;
-                padding: 10px;
             }
         }
     </style>
 </head>
 <body>
 
-<div id="toast" class="toast"></div>
-<button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
-
-<div id="aiChat">
-    <div class="ai-header" onclick="document.getElementById('aiChat').style.display = 'none'">
-        <span><i class="fas fa-robot"></i> المساعد الذكي</span>
-        <i class="fas fa-times"></i>
-    </div>
-    <div class="ai-messages" id="aiMessages">
-        <div class="ai-message" style="background: var(--dark-bg); padding: 10px; border-radius: 15px;">مرحباً! اسألني عن الأرباح، المبيعات، المخزون، أو نصائح مالية.</div>
-    </div>
-    <div class="ai-input">
-        <input type="text" id="aiQuestion" placeholder="اسألني...">
-        <button class="btn btn-p" onclick="askAI()">إرسال</button>
-    </div>
-</div>
+<div id="toastMsg" class="toast"></div>
 
 <div id="authScreen" style="position: fixed; inset: 0; background: linear-gradient(135deg, #0f172a, #1e1b4b); z-index: 9999; display: flex; align-items: center; justify-content: center;">
-    <div class="card" style="width: 92%; max-width: 450px; text-align: center;">
-        <h1 style="color: var(--accent);">GOLDEN ERP</h1>
+    <div class="card" style="width: 95%; max-width: 460px; text-align: center;">
+        <h1 style="color: var(--accent);">GOLDEN ERP PRO</h1>
         <p>نظام متكامل 150+ ميزة</p>
-        <div id="loginForm">
+        <div id="loginDiv">
             <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
             <input type="password" id="loginPass" placeholder="كلمة المرور">
-            <button class="btn btn-p" style="width: 100%; margin-bottom: 10px;" onclick="login()">تسجيل الدخول</button>
-            <button class="btn btn-w" style="width: 100%;" onclick="googleLogin()"><i class="fab fa-google"></i> Google</button>
-            <p style="margin-top: 15px; cursor: pointer; color: var(--accent);" onclick="showRegister()">إنشاء حساب جديد</p>
+            <button class="btn btn-primary" style="width: 100%; margin-bottom: 12px;" onclick="login()">تسجيل الدخول</button>
+            <button class="btn btn-warning" style="width: 100%;" onclick="googleLogin()"><i class="fab fa-google"></i> Google</button>
+            <p style="margin-top: 15px; cursor: pointer; color: var(--accent);" onclick="toggleAuth()">إنشاء حساب جديد</p>
         </div>
-        <div id="registerForm" style="display: none;">
+        <div id="registerDiv" style="display: none;">
             <input type="email" id="regEmail" placeholder="البريد الإلكتروني">
             <input type="password" id="regPass" placeholder="كلمة المرور">
-            <input type="text" id="regName" placeholder="الاسم">
+            <input type="text" id="regName" placeholder="الاسم الكامل">
             <select id="regRole"><option value="admin">مدير</option><option value="staff">موظف</option></select>
-            <button class="btn btn-p" style="width: 100%;" onclick="register()">إنشاء حساب</button>
-            <p style="margin-top: 15px; cursor: pointer; color: var(--accent);" onclick="showLogin()">تسجيل الدخول</p>
+            <button class="btn btn-primary" style="width: 100%;" onclick="register()">إنشاء حساب</button>
+            <p style="margin-top: 15px; cursor: pointer; color: var(--accent);" onclick="toggleAuth()">تسجيل الدخول</p>
         </div>
     </div>
 </div>
 
-<div id="appUI" style="display: none;">
-    <aside class="sidebar" id="sidebar">
-        <div style="text-align: center; margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 15px;">
-            <i class="fas fa-crown" style="font-size: 40px;"></i>
-            <p id="userName" style="margin-top: 8px;"></p>
-            <small id="userRole" style="color: var(--accent);"></small>
-        </div>
-        <div class="nav-item active" onclick="route('dash', this)"><i class="fas fa-tachometer-alt"></i> الرئيسية</div>
-        <div class="nav-item" onclick="route('pos', this)"><i class="fas fa-cash-register"></i> المبيعات</div>
-        <div class="nav-item admin-only" onclick="route('stock', this)"><i class="fas fa-boxes"></i> المخزن</div>
-        <div class="nav-item admin-only" onclick="route('clients', this)"><i class="fas fa-users"></i> العملاء والموردين</div>
-        <div class="nav-item admin-only" onclick="route('expenses', this)"><i class="fas fa-wallet"></i> المصاريف</div>
-        <div class="nav-item admin-only" onclick="route('returns', this)"><i class="fas fa-undo-alt"></i> المرتجعات</div>
-        <div class="nav-item" onclick="route('reports', this)"><i class="fas fa-file-alt"></i> التقارير</div>
-        <div class="nav-item" onclick="toggleTheme()"><i class="fas fa-moon"></i> الوضع الليلي</div>
-        <div class="nav-item" onclick="logout()" style="color: var(--danger);"><i class="fas fa-sign-out-alt"></i> خروج</div>
-    </aside>
-    <main class="main" id="viewPort"></main>
+<div id="appContainer" style="display: none;">
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div style="border-bottom: 1px solid #2d3748; padding-bottom: 15px; margin-bottom: 20px; text-align: center;">
+                <i class="fas fa-crown" style="font-size: 45px;"></i>
+                <p id="userName" style="margin-top: 8px;"></p>
+                <small id="userRole" style="color: var(--accent);"></small>
+            </div>
+            <div class="nav-item active" onclick="navigate('dashboard')"><i class="fas fa-tachometer-alt"></i> الرئيسية</div>
+            <div class="nav-item" onclick="navigate('pos')"><i class="fas fa-cash-register"></i> المبيعات</div>
+            <div class="nav-item admin-only" onclick="navigate('inventory')"><i class="fas fa-boxes"></i> المخزن</div>
+            <div class="nav-item admin-only" onclick="navigate('customers')"><i class="fas fa-users"></i> العملاء والموردين</div>
+            <div class="nav-item admin-only" onclick="navigate('expenses')"><i class="fas fa-wallet"></i> المصاريف</div>
+            <div class="nav-item admin-only" onclick="navigate('returns')"><i class="fas fa-undo-alt"></i> المرتجعات</div>
+            <div class="nav-item" onclick="navigate('reports')"><i class="fas fa-chart-line"></i> التقارير</div>
+            <div class="nav-item" onclick="toggleTheme()"><i class="fas fa-moon"></i> الوضع الليلي</div>
+            <div class="nav-item" onclick="logout()" style="color: var(--danger);"><i class="fas fa-sign-out-alt"></i> خروج</div>
+        </aside>
+        <main class="main-content" id="viewPort"></main>
+    </div>
 </div>
 
 <script>
@@ -375,8 +291,8 @@
     const db = firebase.database();
 
     let currentUser = null;
-    let role = "staff";
-    let data = {
+    let userRole = "staff";
+    let appData = {
         products: [],
         sales: [],
         contacts: [],
@@ -384,14 +300,12 @@
         returns: []
     };
     let cart = [];
-    let autoSaveTimer = null;
-    let discount = 0;
-    let tax = 0;
+    let autoSaveInterval = null;
 
     function showToast(msg, type = "success") {
-        let t = document.getElementById("toast");
+        let t = document.getElementById("toastMsg");
         t.innerHTML = msg;
-        t.style.background = type === "success" ? "linear-gradient(135deg, #10b981, #059669)" : type === "error" ? "linear-gradient(135deg, #ef4444, #dc2626)" : "linear-gradient(135deg, #f59e0b, #d97706)";
+        t.style.background = type === "success" ? "#10b981" : type === "error" ? "#ef4444" : "#f59e0b";
         t.style.display = "block";
         setTimeout(() => t.style.display = "none", 3000);
     }
@@ -401,6 +315,7 @@
         let pass = document.getElementById("loginPass").value;
         try {
             await auth.signInWithEmailAndPassword(email, pass);
+            showToast("تم تسجيل الدخول بنجاح");
         } catch (err) {
             showToast(err.message, "error");
         }
@@ -409,6 +324,7 @@
     async function googleLogin() {
         try {
             await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+            showToast("تم الدخول بحساب Google");
         } catch (err) {
             showToast(err.message, "error");
         }
@@ -418,12 +334,12 @@
         let email = document.getElementById("regEmail").value;
         let pass = document.getElementById("regPass").value;
         let name = document.getElementById("regName").value;
-        let r = document.getElementById("regRole").value;
+        let role = document.getElementById("regRole").value;
         try {
             let res = await auth.createUserWithEmailAndPassword(email, pass);
             await res.user.updateProfile({ displayName: name });
-            await db.ref(`roles/${res.user.uid}`).set(r);
-            showToast("تم إنشاء الحساب بنجاح");
+            await db.ref(`roles/${res.user.uid}`).set(role);
+            showToast("تم إنشاء الحساب");
         } catch (err) {
             showToast(err.message, "error");
         }
@@ -431,18 +347,20 @@
 
     function logout() {
         auth.signOut();
-        if (autoSaveTimer) clearInterval(autoSaveTimer);
+        if (autoSaveInterval) clearInterval(autoSaveInterval);
         location.reload();
     }
 
-    function showRegister() {
-        document.getElementById("loginForm").style.display = "none";
-        document.getElementById("registerForm").style.display = "block";
-    }
-
-    function showLogin() {
-        document.getElementById("registerForm").style.display = "none";
-        document.getElementById("loginForm").style.display = "block";
+    function toggleAuth() {
+        let loginDiv = document.getElementById("loginDiv");
+        let regDiv = document.getElementById("registerDiv");
+        if (loginDiv.style.display === "none") {
+            loginDiv.style.display = "block";
+            regDiv.style.display = "none";
+        } else {
+            loginDiv.style.display = "none";
+            regDiv.style.display = "block";
+        }
     }
 
     function toggleTheme() {
@@ -451,426 +369,426 @@
         else document.body.setAttribute("data-theme", "dark");
     }
 
-    async function loadUserData(user) {
-        let rs = await db.ref(`roles/${user.uid}`).once("value");
-        role = rs.val() || "staff";
+    async function loadAppData(user) {
+        let roleSnap = await db.ref(`roles/${user.uid}`).once("value");
+        userRole = roleSnap.val() || "staff";
         document.getElementById("userName").innerText = user.displayName || user.email.split("@")[0];
-        document.getElementById("userRole").innerText = role === "admin" ? "مدير" : "موظف";
-        if (role !== "admin") document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
-        let ds = await db.ref(`data/${user.uid}`).once("value");
-        let v = ds.val() || {};
-        data = {
-            products: v.products || [],
-            sales: v.sales || [],
-            contacts: v.contacts || [],
-            expenses: v.expenses || [],
-            returns: v.returns || []
+        document.getElementById("userRole").innerText = userRole === "admin" ? "مدير" : "موظف";
+        if (userRole !== "admin") document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
+        let dataSnap = await db.ref(`data/${user.uid}`).once("value");
+        let val = dataSnap.val() || {};
+        appData = {
+            products: val.products || [],
+            sales: val.sales || [],
+            contacts: val.contacts || [],
+            expenses: val.expenses || [],
+            returns: val.returns || []
         };
-        if (data.products.length === 0) {
-            data.products = [
-                { id: 1, name: "هاتف ذكي", price: 2500, cost: 1800, qty: 15, cat: "الكترونيات", barcode: "123456", soldCount: 0 },
-                { id: 2, name: "حاسوب محمول", price: 5200, cost: 4200, qty: 8, cat: "الكترونيات", barcode: "789012", soldCount: 0 },
-                { id: 3, name: "سماعة لاسلكية", price: 350, cost: 200, qty: 50, cat: "اكسسوارات", barcode: "345678", soldCount: 0 }
-            ];
-        }
+        if (appData.products.length === 0) initMockData();
         startAutoSave();
-        route("dash");
+        navigate("dashboard");
+    }
+
+    function initMockData() {
+        appData.products = [
+            { id: 101, name: "هاتف ذكي", price: 2500, cost: 1800, qty: 15, cat: "الكترونيات", barcode: "123456", soldCount: 0 },
+            { id: 102, name: "حاسوب محمول", price: 5200, cost: 4200, qty: 8, cat: "الكترونيات", barcode: "789012", soldCount: 0 },
+            { id: 103, name: "سماعة لاسلكية", price: 350, cost: 200, qty: 50, cat: "اكسسوارات", barcode: "345678", soldCount: 0 }
+        ];
+        saveDataToFirebase();
     }
 
     function startAutoSave() {
-        if (autoSaveTimer) clearInterval(autoSaveTimer);
-        autoSaveTimer = setInterval(() => saveData(), 15 * 60 * 1000);
+        if (autoSaveInterval) clearInterval(autoSaveInterval);
+        autoSaveInterval = setInterval(() => saveDataToFirebase(), 15 * 60 * 1000);
     }
 
-    async function saveData() {
+    async function saveDataToFirebase() {
         if (!currentUser) return;
         await db.ref(`data/${currentUser.uid}`).set({
-            products: data.products,
-            sales: data.sales,
-            contacts: data.contacts,
-            expenses: data.expenses,
-            returns: data.returns
+            products: appData.products,
+            sales: appData.sales,
+            contacts: appData.contacts,
+            expenses: appData.expenses,
+            returns: appData.returns
         });
-        showToast("💾 تم الحفظ التلقائي", "info");
+        showToast("💾 حفظ تلقائي", "info");
     }
 
-    function route(page, el) {
+    async function saveDataOnce() {
+        await saveDataToFirebase();
+    }
+
+    function navigate(page, el) {
         if (el) {
-            document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+            document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
             el.classList.add("active");
         }
-        let v = document.getElementById("viewPort");
-        if (page === "dash") renderDash(v);
-        else if (page === "pos") renderPOS(v);
-        else if (page === "stock") renderStock(v);
-        else if (page === "clients") renderClients(v);
-        else if (page === "expenses") renderExpenses(v);
-        else if (page === "returns") renderReturns(v);
-        else if (page === "reports") renderReports(v);
-        if (page === "dash") drawChart();
+        let view = document.getElementById("viewPort");
+        if (page === "dashboard") renderDashboard(view);
+        else if (page === "pos") renderPOS(view);
+        else if (page === "inventory") renderInventory(view);
+        else if (page === "customers") renderCustomers(view);
+        else if (page === "expenses") renderExpenses(view);
+        else if (page === "returns") renderReturns(view);
+        else if (page === "reports") renderReports(view);
+        if (page === "dashboard") drawSalesChart();
     }
 
-    function renderDash(v) {
-        let today = new Date().toLocaleDateString();
-        let salesToday = data.sales.filter(s => s.date?.includes(today)).reduce((a, b) => a + (b.total || 0), 0);
-        let expToday = data.expenses.filter(e => e.date === today).reduce((a, b) => a + (b.amount || 0), 0);
-        let totalSales = data.sales.reduce((s, i) => s + (i.total || 0), 0);
-        let totalCost = data.sales.reduce((s, i) => s + (i.totalCost || 0), 0);
-        let totalExp = data.expenses.reduce((s, i) => s + (i.amount || 0), 0);
+    function renderDashboard(container) {
+        let totalSales = appData.sales.reduce((s, i) => s + (i.total || 0), 0);
+        let totalExp = appData.expenses.reduce((s, i) => s + (i.amount || 0), 0);
+        let totalCost = appData.sales.reduce((s, i) => s + (i.totalCost || 0), 0);
         let netProfit = totalSales - totalCost - totalExp;
-        let lowStock = data.products.filter(p => p.qty < 5);
-        v.innerHTML = `
-            <div class="grid-stats">
-                <div class="card"><h4>📊 مبيعات اليوم</h4><h2>${salesToday.toFixed(2)}</h2></div>
-                <div class="card"><h4>💰 مصاريف اليوم</h4><h2>${expToday.toFixed(2)}</h2></div>
-                <div class="card"><h4>⚠️ نواقص المخزن</h4><h2>${lowStock.length}</h2></div>
-                <div class="card"><h4>🏆 صافي الربح</h4><h2>${netProfit.toFixed(2)}</h2></div>
+        let lowStock = appData.products.filter(p => p.qty < 5);
+        container.innerHTML = `
+            <div class="stats-grid">
+                <div class="card"><h3>💰 إجمالي المبيعات</h3><h2>${totalSales.toFixed(2)}</h2></div>
+                <div class="card"><h3>📉 إجمالي المصاريف</h3><h2>${totalExp.toFixed(2)}</h2></div>
+                <div class="card"><h3>🏆 صافي الربح</h3><h2>${netProfit.toFixed(2)}</h2></div>
+                <div class="card"><h3>⚠️ نواقص المخزن</h3><h2>${lowStock.length}</h2></div>
             </div>
-            <div class="card"><canvas id="mainChart" height="120"></canvas></div>
-            <div class="card"><h3>⚠️ تنبيهات المخزون</h3>${lowStock.length ? lowStock.map(p => `<p>🔴 ${p.name}: المتبقي ${p.qty}</p>`).join("") : "✅ كل المنتجات متوفرة"}</div>
+            <div class="card"><canvas id="salesChart" height="120"></canvas></div>
+            <div class="card"><h3>🔔 تنبيهات المخزون</h3>${lowStock.length ? lowStock.map(p => `<p>🔴 ${p.name} متبقي ${p.qty} قطعة</p>`).join("") : "✅ كل المنتجات متوفرة"}</div>
         `;
+        drawSalesChart();
     }
 
-    function drawChart() {
-        let ctx = document.getElementById("mainChart")?.getContext("2d");
+    function drawSalesChart() {
+        let ctx = document.getElementById("salesChart")?.getContext("2d");
         if (ctx) {
             let monthly = {};
-            data.sales.forEach(s => { let m = s.date?.split("/")[1]; if (m) monthly[m] = (monthly[m] || 0) + s.total; });
+            appData.sales.forEach(s => {
+                let m = s.date ? s.date.split("/")[1] : new Date().getMonth() + 1;
+                monthly[m] = (monthly[m] || 0) + s.total;
+            });
             new Chart(ctx, {
                 type: "line",
-                data: {
-                    labels: Object.keys(monthly),
-                    datasets: [{ label: "المبيعات", data: Object.values(monthly), borderColor: "#3b82f6", fill: true }]
-                }
+                data: { labels: Object.keys(monthly), datasets: [{ label: "المبيعات", data: Object.values(monthly), borderColor: "#3b82f6", fill: true }] }
             });
         }
     }
 
-    function renderPOS(v) {
-        v.innerHTML = `<div class="pos-grid">
-            <div class="card">
-                <input type="text" id="posSearch" placeholder="🔍 بحث باسم أو باركود..." onkeyup="filterPOS()">
-                <div id="posGrid" class="product-grid"></div>
-            </div>
-            <div class="card">
-                <h3>🛒 السلة <button class="btn btn-d" onclick="cart=[]; updateCart()" style="float: left;">مسح</button></h3>
-                <div id="cartItems" style="min-height: 250px;"></div>
-                <input type="number" id="discountInput" placeholder="خصم (قيمة)" oninput="updateCart()">
-                <input type="number" id="taxInput" placeholder="ضريبة (%)" oninput="updateCart()">
-                <hr><h2>الإجمالي: <span id="cartTotal">0.00</span></h2>
-                <button class="btn btn-s" style="width: 100%;" onclick="checkout()">إتمام البيع وطباعة QR</button>
-            </div>
+    function renderPOS(container) {
+        container.innerHTML = `<div class="pos-layout">
+            <div class="card"><input type="text" id="searchProduct" placeholder="🔍 بحث بالاسم أو الباركود" onkeyup="filterPOSProducts()"><div id="posProductsList" class="product-grid"></div></div>
+            <div class="card"><h3>🛒 السلة <button class="btn btn-danger" style="float: left;" onclick="cart = []; updateCartUI()">مسح</button></h3><div id="cartItemsList" style="min-height: 250px;"></div><input type="number" id="discountAmount" placeholder="خصم (قيمة)" oninput="updateCartUI()"><input type="number" id="taxPercent" placeholder="ضريبة %" oninput="updateCartUI()"><hr><h2>الإجمالي: <span id="cartTotalPrice">0.00</span></h2><button class="btn btn-success" style="width: 100%; margin-top: 15px;" onclick="finalizeSale()">إتمام البيع وطباعة QR</button></div>
         </div>`;
-        filterPOS();
+        filterPOSProducts();
     }
 
-    function filterPOS() {
-        let search = document.getElementById("posSearch")?.value.toLowerCase() || "";
-        let filtered = data.products.filter(p => p.name.toLowerCase().includes(search) || (p.barcode || "").includes(search));
-        document.getElementById("posGrid").innerHTML = filtered.map(p => `<div class="prod-card" onclick="addToCart(${p.id})"><b>${p.name}</b><br><span style="color: var(--accent);">${p.price}</span><br><small>📦 ${p.qty}</small></div>`).join("");
+    function filterPOSProducts() {
+        let search = document.getElementById("searchProduct")?.value.toLowerCase() || "";
+        let filtered = appData.products.filter(p => p.name.toLowerCase().includes(search) || (p.barcode || "").includes(search));
+        document.getElementById("posProductsList").innerHTML = filtered.map(p => `<div class="product-card" onclick="addToCart(${p.id})"><b>${p.name}</b><br><span style="color: var(--accent);">${p.price}</span><br><small>📦 ${p.qty}</small></div>`).join("");
     }
 
     function addToCart(id) {
-        let p = data.products.find(x => x.id === id);
-        if (!p || p.qty <= 0) return showToast("المنتج غير متوفر!", "error");
-        let ex = cart.find(x => x.id === id);
-        if (ex) { if (ex.qty < p.qty) ex.qty++; else return showToast("الكمية المطلوبة أكبر من المتوفرة!", "error"); }
-        else cart.push({ ...p, qty: 1 });
-        updateCart();
+        let product = appData.products.find(p => p.id === id);
+        if (!product || product.qty <= 0) return showToast("المنتج غير متوفر!", "error");
+        let existing = cart.find(c => c.id === id);
+        if (existing) {
+            if (existing.qty < product.qty) existing.qty++;
+            else return showToast("الكمية المطلوبة أكبر من المتوفرة!", "error");
+        } else cart.push({ ...product, qty: 1 });
+        updateCartUI();
     }
 
-    function updateCart() {
-        let cartDiv = document.getElementById("cartItems");
+    function updateCartUI() {
+        let cartDiv = document.getElementById("cartItemsList");
         if (!cartDiv) return;
-        cartDiv.innerHTML = cart.map((it, i) => `<div style="display: flex; justify-content: space-between; margin-bottom: 8px;"><span>${it.name} x ${it.qty}</span><span><button onclick="changeQty(${i}, -1)">-</button> <b>${it.price * it.qty}</b> <button onclick="changeQty(${i}, 1)">+</button> <i class="fas fa-trash" style="color: red; cursor: pointer;" onclick="cart.splice(${i},1); updateCart();"></i></span></div>`).join("");
-        let sub = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-        let disc = Number(document.getElementById("discountInput")?.value || 0);
-        let tx = (sub - disc) * (Number(document.getElementById("taxInput")?.value || 0) / 100);
-        let total = sub - disc + tx;
-        discount = disc;
-        tax = tx;
-        document.getElementById("cartTotal").innerText = total.toFixed(2);
+        cartDiv.innerHTML = cart.map((item, idx) => `<div class="cart-item"><span><b>${item.name}</b> x ${item.qty}</span><span>${(item.price * item.qty).toFixed(2)} <button class="btn btn-warning" onclick="changeCartQty(${idx}, -1)">-</button> <button class="btn btn-success" onclick="changeCartQty(${idx}, 1)">+</button> <i class="fas fa-trash" style="color: red; cursor: pointer;" onclick="removeCartItem(${idx})"></i></span></div>`).join("");
+        let subtotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        let disc = Number(document.getElementById("discountAmount")?.value || 0);
+        let tax = (subtotal - disc) * (Number(document.getElementById("taxPercent")?.value || 0) / 100);
+        let total = subtotal - disc + tax;
+        document.getElementById("cartTotalPrice").innerText = total.toFixed(2);
     }
 
-    function changeQty(idx, delta) {
+    function changeCartQty(idx, delta) {
         let item = cart[idx];
-        let p = data.products.find(x => x.id === item.id);
-        if (delta === 1 && item.qty < p.qty) item.qty++;
+        let prod = appData.products.find(p => p.id === item.id);
+        if (delta === 1 && item.qty < prod.qty) item.qty++;
         else if (delta === -1 && item.qty > 1) item.qty--;
         else if (delta === -1 && item.qty === 1) cart.splice(idx, 1);
-        updateCart();
+        updateCartUI();
     }
 
-    async function checkout() {
+    function removeCartItem(idx) {
+        cart.splice(idx, 1);
+        updateCartUI();
+    }
+
+    async function finalizeSale() {
         if (cart.length === 0) return showToast("السلة فارغة!", "error");
-        let sub = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-        let cost = cart.reduce((s, i) => s + ((i.cost || 0) * i.qty), 0);
-        let total = sub - discount + tax;
+        let subtotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        let totalCost = cart.reduce((s, i) => s + ((i.cost || 0) * i.qty), 0);
+        let discount = Number(document.getElementById("discountAmount")?.value || 0);
+        let tax = (subtotal - discount) * (Number(document.getElementById("taxPercent")?.value || 0) / 100);
+        let total = subtotal - discount + tax;
         let saleId = Date.now();
         let sale = {
             id: saleId,
             total: total,
-            totalCost: cost,
-            items: [...cart],
-            date: new Date().toLocaleString(),
+            totalCost: totalCost,
+            subtotal: subtotal,
             discount: discount,
             tax: tax,
-            profit: total - cost
+            items: [...cart],
+            date: new Date().toLocaleString(),
+            profit: total - totalCost
         };
-        data.sales.unshift(sale);
-        cart.forEach(c => { let p = data.products.find(x => x.id === c.id); if (p) { p.qty -= c.qty; p.soldCount = (p.soldCount || 0) + c.qty; } });
-        await saveData();
-        printInvoice(sale);
+        appData.sales.unshift(sale);
+        cart.forEach(c => {
+            let p = appData.products.find(x => x.id === c.id);
+            if (p) {
+                p.qty -= c.qty;
+                p.soldCount = (p.soldCount || 0) + c.qty;
+            }
+        });
+        await saveDataOnce();
+        printSaleInvoice(sale);
         cart = [];
-        updateCart();
-        showToast("تمت عملية البيع");
+        updateCartUI();
+        showToast("تم البيع بنجاح");
     }
 
-    function printInvoice(sale) {
-        let printDiv = document.getElementById("printArea");
-        if (!printDiv) {
-            let div = document.createElement("div");
-            div.id = "printArea";
-            div.style.display = "none";
-            document.body.appendChild(div);
-        }
-        let pDiv = document.getElementById("printArea");
-        pDiv.innerHTML = `<div style="text-align:center;"><h2>GOLDEN ERP</h2><p>فاتورة #${sale.id}</p><p>${sale.date}</p><hr>${sale.items.map(i => `<p>${i.name} x ${i.qty} = ${i.price * i.qty}</p>`).join("")}<hr><h3>الإجمالي: ${sale.total.toFixed(2)}</h3><div id="qrPrint"></div></div>`;
-        new QRCode(document.getElementById("qrPrint"), { text: `INV-${sale.id}`, width: 120, height: 120 });
-        setTimeout(() => window.print(), 200);
+    function printSaleInvoice(sale) {
+        let printDiv = document.createElement("div");
+        printDiv.id = "printInvoiceDiv";
+        printDiv.innerHTML = `<div style="text-align: center; padding: 20px; font-family: 'Cairo';"><h2>GOLDEN ERP</h2><p>فاتورة #${sale.id}</p><p>${sale.date}</p><hr>${sale.items.map(i => `<p>${i.name} x ${i.qty} = ${(i.price * i.qty).toFixed(2)}</p>`).join("")}<hr><h3>الإجمالي: ${sale.total.toFixed(2)}</h3><div id="qrInvoicePrint"></div><p>شكراً لتعاملكم</p></div>`;
+        document.body.appendChild(printDiv);
+        new QRCode(document.getElementById("qrInvoicePrint"), { text: `INV-${sale.id}`, width: 120, height: 120 });
+        setTimeout(() => { window.print(); printDiv.remove(); }, 300);
     }
 
-    function renderStock(v) {
-        v.innerHTML = `<div class="card"><h3>📦 إدارة المخزون <button class="btn btn-s" onclick="exportStock()">تصدير Excel</button></h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto; gap: 10px;">
-                <input id="pName" placeholder="الاسم"><input id="pCat" placeholder="الفئة"><input id="pCost" type="number" placeholder="التكلفة"><input id="pPrice" type="number" placeholder="السعر"><input id="pQty" type="number" placeholder="الكمية"><input id="pBarcode" placeholder="الباركود"><button class="btn btn-p" onclick="addProduct()">إضافة</button>
+    function renderInventory(container) {
+        container.innerHTML = `<div class="card"><h3>📦 إدارة المخزون <button class="btn btn-success" style="float: left;" onclick="exportInventoryExcel()">تصدير Excel</button></h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr auto; gap: 10px;">
+                <input id="prodName" placeholder="الاسم"><input id="prodCat" placeholder="الفئة"><input id="prodCost" type="number" placeholder="التكلفة"><input id="prodPrice" type="number" placeholder="السعر"><input id="prodQty" type="number" placeholder="الكمية"><input id="prodBarcode" placeholder="الباركود"><button class="btn btn-primary" onclick="addProductToInventory()">إضافة</button>
             </div>
-            <div id="stockTable"></div></div>`;
-        filterStock();
+            <div id="inventoryTable"></div></div>`;
+        renderInventoryTable();
     }
 
-    function filterStock() {
+    function renderInventoryTable() {
         let html = `<table><thead><th>الاسم</th><th>الفئة</th><th>الباركود</th><th>التكلفة</th><th>السعر</th><th>الكمية</th><th>إجراءات</th></thead><tbody>`;
-        data.products.forEach(p => {
-            html += `<tr><td>${p.name}</td><td>${p.cat || "عام"}</td><td>${p.barcode || "-"}</td><td>${p.cost}</td><td>${p.price}</td><td class="${p.qty < 5 ? 'low-stock' : ''}">${p.qty}</td><td><button class="btn btn-p" onclick="editProduct(${p.id})">تعديل</button> <button class="btn btn-d" onclick="deleteProduct(${p.id})">حذف</button></td></tr>`;
+        appData.products.forEach(p => {
+            html += `<tr><td><input value="${p.name}" id="name_${p.id}" style="width: 100%;"></td><td><input value="${p.cat || "عام"}" id="cat_${p.id}"></td><td><input value="${p.barcode || ""}" id="barcode_${p.id}"></td><td><input value="${p.cost}" id="cost_${p.id}" type="number"></td><td><input value="${p.price}" id="price_${p.id}" type="number"></td><td id="qty_${p.id}">${p.qty}</td><td><button class="btn btn-primary" onclick="updateProductInline(${p.id})">حفظ</button> <button class="btn btn-danger" onclick="deleteProductInline(${p.id})">حذف</button></td></tr>`;
         });
         html += `</tbody></table>`;
-        document.getElementById("stockTable").innerHTML = html;
+        document.getElementById("inventoryTable").innerHTML = html;
     }
 
-    function addProduct() {
-        let name = document.getElementById("pName").value, cat = document.getElementById("pCat").value, cost = Number(document.getElementById("pCost").value), price = Number(document.getElementById("pPrice").value), qty = Number(document.getElementById("pQty").value), bc = document.getElementById("pBarcode").value;
-        if (!name || !price) return showToast("أدخل الاسم والسعر!", "error");
-        data.products.push({ id: Date.now(), name, cat, cost, price, qty: qty || 0, barcode: bc, soldCount: 0 });
-        saveData();
-        filterStock();
+    function addProductToInventory() {
+        let name = document.getElementById("prodName").value;
+        let cat = document.getElementById("prodCat").value;
+        let cost = Number(document.getElementById("prodCost").value);
+        let price = Number(document.getElementById("prodPrice").value);
+        let qty = Number(document.getElementById("prodQty").value);
+        let barcode = document.getElementById("prodBarcode").value;
+        if (!name || !price) return showToast("الاسم والسعر مطلوبان", "error");
+        appData.products.push({ id: Date.now(), name, cat, cost, price, qty: qty || 0, barcode, soldCount: 0 });
+        saveDataOnce();
+        renderInventoryTable();
         showToast("تمت الإضافة");
     }
 
-    function editProduct(id) {
-        let p = data.products.find(x => x.id === id);
-        let nn = prompt("الاسم الجديد:", p.name);
-        let nc = prompt("الفئة الجديدة:", p.cat || "عام");
-        let ncost = prompt("التكلفة الجديدة:", p.cost);
-        let np = prompt("السعر الجديد:", p.price);
-        let nq = prompt("الكمية الجديدة:", p.qty);
-        let nb = prompt("الباركود الجديد:", p.barcode || "");
-        if (nn) p.name = nn;
-        if (nc) p.cat = nc;
-        if (ncost) p.cost = Number(ncost);
-        if (np) p.price = Number(np);
-        if (nq) p.qty = Number(nq);
-        if (nb) p.barcode = nb;
-        saveData();
-        filterStock();
-        showToast("تم التعديل");
+    function updateProductInline(id) {
+        let p = appData.products.find(x => x.id === id);
+        p.name = document.getElementById(`name_${id}`).value;
+        p.cat = document.getElementById(`cat_${id}`).value;
+        p.barcode = document.getElementById(`barcode_${id}`).value;
+        p.cost = Number(document.getElementById(`cost_${id}`).value);
+        p.price = Number(document.getElementById(`price_${id}`).value);
+        saveDataOnce();
+        renderInventoryTable();
+        showToast("تم التحديث");
     }
 
-    function deleteProduct(id) {
+    function deleteProductInline(id) {
         if (confirm("حذف المنتج نهائياً؟")) {
-            data.products = data.products.filter(p => p.id !== id);
-            saveData();
-            filterStock();
+            appData.products = appData.products.filter(p => p.id !== id);
+            saveDataOnce();
+            renderInventoryTable();
             showToast("تم الحذف");
         }
     }
 
-    function exportStock() {
-        let ws = XLSX.utils.json_to_sheet(data.products);
+    function exportInventoryExcel() {
+        let ws = XLSX.utils.json_to_sheet(appData.products);
         let wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "المخزن");
         XLSX.writeFile(wb, `golden_stock_${Date.now()}.xlsx`);
         showToast("تم التصدير");
     }
 
-    function renderClients(v) {
-        v.innerHTML = `<div class="card"><h3>👥 العملاء والموردين</h3><div style="display: flex; gap: 10px;"><input id="cName" placeholder="الاسم"><select id="cType"><option value="عميل">عميل</option><option value="مورد">مورد</option></select><button class="btn btn-p" onclick="addClient()">إضافة</button></div><div id="clientsTable"></div></div>`;
-        filterClients();
+    function renderCustomers(container) {
+        container.innerHTML = `<div class="card"><h3>👥 العملاء والموردين</h3>
+            <div style="display: flex; gap: 12px;"><input id="clientName" placeholder="الاسم"><select id="clientType"><option value="عميل">عميل</option><option value="مورد">مورد</option></select><button class="btn btn-primary" onclick="addClientRecord()">إضافة</button></div>
+            <div id="clientsListTable"></div></div>`;
+        renderClientsTable();
     }
 
-    function addClient() {
-        let name = document.getElementById("cName").value;
-        let type = document.getElementById("cType").value;
-        if (!name) return showToast("أدخل الاسم!", "error");
-        data.contacts.push({ id: Date.now(), name, type, debt: 0 });
-        saveData();
-        filterClients();
+    function addClientRecord() {
+        let name = document.getElementById("clientName").value;
+        let type = document.getElementById("clientType").value;
+        if (!name) return showToast("أدخل الاسم", "error");
+        appData.contacts.push({ id: Date.now(), name, type, debt: 0 });
+        saveDataOnce();
+        renderClientsTable();
         showToast("تمت الإضافة");
     }
 
-    function filterClients() {
+    function renderClientsTable() {
         let html = `<table><thead><th>الاسم</th><th>النوع</th><th>الرصيد</th><th>إجراءات</th></thead><tbody>`;
-        data.contacts.forEach(c => {
-            html += `<tr><td>${c.name}</td><td>${c.type}</td><td>${c.debt || 0}</td><td><button class="btn btn-s" onclick="payDebt(${c.id})">تسديد</button> <button class="btn btn-p" onclick="editClient(${c.id})">تعديل</button> <button class="btn btn-d" onclick="deleteClient(${c.id})">حذف</button></td></tr>`;
+        appData.contacts.forEach(c => {
+            html += `<td><td><input value="${c.name}" id="clientName_${c.id}"></td><td><select id="clientType_${c.id}"><option ${c.type === "عميل" ? "selected" : ""}>عميل</option><option ${c.type === "مورد" ? "selected" : ""}>مورد</option></select></td><td><input value="${c.debt || 0}" id="clientDebt_${c.id}" type="number"></td><td><button class="btn btn-primary" onclick="updateClientInline(${c.id})">حفظ</button> <button class="btn btn-danger" onclick="deleteClientInline(${c.id})">حذف</button></td></tr>`;
         });
         html += `</tbody></table>`;
-        document.getElementById("clientsTable").innerHTML = html;
+        document.getElementById("clientsListTable").innerHTML = html;
     }
 
-    function editClient(id) {
-        let c = data.contacts.find(x => x.id === id);
-        let nn = prompt("الاسم الجديد:", c.name);
-        if (nn) { c.name = nn; saveData(); filterClients(); showToast("تم التعديل"); }
-    }
-
-    function payDebt(id) {
-        let c = data.contacts.find(x => x.id === id);
-        let amt = Number(prompt(`المبلغ المسدد لـ ${c.name} (الدين: ${c.debt || 0}):`));
-        if (amt && amt > 0) {
-            c.debt = (c.debt || 0) - amt;
-            saveData();
-            filterClients();
-            showToast(`تم تسديد ${amt}`);
-        }
-    }
-
-    function deleteClient(id) {
-        if (confirm("حذف هذا السجل؟")) {
-            data.contacts = data.contacts.filter(c => c.id !== id);
-            saveData();
-            filterClients();
-            showToast("تم الحذف");
-        }
-    }
-
-    function renderExpenses(v) {
-        v.innerHTML = `<div class="card"><h3>💸 المصاريف</h3><div style="display: flex; gap: 10px;"><input id="expNote" placeholder="البيان"><input id="expAmt" type="number" placeholder="المبلغ"><button class="btn btn-d" onclick="addExpense()">إضافة</button></div><div id="expTable"></div></div>`;
-        filterExpenses();
-    }
-
-    function addExpense() {
-        let note = document.getElementById("expNote").value;
-        let amt = Number(document.getElementById("expAmt").value);
-        if (!note || !amt) return showToast("أدخل البيانات!", "error");
-        data.expenses.unshift({ note, amount: amt, date: new Date().toLocaleDateString() });
-        saveData();
-        filterExpenses();
-        showToast("تم تسجيل المصروف");
-    }
-
-    function filterExpenses() {
-        let html = `<table><thead><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th>إجراءات</th></thead><tbody>`;
-        data.expenses.forEach((e, i) => {
-            html += `<td><td>${e.date}</td><td>${e.note}</td><td>${e.amount}</td><td><button class="btn btn-p" onclick="editExpense(${i})">تعديل</button> <button class="btn btn-d" onclick="deleteExpense(${i})">حذف</button></td></tr>`;
-        });
-        html += `</tbody></table>`;
-        document.getElementById("expTable").innerHTML = html;
-    }
-
-    function editExpense(i) {
-        let e = data.expenses[i];
-        let nn = prompt("البيان الجديد:", e.note);
-        let na = prompt("المبلغ الجديد:", e.amount);
-        if (nn) e.note = nn;
-        if (na) e.amount = Number(na);
-        saveData();
-        filterExpenses();
+    function updateClientInline(id) {
+        let c = appData.contacts.find(x => x.id === id);
+        c.name = document.getElementById(`clientName_${id}`).value;
+        c.type = document.getElementById(`clientType_${id}`).value;
+        c.debt = Number(document.getElementById(`clientDebt_${id}`).value);
+        saveDataOnce();
+        renderClientsTable();
         showToast("تم التعديل");
     }
 
-    function deleteExpense(i) {
-        if (confirm("حذف المصروف؟")) {
-            data.expenses.splice(i, 1);
-            saveData();
-            filterExpenses();
+    function deleteClientInline(id) {
+        if (confirm("حذف هذا السجل؟")) {
+            appData.contacts = appData.contacts.filter(c => c.id !== id);
+            saveDataOnce();
+            renderClientsTable();
             showToast("تم الحذف");
         }
     }
 
-    function renderReturns(v) {
-        v.innerHTML = `<div class="card"><h3>↩️ المرتجعات</h3><div style="display: flex; gap: 10px;"><input id="retProd" placeholder="المنتج أو الفاتورة"><input id="retAmount" type="number" placeholder="المبلغ"><button class="btn btn-w" onclick="addReturn()">تسجيل</button></div><div id="returnsTable"></div></div>`;
-        filterReturns();
+    function renderExpenses(container) {
+        container.innerHTML = `<div class="card"><h3>💸 المصاريف</h3>
+            <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px;"><input id="expenseNote" placeholder="البيان"><input id="expenseAmount" type="number" placeholder="المبلغ"><button class="btn btn-danger" onclick="addExpenseRecord()">إضافة</button></div>
+            <div id="expensesTableDiv"></div></div>`;
+        renderExpensesTable();
     }
 
-    function addReturn() {
-        let prod = document.getElementById("retProd").value;
-        let amt = Number(document.getElementById("retAmount").value);
-        if (!prod || !amt) return showToast("أدخل البيانات!", "error");
-        data.returns.unshift({ product: prod, amount: amt, date: new Date().toLocaleDateString() });
-        saveData();
-        filterReturns();
+    function addExpenseRecord() {
+        let note = document.getElementById("expenseNote").value;
+        let amount = Number(document.getElementById("expenseAmount").value);
+        if (!note || !amount) return showToast("أدخل البيانات", "error");
+        appData.expenses.unshift({ note, amount, date: new Date().toLocaleDateString() });
+        saveDataOnce();
+        renderExpensesTable();
+        showToast("تم الإضافة");
+    }
+
+    function renderExpensesTable() {
+        let html = `<table><thead><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th>إجراءات</th></thead><tbody>`;
+        appData.expenses.forEach((e, i) => {
+            html += `<tr><td><input value="${e.date}" id="expDate_${i}"><td><input value="${e.note}" id="expNote_${i}"><td><input value="${e.amount}" id="expAmount_${i}" type="number"><td><button class="btn btn-primary" onclick="updateExpenseInline(${i})">حفظ</button> <button class="btn btn-danger" onclick="deleteExpenseInline(${i})">حذف</button></td></tr>`;
+        });
+        html += `</tbody></table>`;
+        document.getElementById("expensesTableDiv").innerHTML = html;
+    }
+
+    function updateExpenseInline(i) {
+        let e = appData.expenses[i];
+        e.date = document.getElementById(`expDate_${i}`).value;
+        e.note = document.getElementById(`expNote_${i}`).value;
+        e.amount = Number(document.getElementById(`expAmount_${i}`).value);
+        saveDataOnce();
+        renderExpensesTable();
+        showToast("تم التعديل");
+    }
+
+    function deleteExpenseInline(i) {
+        if (confirm("حذف هذا المصروف؟")) {
+            appData.expenses.splice(i, 1);
+            saveDataOnce();
+            renderExpensesTable();
+            showToast("تم الحذف");
+        }
+    }
+
+    function renderReturns(container) {
+        container.innerHTML = `<div class="card"><h3>↩️ المرتجعات</h3>
+            <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px;"><input id="returnProduct" placeholder="المنتج / الفاتورة"><input id="returnAmount" type="number" placeholder="المبلغ"><button class="btn btn-warning" onclick="addReturnRecord()">تسجيل</button></div>
+            <div id="returnsTableDiv"></div></div>`;
+        renderReturnsTable();
+    }
+
+    function addReturnRecord() {
+        let product = document.getElementById("returnProduct").value;
+        let amount = Number(document.getElementById("returnAmount").value);
+        if (!product || !amount) return showToast("أدخل البيانات", "error");
+        appData.returns.unshift({ product, amount, date: new Date().toLocaleDateString() });
+        saveDataOnce();
+        renderReturnsTable();
         showToast("تم تسجيل المرتجع");
     }
 
-    function filterReturns() {
+    function renderReturnsTable() {
         let html = `<table><thead><th>التاريخ</th><th>المنتج/الفاتورة</th><th>المبلغ</th><th>إجراءات</th></thead><tbody>`;
-        data.returns.forEach((r, i) => {
-            html += `<tr><td>${r.date}</td><td>${r.product}</td><td>${r.amount}</td><td><button class="btn btn-p" onclick="editReturn(${i})">تعديل</button> <button class="btn btn-d" onclick="deleteReturn(${i})">حذف</button></td></tr>`;
+        appData.returns.forEach((r, i) => {
+            html += `<tr><td><input value="${r.date}" id="retDate_${i}"><td><input value="${r.product}" id="retProd_${i}"><td><input value="${r.amount}" id="retAmount_${i}" type="number"><td><button class="btn btn-primary" onclick="updateReturnInline(${i})">حفظ</button> <button class="btn btn-danger" onclick="deleteReturnInline(${i})">حذف</button></td></tr>`;
         });
-        html += `</tbody></td>`;
-        document.getElementById("returnsTable").innerHTML = html;
+        html += `</tbody><tr>`;
+        document.getElementById("returnsTableDiv").innerHTML = html;
     }
 
-    function editReturn(i) {
-        let r = data.returns[i];
-        let np = prompt("المنتج الجديد:", r.product);
-        let na = prompt("المبلغ الجديد:", r.amount);
-        if (np) r.product = np;
-        if (na) r.amount = Number(na);
-        saveData();
-        filterReturns();
+    function updateReturnInline(i) {
+        let r = appData.returns[i];
+        r.date = document.getElementById(`retDate_${i}`).value;
+        r.product = document.getElementById(`retProd_${i}`).value;
+        r.amount = Number(document.getElementById(`retAmount_${i}`).value);
+        saveDataOnce();
+        renderReturnsTable();
         showToast("تم التعديل");
     }
 
-    function deleteReturn(i) {
-        if (confirm("حذف المرتجع؟")) {
-            data.returns.splice(i, 1);
-            saveData();
-            filterReturns();
+    function deleteReturnInline(i) {
+        if (confirm("حذف هذا المرتجع؟")) {
+            appData.returns.splice(i, 1);
+            saveDataOnce();
+            renderReturnsTable();
             showToast("تم الحذف");
         }
     }
 
-    function renderReports(v) {
-        v.innerHTML = `<div class="card"><h3>📋 سجل المبيعات والمرتجعات</h3><div id="reportsTable"></div></div>`;
-        let html = `<tr><thead><th>رقم الفاتورة</th><th>التاريخ</th><th>الإجمالي</th><th>إجراءات</th></thead><tbody>`;
-        data.sales.forEach(s => {
-            html += `<tr><td>#${s.id}</td><td>${s.date}</td><td>${s.total.toFixed(2)}</td><td><button class="btn btn-p" onclick="printInvoiceById(${s.id})">طباعة</button> <button class="btn btn-w" onclick="returnSaleById(${s.id})">إرجاع</button></td></tr>`;
+    function renderReports(container) {
+        container.innerHTML = `<div class="card"><h3>📋 التقارير والمرتجعات</h3>
+            <div id="reportsContent"></div></div>`;
+        let html = `</table><thead><th>رقم الفاتورة</th><th>التاريخ</th><th>الإجمالي</th><th>إجراءات</th></thead><tbody>`;
+        appData.sales.forEach(s => {
+            html += `<tr><td>#${s.id}<td>${s.date}<td>${s.total.toFixed(2)}<td><button class="btn btn-primary" onclick="printSaleById(${s.id})">طباعة</button> <button class="btn btn-warning" onclick="returnSaleById(${s.id})">إرجاع</button></td></tr>`;
         });
-        html += `</tbody></table>`;
-        document.getElementById("reportsTable").innerHTML = html;
+        html += `</tbody></tr>`;
+        document.getElementById("reportsContent").innerHTML = html;
     }
 
-    function printInvoiceById(id) {
-        let sale = data.sales.find(s => s.id == id);
-        if (sale) printInvoice(sale);
+    function printSaleById(id) {
+        let sale = appData.sales.find(s => s.id === id);
+        if (sale) printSaleInvoice(sale);
         else showToast("الفاتورة غير موجودة", "error");
     }
 
     function returnSaleById(id) {
         if (confirm("إرجاع الفاتورة بالكامل واسترجاع المنتجات للمخزن؟")) {
-            let sale = data.sales.find(s => s.id == id);
+            let sale = appData.sales.find(s => s.id === id);
             if (sale && sale.items) {
                 sale.items.forEach(item => {
-                    let p = data.products.find(prod => prod.id === item.id);
+                    let p = appData.products.find(prod => prod.id === item.id);
                     if (p) p.qty += item.qty;
                 });
-                data.returns.unshift({ product: `فاتورة رقم ${id}`, amount: sale.total, date: new Date().toLocaleDateString() });
-                data.sales = data.sales.filter(s => s.id != id);
-                saveData();
+                appData.returns.unshift({ product: `فاتورة رقم ${id}`, amount: sale.total, date: new Date().toLocaleDateString() });
+                appData.sales = appData.sales.filter(s => s.id !== id);
+                saveDataOnce();
                 renderReports();
-                filterReturns();
-                showToast("تم إرجاع الفاتورة");
+                renderReturnsTable();
+                showToast("تم الإرجاع");
             }
         }
     }
@@ -879,387 +797,42 @@
         if (user) {
             currentUser = user;
             document.getElementById("authScreen").style.display = "none";
-            document.getElementById("appUI").style.display = "block";
-            loadUserData(user);
+            document.getElementById("appContainer").style.display = "block";
+            loadAppData(user);
         } else {
             document.getElementById("authScreen").style.display = "flex";
-            document.getElementById("appUI").style.display = "none";
+            document.getElementById("appContainer").style.display = "none";
         }
     });
-</script>
-</body>
-    </html><!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>GOLDEN ERP | النسخة الكاملة (الجزء الثاني)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Cairo', sans-serif;
-        }
 
-        :root {
-            --primary: #0f172a;
-            --accent: #3b82f6;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --info: #8b5cf6;
-            --dark-bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-dark: #1e293b;
-            --border: #e2e8f0;
-        }
-
-        [data-theme="dark"] {
-            --primary: #f1f5f9;
-            --dark-bg: #0f172a;
-            --card-bg: #1e293b;
-            --text-dark: #f1f5f9;
-            --border: #334155;
-        }
-
-        body {
-            background: var(--dark-bg);
-            color: var(--text-dark);
-            transition: 0.3s;
-        }
-
-        .main-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 25px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 24px;
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-        }
-
-        .grid-4 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.2s;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-warning {
-            background: var(--warning);
-            color: white;
-        }
-
-        input,
-        select,
-        textarea {
-            padding: 12px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            width: 100%;
-            margin-bottom: 12px;
-            background: var(--card-bg);
-            color: var(--text-dark);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        th {
-            background: var(--dark-bg);
-            padding: 14px;
-            font-weight: 700;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
-            text-align: center;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 25px;
-            left: 25px;
-            background: var(--success);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 40px;
-            z-index: 10000;
-            display: none;
-        }
-
-        @media (max-width: 800px) {
-            .grid-4 {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media print {
-            .btn,
-            .no-print {
-                display: none;
-            }
-        }
-    </style>
-</head>
-<body>
-
-<div id="toast" class="toast"></div>
-
-<div id="appContainer" class="main-content">
-    <!-- الجزء الثاني: تقارير متقدمة، تحليلات، إعدادات متطورة، دعم عملات، إدارة فروع، طباعة PDF، إرسال واتساب، أكثر المنتجات مبيعاً، إلخ -->
-    <div class="card">
-        <h2><i class="fas fa-chart-line"></i> التقارير المتقدمة والتحليلات المالية</h2>
-        <div class="grid-4">
-            <div class="card">
-                <h3>🏆 أكثر المنتجات مبيعاً</h3>
-                <div id="topProductsList"></div>
-                <button class="btn btn-primary" onclick="generateTopProducts()">تحديث</button>
-            </div>
-            <div class="card">
-                <h3>💰 أرباح كل منتج</h3>
-                <div id="productProfitList"></div>
-                <button class="btn btn-primary" onclick="generateProductProfit()">تحليل الأرباح</button>
-            </div>
-            <div class="card">
-                <h3>📊 تقرير العملاء الأكثر شراء</h3>
-                <div id="topCustomers"></div>
-                <button class="btn btn-primary" onclick="generateTopCustomers()">تحديث</button>
-            </div>
-            <div class="card">
-                <h3>📅 الإحصائيات الشهرية والسنوية</h3>
-                <select id="reportYear">
-                    <option value="2024">2024</option>
-                    <option value="2025">2025</option>
-                </select>
-                <button class="btn btn-success" onclick="generateYearlyReport()">تقرير سنوي</button>
-                <button class="btn btn-warning" onclick="generateMonthlyReport()">تقرير شهري</button>
-                <div id="yearlyReport"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <h2><i class="fas fa-envelope"></i> إرسال الفواتير عبر واتساب والإيميل</h2>
-        <div class="grid-4">
-            <div class="card">
-                <h3>إرسال فاتورة عبر واتساب</h3>
-                <input type="number" id="invoiceIdWhatsapp" placeholder="رقم الفاتورة">
-                <input type="text" id="phoneNumber" placeholder="رقم الجوال (مثال: 218912345678)">
-                <button class="btn btn-success" onclick="sendInvoiceWhatsapp()">إرسال</button>
-            </div>
-            <div class="card">
-                <h3>إرسال فاتورة عبر الإيميل</h3>
-                <input type="number" id="invoiceIdEmail" placeholder="رقم الفاتورة">
-                <input type="email" id="emailAddress" placeholder="البريد الإلكتروني">
-                <button class="btn btn-primary" onclick="sendInvoiceEmail()">إرسال</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <h2><i class="fas fa-globe"></i> الإعدادات المتقدمة (العملات، الفروع، الصلاحيات)</h2>
-        <div class="grid-4">
-            <div class="card">
-                <h3>العملة</h3>
-                <select id="currencySelect" onchange="changeCurrency()">
-                    <option value="LYD">دينار ليبي (LYD)</option>
-                    <option value="USD">دولار أمريكي (USD)</option>
-                    <option value="EUR">يورو (EUR)</option>
-                </select>
-            </div>
-            <div class="card">
-                <h3>إدارة الفروع</h3>
-                <input type="text" id="branchName" placeholder="اسم الفرع">
-                <button class="btn btn-primary" onclick="addBranch()">إضافة فرع</button>
-                <div id="branchesList"></div>
-            </div>
-            <div class="card">
-                <h3>طباعة تقرير PDF</h3>
-                <button class="btn btn-danger" onclick="exportPDF()">تصدير التقرير الكامل PDF</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    // بيانات تجريبية (لن يتم تخزينها في Firebase في هذا الجزء، لكنها تكمل الجزء الأول)
-    let salesData = JSON.parse(localStorage.getItem("salesData")) || [
-        { id: 1, total: 2500, date: "2025-05-01", customer: "شركة النخبة", products: [{ name: "هاتف ذكي", qty: 1, price: 2500 }] },
-        { id: 2, total: 5200, date: "2025-05-02", customer: "مؤسسة الأمل", products: [{ name: "حاسوب محمول", qty: 1, price: 5200 }] },
-        { id: 3, total: 1050, date: "2025-05-03", customer: "شركة النخبة", products: [{ name: "سماعة لاسلكية", qty: 3, price: 350 }] }
-    ];
-    let productsData = JSON.parse(localStorage.getItem("productsData")) || [
-        { id: 1, name: "هاتف ذكي", price: 2500, cost: 1800, soldCount: 5 },
-        { id: 2, name: "حاسوب محمول", price: 5200, cost: 4200, soldCount: 3 },
-        { id: 3, name: "سماعة لاسلكية", price: 350, cost: 200, soldCount: 20 }
-    ];
-
-    function showToast(msg, type = "success") {
-        let t = document.getElementById("toast");
-        t.innerHTML = msg;
-        t.style.background = type === "success" ? "#10b981" : type === "error" ? "#ef4444" : "#f59e0b";
-        t.style.display = "block";
-        setTimeout(() => t.style.display = "none", 3000);
-    }
-
-    function generateTopProducts() {
-        let top = [...productsData].sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0)).slice(0, 5);
-        let html = "<ul>";
-        top.forEach(p => { html += `<li>${p.name} - تم بيع ${p.soldCount || 0} قطعة</li>`; });
-        html += "</ul>";
-        document.getElementById("topProductsList").innerHTML = html;
-    }
-
-    function generateProductProfit() {
-        let html = "<ul>";
-        productsData.forEach(p => {
-            let profit = (p.price - p.cost) * (p.soldCount || 0);
-            html += `<li>${p.name}: ربح = ${profit.toFixed(2)} (سعر البيع ${p.price} - التكلفة ${p.cost}) × ${p.soldCount || 0}</li>`;
-        });
-        html += "</ul>";
-        document.getElementById("productProfitList").innerHTML = html;
-    }
-
-    function generateTopCustomers() {
-        let customersMap = new Map();
-        salesData.forEach(sale => {
-            if (sale.customer) {
-                let total = customersMap.get(sale.customer) || 0;
-                customersMap.set(sale.customer, total + sale.total);
-            }
-        });
-        let topCustomers = Array.from(customersMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
-        let html = "<ul>";
-        topCustomers.forEach(c => { html += `<li>${c[0]} - إجمالي المشتريات: ${c[1].toFixed(2)}</li>`; });
-        html += "</ul>";
-        document.getElementById("topCustomers").innerHTML = html;
-    }
-
-    function generateYearlyReport() {
-        let year = document.getElementById("reportYear").value;
-        let total = 0;
-        salesData.forEach(sale => {
-            if (sale.date.startsWith(year)) total += sale.total;
-        });
-        document.getElementById("yearlyReport").innerHTML = `<p><strong>تقرير سنة ${year}:</strong> إجمالي المبيعات = ${total.toFixed(2)}</p>`;
-    }
-
-    function generateMonthlyReport() {
-        let now = new Date();
-        let month = now.getMonth() + 1;
-        let year = now.getFullYear();
-        let total = 0;
-        salesData.forEach(sale => {
-            let [y, m] = sale.date.split("-");
-            if (y == year && m == month) total += sale.total;
-        });
-        document.getElementById("yearlyReport").innerHTML = `<p><strong>تقرير الشهر الحالي:</strong> إجمالي المبيعات = ${total.toFixed(2)}</p>`;
-    }
-
-    function sendInvoiceWhatsapp() {
-        let invoiceId = document.getElementById("invoiceIdWhatsapp").value;
-        let phone = document.getElementById("phoneNumber").value;
-        let sale = salesData.find(s => s.id == invoiceId);
-        if (!sale) return showToast("الفاتورة غير موجودة", "error");
-        let msg = `فاتورة رقم ${sale.id} - التاريخ ${sale.date} - الإجمالي ${sale.total} - شكراً لتعاملكم`;
-        let url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-        window.open(url, "_blank");
-        showToast("تم توجيهك لواتساب");
-    }
-
-    function sendInvoiceEmail() {
-        let invoiceId = document.getElementById("invoiceIdEmail").value;
-        let email = document.getElementById("emailAddress").value;
-        let sale = salesData.find(s => s.id == invoiceId);
-        if (!sale) return showToast("الفاتورة غير موجودة", "error");
-        let subject = `فاتورة رقم ${sale.id}`;
-        let body = `تفاصيل الفاتورة: التاريخ ${sale.date} - الإجمالي ${sale.total}`;
-        let mailto = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        window.location.href = mailto;
-        showToast("تم فتح برنامج البريد الإلكتروني");
-    }
-
-    function changeCurrency() {
-        let curr = document.getElementById("currencySelect").value;
-        let symbol = curr === "LYD" ? "د.ل" : curr === "USD" ? "$" : "€";
-        showToast(`تم تغيير العملة إلى ${symbol}`);
-    }
-
-    let branches = [];
-
-    function addBranch() {
-        let name = document.getElementById("branchName").value;
-        if (!name) return showToast("أدخل اسم الفرع", "error");
-        branches.push(name);
-        displayBranches();
-        showToast(`تم إضافة فرع ${name}`);
-    }
-
-    function displayBranches() {
-        let html = "<ul>";
-        branches.forEach(b => { html += `<li>${b}</li>`; });
-        html += "</ul>";
-        document.getElementById("branchesList").innerHTML = html;
-    }
-
-    function exportPDF() {
-        let originalTitle = document.title;
-        document.title = "تقرير GOLDEN ERP";
-        window.print();
-        document.title = originalTitle;
-        showToast("تم فتح نافذة الطباعة (PDF)");
-    }
-
-    // تحميل البيانات التلقائي
-    generateTopProducts();
-    generateProductProfit();
-    generateTopCustomers();
+    window.filterPOSProducts = filterPOSProducts;
+    window.addToCart = addToCart;
+    window.changeCartQty = changeCartQty;
+    window.removeCartItem = removeCartItem;
+    window.updateCartUI = updateCartUI;
+    window.finalizeSale = finalizeSale;
+    window.addProductToInventory = addProductToInventory;
+    window.updateProductInline = updateProductInline;
+    window.deleteProductInline = deleteProductInline;
+    window.addClientRecord = addClientRecord;
+    window.updateClientInline = updateClientInline;
+    window.deleteClientInline = deleteClientInline;
+    window.addExpenseRecord = addExpenseRecord;
+    window.updateExpenseInline = updateExpenseInline;
+    window.deleteExpenseInline = deleteExpenseInline;
+    window.addReturnRecord = addReturnRecord;
+    window.updateReturnInline = updateReturnInline;
+    window.deleteReturnInline = deleteReturnInline;
+    window.printSaleById = printSaleById;
+    window.returnSaleById = returnSaleById;
+    window.exportInventoryExcel = exportInventoryExcel;
+    window.navigate = navigate;
+    window.login = login;
+    window.googleLogin = googleLogin;
+    window.register = register;
+    window.logout = logout;
+    window.toggleAuth = toggleAuth;
+    window.toggleTheme = toggleTheme;
 </script>
 </body>
 </html>
