@@ -658,3 +658,64 @@ auth.onAuthStateChanged(user => {
 </script>
 </body>
 </html>
+    filterSales() {
+        let search = document.getElementById('reportSearch')?.value.toLowerCase() || '';
+        let sortBy = document.getElementById('reportSort')?.value || 'date';
+        let filtered = this.data.sales.filter(s => s.id.toString().includes(search));
+        if(sortBy === 'amount') filtered.sort((a,b) => b.total - a.total);
+        else filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+        let tbody = document.querySelector('#salesTable tbody');
+        if(tbody) tbody.innerHTML = filtered.map(s => `
+            <tr>
+                <td>#${s.id}</td>
+                <td>${s.date}</td>
+                <td>${s.paymentMethod === 'cash' ? 'نقدي' : s.paymentMethod === 'card' ? 'بطاقة' : 'تحويل بنكي'}</td>
+                <td>${s.total.toFixed(2)}</td>
+                <td>
+                    <button class="btn btn-p" onclick="app.printInvoiceById(${s.id})"><i class="fas fa-print"></i> طباعة</button>
+                    <button class="btn btn-w" onclick="app.returnSaleById(${s.id})"><i class="fas fa-undo"></i> إرجاع</button>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    printInvoiceById(id) {
+        let sale = this.data.sales.find(s => s.id == id);
+        if(sale) this.printInvoice(sale);
+        else this.toast("الفاتورة غير موجودة", 'error');
+    },
+
+    returnSaleById(id) {
+        if(confirm("هل تريد إرجاع هذه الفاتورة بالكامل واسترجاع المنتجات للمخزن؟")) {
+            let sale = this.data.sales.find(s => s.id == id);
+            if(sale && sale.items) {
+                sale.items.forEach(item => {
+                    let p = this.data.products.find(x => x.id === item.id);
+                    if(p) p.qty += item.qty;
+                });
+                this.data.returns.unshift({ product: `فاتورة رقم ${id}`, amount: sale.total, date: new Date().toLocaleDateString() });
+                this.data.sales = this.data.sales.filter(s => s.id != id);
+                this.saveData();
+                this.filterSales();
+                this.filterReturns();
+                this.toast("تم إرجاع الفاتورة بنجاح");
+            }
+        }
+    }
+};
+
+// بدء التطبيق
+auth.onAuthStateChanged(user => {
+    if(user) {
+        app.user = user;
+        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('appUI').style.display = 'block';
+        app.loadUserData();
+    } else {
+        document.getElementById('authScreen').style.display = 'flex';
+        document.getElementById('appUI').style.display = 'none';
+    }
+});
+</script>
+</body>
+</html>
