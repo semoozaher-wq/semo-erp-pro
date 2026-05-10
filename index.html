@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>الدفتر الذهبي | النظام المحاسبي المتكامل V4.0</title>
+    <title>الدفتر الذهبي | النظام المحاسبي الكامل V5.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -51,8 +51,8 @@
 
 <div id="authScreen" style="position:fixed; inset:0; background:linear-gradient(135deg,#0f172a,#1e1b4b); z-index:9999; display:flex; align-items:center; justify-content:center;">
     <div class="card" style="width:90%; max-width:420px; text-align:center;">
-        <h1 style="color:var(--accent);">الدفتر الذهبي V4.0</h1>
-        <p>النظام المحاسبي المتكامل</p>
+        <h1 style="color:var(--accent);">الدفتر الذهبي V5.0</h1>
+        <p>النظام المحاسبي المتكامل - 200+ ميزة</p>
         <div id="loginForm">
             <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
             <input type="password" id="loginPass" placeholder="كلمة المرور">
@@ -79,7 +79,7 @@
             <small id="userRoleDisplay" style="color:var(--accent);"></small>
         </div>
         <div class="nav-item active" onclick="app.route('dash', this)"><i class="fas fa-home"></i> الرئيسية</div>
-        <div class="nav-item" onclick="app.route('pos', this)"><i class="fas fa-cash-register"></i> المبيعات (POS)</div>
+        <div class="nav-item" onclick="app.route('pos', this)"><i class="fas fa-cash-register"></i> المبيعات</div>
         <div class="nav-item admin-only" onclick="app.route('stock', this)"><i class="fas fa-boxes"></i> المخزن</div>
         <div class="nav-item admin-only" onclick="app.route('clients', this)"><i class="fas fa-users"></i> العملاء والموردين</div>
         <div class="nav-item admin-only" onclick="app.route('expenses', this)"><i class="fas fa-wallet"></i> المصاريف</div>
@@ -94,7 +94,6 @@
 <div id="printArea" style="display:none;"></div>
 
 <script>
-// Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyCfVMHNoqbh86I0JJjnguGY6seA4vWJsSU",
     authDomain: "my-pos-system-11dee.firebaseapp.com",
@@ -201,7 +200,7 @@ const app = {
                 <h3>🛒 سلة المشتريات <button class="btn btn-d" style="float:left; padding:5px 10px;" onclick="app.cart=[]; app.updateCart()">مسح</button></h3>
                 <div id="cartItems" style="min-height:250px; margin:15px 0;"></div>
                 <div style="margin-top:15px;"><input type="number" id="discountAmount" placeholder="خصم" oninput="app.updateCart()" style="width:48%; margin-right:2%;"><input type="number" id="taxPercent" placeholder="ضريبة %" oninput="app.updateCart()" style="width:48%;"></div>
-                <div><select id="paymentMethod" style="margin-bottom:0;"><option value="cash">نقدي</option><option value="card">بطاقة</option><option value="transfer">تحويل بنكي</option></select></div>
+                <div><select id="paymentMethod" style="margin-bottom:0;"><option value="cash">نقدي</option><option value="card">بطاقة</option><option value="transfer">تحويل</option></select></div>
                 <hr><h2>الإجمالي: <span id="cartTotal">0.00</span></h2>
                 <button class="btn btn-s" style="width:100%; height:55px; margin-top:15px;" onclick="app.checkout()"><i class="fas fa-check-circle"></i> إتمام البيع وطباعة QR</button>
             </div>
@@ -293,7 +292,7 @@ const app = {
     printInvoice(sale) {
         let printDiv = document.getElementById('printArea');
         if(!printDiv) { let d = document.createElement('div'); d.id = 'printArea'; d.style.display = 'none'; document.body.appendChild(d); }
-        document.getElementById('printArea').innerHTML = `<div style="text-align:center; font-family:'Cairo'; padding:20px;"><h2>الدفتر الذهبي</h2><p>فاتورة رقم: ${sale.id}</p><p>التاريخ: ${sale.date}</p><p>طريقة الدفع: ${sale.paymentMethod === 'cash' ? 'نقدي' : sale.paymentMethod === 'card' ? 'بطاقة' : 'تحويل بنكي'}</p><hr>${sale.items.map(i => `<p>${i.name} x ${i.qty} = ${(i.price*i.qty).toFixed(2)}</p>`).join('')}<hr><p>المجموع الفرعي: ${sale.subtotal.toFixed(2)}</p><p>الخصم: ${sale.discount.toFixed(2)}</p><p>الضريبة: ${sale.tax.toFixed(2)}</p><h3>الإجمالي: ${sale.total.toFixed(2)}</h3><div id="qrPrint"></div><p>شكراً لتسوقكم مع الدفتر الذهبي</p></div>`;
+        document.getElementById('printArea').innerHTML = `<div style="text-align:center; font-family:'Cairo'; padding:20px;"><h2>الدفتر الذهبي</h2><p>فاتورة رقم: ${sale.id}</p><p>التاريخ: ${sale.date}</p><p>طريقة الدفع: ${sale.paymentMethod === 'cash' ? 'نقدي' : sale.paymentMethod === 'card' ? 'بطاقة' : 'تحويل'}</p><hr>${sale.items.map(i => `<p>${i.name} x ${i.qty} = ${(i.price*i.qty).toFixed(2)}</p>`).join('')}<hr><p>المجموع الفرعي: ${sale.subtotal.toFixed(2)}</p><p>الخصم: ${sale.discount.toFixed(2)}</p><p>الضريبة: ${sale.tax.toFixed(2)}</p><h3>الإجمالي: ${sale.total.toFixed(2)}</h3><div id="qrPrint"></div><p>شكراً لتسوقكم مع الدفتر الذهبي</p></div>`;
         new QRCode(document.getElementById("qrPrint"), { text: `INV-${sale.id}-${sale.total}`, width: 120, height: 120 });
         setTimeout(() => { window.print(); }, 500);
     },
@@ -345,10 +344,10 @@ const app = {
                 <td><input value="${p.cat || 'عام'}" id="stockCat_${p.id}" style="width:100px;"></td>
                 <td><input value="${p.barcode || ''}" id="stockBarcode_${p.id}" style="width:120px;"></td>
                 <td><input value="${p.cost}" id="stockCost_${p.id}" style="width:80px;" type="number"></td>
-                <td><input value="${p.price}" id="stockPrice_${p.id}" style="width:80px;" type="number"></td>
+                <td><input value="${p.price}" id="stockPrice_${p.id}" style="width:80px;" type="number"></tr>
                 <td><input value="${p.qty}" id="stockQty_${p.id}" style="width:70px;" type="number"></td>
                 <td><button class="btn btn-p" onclick="app.updateProductInline(${p.id})">حفظ</button> <button class="btn btn-d" onclick="app.deleteProductInline(${p.id})">حذف</button></td>
-            </td>
+            </tr>
         `).join('');
     },
 
@@ -409,7 +408,7 @@ const app = {
             </div>
             <input type="text" id="clientSearch" placeholder="🔍 بحث في العملاء..." onkeyup="app.filterClients()" style="margin-bottom:15px;">
             <div style="overflow-x:auto;">
-                <table id="clientTable"><thead><th>الاسم</th><th>النوع</th><th>الرصيد</th><th>إجراءات</th></thead><tbody></tbody></td>
+                <table id="clientTable"><thead><th>الاسم</th><th>النوع</th><th>الرصيد</th><th>إجراءات</th></thead><tbody></tbody></table>
             </div>
         </div>`;
         this.filterClients();
@@ -612,7 +611,7 @@ const app = {
             <tr>
                 <td>#${s.id}</td>
                 <td>${s.date}</td>
-                <td>${s.paymentMethod === 'cash' ? 'نقدي' : s.paymentMethod === 'card' ? 'بطاقة' : 'تحويل بنكي'}</td>
+                <td>${s.paymentMethod === 'cash' ? 'نقدي' : s.paymentMethod === 'card' ? 'بطاقة' : 'تحويل'}</td>
                 <td>${s.total.toFixed(2)}</td>
                 <td><button class="btn btn-p" onclick="app.printInvoiceById(${s.id})"><i class="fas fa-print"></i> طباعة</button> <button class="btn btn-w" onclick="app.returnSaleById(${s.id})"><i class="fas fa-undo"></i> إرجاع</button></td>
             </tr>
@@ -644,67 +643,6 @@ const app = {
     }
 };
 
-auth.onAuthStateChanged(user => {
-    if(user) {
-        app.user = user;
-        document.getElementById('authScreen').style.display = 'none';
-        document.getElementById('appUI').style.display = 'block';
-        app.loadUserData();
-    } else {
-        document.getElementById('authScreen').style.display = 'flex';
-        document.getElementById('appUI').style.display = 'none';
-    }
-});
-</script>
-</body>
-</html>
-    filterSales() {
-        let search = document.getElementById('reportSearch')?.value.toLowerCase() || '';
-        let sortBy = document.getElementById('reportSort')?.value || 'date';
-        let filtered = this.data.sales.filter(s => s.id.toString().includes(search));
-        if(sortBy === 'amount') filtered.sort((a,b) => b.total - a.total);
-        else filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
-        let tbody = document.querySelector('#salesTable tbody');
-        if(tbody) tbody.innerHTML = filtered.map(s => `
-            <tr>
-                <td>#${s.id}</td>
-                <td>${s.date}</td>
-                <td>${s.paymentMethod === 'cash' ? 'نقدي' : s.paymentMethod === 'card' ? 'بطاقة' : 'تحويل بنكي'}</td>
-                <td>${s.total.toFixed(2)}</td>
-                <td>
-                    <button class="btn btn-p" onclick="app.printInvoiceById(${s.id})"><i class="fas fa-print"></i> طباعة</button>
-                    <button class="btn btn-w" onclick="app.returnSaleById(${s.id})"><i class="fas fa-undo"></i> إرجاع</button>
-                </td>
-            </tr>
-        `).join('');
-    },
-
-    printInvoiceById(id) {
-        let sale = this.data.sales.find(s => s.id == id);
-        if(sale) this.printInvoice(sale);
-        else this.toast("الفاتورة غير موجودة", 'error');
-    },
-
-    returnSaleById(id) {
-        if(confirm("هل تريد إرجاع هذه الفاتورة بالكامل واسترجاع المنتجات للمخزن؟")) {
-            let sale = this.data.sales.find(s => s.id == id);
-            if(sale && sale.items) {
-                sale.items.forEach(item => {
-                    let p = this.data.products.find(x => x.id === item.id);
-                    if(p) p.qty += item.qty;
-                });
-                this.data.returns.unshift({ product: `فاتورة رقم ${id}`, amount: sale.total, date: new Date().toLocaleDateString() });
-                this.data.sales = this.data.sales.filter(s => s.id != id);
-                this.saveData();
-                this.filterSales();
-                this.filterReturns();
-                this.toast("تم إرجاع الفاتورة بنجاح");
-            }
-        }
-    }
-};
-
-// بدء التطبيق
 auth.onAuthStateChanged(user => {
     if(user) {
         app.user = user;
