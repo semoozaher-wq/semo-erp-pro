@@ -1,0 +1,3507 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدفتر الذهبي - نظام إدارة المبيعات والمخزون الاحترافي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --primary-dark: #1e40af;
+            --secondary: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f97316;
+            --info: #0ea5e9;
+            --light: #f3f4f6;
+            --dark: #1f2937;
+            --gray: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            color: var(--dark);
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            color: #f3f4f6;
+        }
+
+        /* ==================== LAYOUT ==================== */
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        body.dark-mode .sidebar {
+            background: #0f172a;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar.collapsed .sidebar-title,
+        .sidebar.collapsed .nav-item span {
+            display: none;
+        }
+
+        .main-content {
+            margin-right: 260px;
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .main-content {
+            background: #111827;
+        }
+
+        .main-content.expanded {
+            margin-right: 80px;
+        }
+
+        /* ==================== HEADER ==================== */
+        .header {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        body.dark-mode .header {
+            background: #1f2937;
+            color: white;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--primary);
+        }
+
+        body.dark-mode .toggle-sidebar {
+            color: var(--primary-light);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        body.dark-mode .header-title {
+            color: var(--primary-light);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: var(--light);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        body.dark-mode .user-info {
+            background: #374151;
+            color: white;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        body.dark-mode .user-role {
+            color: #9ca3af;
+        }
+
+        .header-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .header-btn {
+            color: var(--primary-light);
+        }
+
+        .header-btn:hover {
+            color: var(--secondary);
+            transform: scale(1.1);
+        }
+
+        /* ==================== SIDEBAR ==================== */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-logo {
+            width: 40px;
+            height: 40px;
+            background: var(--secondary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-section-title {
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            opacity: 0.7;
+            margin-bottom: 10px;
+            padding: 0 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: var(--secondary);
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* ==================== CONTENT ==================== */
+        .content {
+            padding: 30px;
+            background: var(--light);
+            min-height: calc(100vh - 70px);
+        }
+
+        body.dark-mode .content {
+            background: #111827;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        body.dark-mode .page-title {
+            color: var(--primary-light);
+        }
+
+        /* ==================== CARDS ==================== */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .card {
+            background: #1f2937;
+            color: white;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        body.dark-mode .card-header {
+            border-bottom-color: #374151;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        body.dark-mode .card-title {
+            color: var(--primary-light);
+        }
+
+        /* ==================== BUTTONS ==================== */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        /* ==================== FORMS ==================== */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        body.dark-mode .form-label {
+            color: #e5e7eb;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+            color: var(--dark);
+        }
+
+        body.dark-mode .form-control {
+            background: #374151;
+            color: white;
+            border-color: #4b5563;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: var(--gray);
+        }
+
+        body.dark-mode .form-control::placeholder {
+            color: #9ca3af;
+        }
+
+        /* ==================== TABLES ==================== */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .table thead {
+            background: var(--light);
+            border-bottom: 2px solid var(--border);
+        }
+
+        body.dark-mode .table thead {
+            background: #374151;
+            border-bottom-color: #4b5563;
+        }
+
+        .table th {
+            padding: 15px;
+            text-align: right;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        body.dark-mode .table th {
+            color: var(--primary-light);
+        }
+
+        .table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        body.dark-mode .table td {
+            border-bottom-color: #374151;
+        }
+
+        .table tbody tr:hover {
+            background: var(--light);
+        }
+
+        body.dark-mode .table tbody tr:hover {
+            background: #374151;
+        }
+
+        /* ==================== MODALS ==================== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        body.dark-mode .modal-content {
+            background: #1f2937;
+            color: white;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        body.dark-mode .modal-header {
+            border-bottom-color: #374151;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        body.dark-mode .modal-title {
+            color: var(--primary-light);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+        }
+
+        /* ==================== GRID ==================== */
+        .grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+
+        /* ==================== STATS ==================== */
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .stat-card {
+            background: #1f2937;
+            color: white;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        body.dark-mode .stat-value {
+            color: var(--primary-light);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        body.dark-mode .stat-label {
+            color: #9ca3af;
+        }
+
+        /* ==================== ALERTS ==================== */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: #7f1d1d;
+            border-left: 4px solid var(--danger);
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #78350f;
+            border-left: 4px solid var(--warning);
+        }
+
+        .alert-info {
+            background: #cffafe;
+            color: #164e63;
+            border-left: 4px solid var(--info);
+        }
+
+        body.dark-mode .alert-success {
+            background: #064e3b;
+            color: #d1fae5;
+        }
+
+        body.dark-mode .alert-danger {
+            background: #7f1d1d;
+            color: #fee2e2;
+        }
+
+        body.dark-mode .alert-warning {
+            background: #78350f;
+            color: #fef3c7;
+        }
+
+        body.dark-mode .alert-info {
+            background: #164e63;
+            color: #cffafe;
+        }
+
+        /* ==================== AUTH PAGE ==================== */
+        .auth-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+        }
+
+        body.dark-mode .auth-card {
+            background: #1f2937;
+            color: white;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-logo {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .auth-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        body.dark-mode .auth-title {
+            color: var(--primary-light);
+        }
+
+        .auth-subtitle {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        body.dark-mode .auth-subtitle {
+            color: #9ca3af;
+        }
+
+        .auth-form {
+            margin-bottom: 20px;
+        }
+
+        .auth-footer {
+            text-align: center;
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        body.dark-mode .auth-footer {
+            color: #9ca3af;
+        }
+
+        .auth-link {
+            color: var(--primary);
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ==================== SEARCH & FILTER ==================== */
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ==================== LOADING ==================== */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 80px;
+            }
+
+            .sidebar-title,
+            .nav-item span {
+                display: none;
+            }
+
+            .main-content {
+                margin-right: 80px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .grid-2,
+            .grid-3,
+            .grid-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                max-width: 90%;
+            }
+
+            .table {
+                font-size: 12px;
+            }
+
+            .table th,
+            .table td {
+                padding: 8px 10px;
+            }
+        }
+
+        /* ==================== PRINT ==================== */
+        @media print {
+            .sidebar,
+            .header,
+            .btn,
+            .search-bar,
+            .filter-group {
+                display: none;
+            }
+
+            .main-content {
+                margin-right: 0;
+            }
+
+            .content {
+                background: white;
+            }
+        }
+
+        /* ==================== CUSTOM SCROLLBAR ==================== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light);
+        }
+
+        body.dark-mode ::-webkit-scrollbar-track {
+            background: #374151;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* ==================== ANIMATIONS ==================== */
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .bounce {
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* ==================== BADGES ==================== */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-primary {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        body.dark-mode .badge-primary {
+            background: #1e3a8a;
+            color: #93c5fd;
+        }
+
+        body.dark-mode .badge-success {
+            background: #064e3b;
+            color: #86efac;
+        }
+
+        body.dark-mode .badge-danger {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        body.dark-mode .badge-warning {
+            background: #78350f;
+            color: #fcd34d;
+        }
+
+        /* ==================== TOOLTIPS ==================== */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            background-color: var(--dark);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -50px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* ==================== SPECIAL STYLES ==================== */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-left {
+            text-align: left;
+        }
+
+        .mt-10 { margin-top: 10px; }
+        .mt-20 { margin-top: 20px; }
+        .mt-30 { margin-top: 30px; }
+
+        .mb-10 { margin-bottom: 10px; }
+        .mb-20 { margin-bottom: 20px; }
+        .mb-30 { margin-bottom: 30px; }
+
+        .p-10 { padding: 10px; }
+        .p-20 { padding: 20px; }
+        .p-30 { padding: 30px; }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .flex-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .gap-10 { gap: 10px; }
+        .gap-20 { gap: 20px; }
+
+        .w-100 { width: 100%; }
+        .h-100 { height: 100%; }
+
+        .opacity-50 { opacity: 0.5; }
+        .opacity-75 { opacity: 0.75; }
+
+        .rounded { border-radius: 8px; }
+        .rounded-full { border-radius: 50%; }
+
+        .shadow { box-shadow: var(--shadow); }
+        .shadow-lg { box-shadow: var(--shadow-lg); }
+
+        .cursor-pointer { cursor: pointer; }
+        .cursor-not-allowed { cursor: not-allowed; }
+
+        .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .hidden { display: none; }
+        .visible { display: block; }
+
+        /* ==================== CART STYLES ==================== */
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: var(--light);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        body.dark-mode .cart-item {
+            background: #374151;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        body.dark-mode .cart-item-price {
+            color: #9ca3af;
+        }
+
+        .cart-item-qty {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border-radius: 6px;
+            padding: 4px 8px;
+        }
+
+        body.dark-mode .cart-item-qty {
+            background: #4b5563;
+        }
+
+        .qty-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--primary);
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qty-input {
+            width: 40px;
+            text-align: center;
+            border: none;
+            background: none;
+            font-weight: 600;
+        }
+
+        .cart-item-total {
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 80px;
+            text-align: left;
+        }
+
+        body.dark-mode .cart-item-total {
+            color: var(--primary-light);
+        }
+
+        .cart-item-remove {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+
+        /* ==================== INVOICE STYLES ==================== */
+        .invoice {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        body.dark-mode .invoice {
+            background: #1f2937;
+            color: white;
+        }
+
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        body.dark-mode .invoice-header {
+            border-bottom-color: #374151;
+        }
+
+        .invoice-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        body.dark-mode .invoice-title {
+            color: var(--primary-light);
+        }
+
+        .invoice-number {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        body.dark-mode .invoice-number {
+            color: #9ca3af;
+        }
+
+        .invoice-body {
+            margin-bottom: 20px;
+        }
+
+        .invoice-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        body.dark-mode .invoice-item {
+            border-bottom-color: #374151;
+        }
+
+        .invoice-item-name {
+            flex: 1;
+        }
+
+        .invoice-item-qty {
+            width: 60px;
+            text-align: center;
+        }
+
+        .invoice-item-price {
+            width: 80px;
+            text-align: left;
+        }
+
+        .invoice-footer {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border);
+        }
+
+        body.dark-mode .invoice-footer {
+            border-top-color: #374151;
+        }
+
+        .invoice-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        body.dark-mode .invoice-total {
+            color: var(--primary-light);
+        }
+
+        .invoice-qr {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        body.dark-mode .invoice-qr {
+            border-top-color: #374151;
+        }
+
+        /* ==================== CHART STYLES ==================== */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        /* ==================== PAGINATION ==================== */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .pagination button {
+            background: #374151;
+            border-color: #4b5563;
+            color: white;
+        }
+
+        .pagination button:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .pagination button.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* ==================== EMPTY STATE ==================== */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            color: var(--gray);
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        body.dark-mode .empty-state-title {
+            color: white;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        body.dark-mode .empty-state-text {
+            color: #9ca3af;
+        }
+
+        /* ==================== DROPDOWN ==================== */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: var(--shadow-lg);
+            padding: 12px 0;
+            z-index: 1;
+            border-radius: 8px;
+            top: 100%;
+            right: 0;
+        }
+
+        body.dark-mode .dropdown-content {
+            background-color: #1f2937;
+            color: white;
+        }
+
+        .dropdown-content a {
+            color: var(--dark);
+            padding: 12px 20px;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .dropdown-content a {
+            color: white;
+        }
+
+        .dropdown-content a:hover {
+            background-color: var(--light);
+        }
+
+        body.dark-mode .dropdown-content a:hover {
+            background-color: #374151;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* ==================== TABS ==================== */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        body.dark-mode .tabs {
+            border-bottom-color: #374151;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* ==================== PROGRESS BAR ==================== */
+        .progress {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        body.dark-mode .progress {
+            background: #374151;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        /* ==================== BREADCRUMB ==================== */
+        .breadcrumb {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb span {
+            color: var(--gray);
+        }
+
+        body.dark-mode .breadcrumb span {
+            color: #9ca3af;
+        }
+
+        /* ==================== SEPARATOR ==================== */
+        .separator {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+
+        body.dark-mode .separator {
+            background: #374151;
+        }
+
+        /* ==================== CUSTOM CHECKBOX ==================== */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        /* ==================== CUSTOM RADIO ==================== */
+        .radio-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .radio {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        /* ==================== SWITCH ==================== */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* ==================== TOAST NOTIFICATION ==================== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3000;
+            max-width: 400px;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        body.dark-mode .toast {
+            background: #1f2937;
+            color: white;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .toast.info {
+            border-left: 4px solid var(--info);
+        }
+
+        .toast-icon {
+            font-size: 20px;
+        }
+
+        .toast-message {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--gray);
+        }
+
+        .toast-close:hover {
+            color: var(--dark);
+        }
+
+        body.dark-mode .toast-close:hover {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- ==================== AUTH PAGE ==================== -->
+    <div id="authPage" class="auth-container active">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">📊</div>
+                <h1 class="auth-title">الدفتر الذهبي</h1>
+                <p class="auth-subtitle">نظام إدارة المبيعات والمخزون</p>
+            </div>
+
+            <div id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label class="form-label">البريد الإلكتروني</label>
+                    <input type="email" id="loginEmail" class="form-control" placeholder="أدخل بريدك الإلكتروني">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">كلمة المرور</label>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="أدخل كلمة المرور">
+                </div>
+                <button class="btn btn-primary btn-block" onclick="handleLogin()">
+                    <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+                </button>
+                <div class="auth-footer mt-20">
+                    ليس لديك حساب؟ <span class="auth-link" onclick="toggleAuthForm()">إنشاء حساب</span>
+                </div>
+            </div>
+
+            <div id="registerForm" class="auth-form hidden">
+                <div class="form-group">
+                    <label class="form-label">الاسم الكامل</label>
+                    <input type="text" id="registerName" class="form-control" placeholder="أدخل اسمك الكامل">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">البريد الإلكتروني</label>
+                    <input type="email" id="registerEmail" class="form-control" placeholder="أدخل بريدك الإلكتروني">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">كلمة المرور</label>
+                    <input type="password" id="registerPassword" class="form-control" placeholder="أدخل كلمة المرور">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">تأكيد كلمة المرور</label>
+                    <input type="password" id="registerPasswordConfirm" class="form-control" placeholder="أعد إدخال كلمة المرور">
+                </div>
+                <button class="btn btn-success btn-block" onclick="handleRegister()">
+                    <i class="fas fa-user-plus"></i> إنشاء حساب
+                </button>
+                <div class="auth-footer mt-20">
+                    لديك حساب بالفعل؟ <span class="auth-link" onclick="toggleAuthForm()">تسجيل الدخول</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN APP ==================== -->
+    <div id="appContainer" class="hidden">
+        <!-- SIDEBAR -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">📊</div>
+                <div class="sidebar-title">الدفتر الذهبي</div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">الرئيسية</div>
+                <div class="nav-item active" onclick="showPage('dashboard')">
+                    <i class="fas fa-home"></i>
+                    <span>لوحة التحكم</span>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">العمليات</div>
+                <div class="nav-item" onclick="showPage('pos')">
+                    <i class="fas fa-cash-register"></i>
+                    <span>نقطة البيع</span>
+                </div>
+                <div class="nav-item" onclick="showPage('inventory')">
+                    <i class="fas fa-boxes"></i>
+                    <span>المخزون</span>
+                </div>
+                <div class="nav-item" onclick="showPage('customers')">
+                    <i class="fas fa-users"></i>
+                    <span>العملاء</span>
+                </div>
+                <div class="nav-item" onclick="showPage('suppliers')">
+                    <i class="fas fa-truck"></i>
+                    <span>الموردين</span>
+                </div>
+                <div class="nav-item" onclick="showPage('expenses')">
+                    <i class="fas fa-money-bill"></i>
+                    <span>المصاريف</span>
+                </div>
+                <div class="nav-item" onclick="showPage('returns')">
+                    <i class="fas fa-undo"></i>
+                    <span>المرتجعات</span>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">التقارير</div>
+                <div class="nav-item" onclick="showPage('reports')">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>التقارير</span>
+                </div>
+                <div class="nav-item" onclick="showPage('sales-history')">
+                    <i class="fas fa-history"></i>
+                    <span>سجل المبيعات</span>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">الإعدادات</div>
+                <div class="nav-item" onclick="showPage('settings')">
+                    <i class="fas fa-cog"></i>
+                    <span>الإعدادات</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- HEADER -->
+            <div class="header">
+                <div class="header-left">
+                    <button class="toggle-sidebar" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="header-title">الدفتر الذهبي</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <i class="fas fa-user-circle" style="font-size: 24px;"></i>
+                        <div>
+                            <div id="userName">المستخدم</div>
+                            <div class="user-role" id="userRole">موظف</div>
+                        </div>
+                    </div>
+                    <button class="header-btn" onclick="toggleDarkMode()" title="تبديل الوضع الليلي">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="header-btn" onclick="handleLogout()" title="تسجيل الخروج">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONTENT -->
+            <div class="content">
+                <!-- ==================== DASHBOARD PAGE ==================== -->
+                <div id="dashboardPage" class="page active">
+                    <h2 class="page-title">لوحة التحكم</h2>
+
+                    <div class="grid grid-4">
+                        <div class="stat-card">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-value" id="totalSales">0 ر.س</div>
+                            <div class="stat-label">إجمالي المبيعات</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💸</div>
+                            <div class="stat-value" id="totalExpenses">0 ر.س</div>
+                            <div class="stat-label">إجمالي المصاريف</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📈</div>
+                            <div class="stat-value" id="totalProfit">0 ر.س</div>
+                            <div class="stat-label">الأرباح</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⚠️</div>
+                            <div class="stat-value" id="lowStock">0</div>
+                            <div class="stat-label">نواقص المخزون</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">مبيعات اليوم</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">توزيع المصاريف</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="expensesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">آخر المبيعات</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>رقم الفاتورة</th>
+                                        <th>التاريخ</th>
+                                        <th>المبلغ</th>
+                                        <th>طريقة الدفع</th>
+                                        <th>الحالة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentSalesBody">
+                                    <tr>
+                                        <td colspan="5" class="text-center">لا توجد مبيعات</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== POS PAGE ==================== -->
+                <div id="posPage" class="page">
+                    <h2 class="page-title">نقطة البيع</h2>
+
+                    <div class="grid grid-2">
+                        <div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">المنتجات</h3>
+                                </div>
+
+                                <div class="search-bar">
+                                    <input type="text" id="posSearch" class="form-control search-input" placeholder="ابحث عن منتج...">
+                                    <select id="posCategoryFilter" class="form-control" style="flex: 0 0 150px;">
+                                        <option value="">جميع الفئات</option>
+                                    </select>
+                                </div>
+
+                                <div id="posProductsList" style="max-height: 500px; overflow-y: auto;">
+                                    <!-- Products will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">السلة</h3>
+                                </div>
+
+                                <div id="posCartItems" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">🛒</div>
+                                        <div class="empty-state-title">السلة فارغة</div>
+                                    </div>
+                                </div>
+
+                                <div class="separator"></div>
+
+                                <div class="form-group">
+                                    <label class="form-label">الخصم (%)</label>
+                                    <input type="number" id="posDiscount" class="form-control" value="0" min="0" max="100" onchange="updatePOSTotal()">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">الضريبة (%)</label>
+                                    <input type="number" id="posTax" class="form-control" value="15" min="0" max="100" onchange="updatePOSTotal()">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">طريقة الدفع</label>
+                                    <select id="posPaymentMethod" class="form-control">
+                                        <option value="cash">نقدي</option>
+                                        <option value="card">بطاقة</option>
+                                        <option value="transfer">تحويل بنكي</option>
+                                        <option value="credit">آجل</option>
+                                    </select>
+                                </div>
+
+                                <div style="background: var(--light); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                    <div class="flex-between mb-10">
+                                        <span>الإجمالي:</span>
+                                        <span id="posSubtotal" style="font-weight: bold;">0 ر.س</span>
+                                    </div>
+                                    <div class="flex-between mb-10">
+                                        <span>الخصم:</span>
+                                        <span id="posDiscountAmount" style="color: var(--danger);">0 ر.س</span>
+                                    </div>
+                                    <div class="flex-between mb-10">
+                                        <span>الضريبة:</span>
+                                        <span id="posTaxAmount" style="color: var(--warning);">0 ر.س</span>
+                                    </div>
+                                    <div class="separator"></div>
+                                    <div class="flex-between" style="font-size: 18px; font-weight: bold;">
+                                        <span>المجموع:</span>
+                                        <span id="posTotal" style="color: var(--primary);">0 ر.س</span>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-success btn-block" onclick="completePOSSale()">
+                                    <i class="fas fa-check"></i> إتمام البيع
+                                </button>
+                                <button class="btn btn-danger btn-block mt-10" onclick="clearPOSCart()">
+                                    <i class="fas fa-trash"></i> مسح السلة
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== INVENTORY PAGE ==================== -->
+                <div id="inventoryPage" class="page">
+                    <h2 class="page-title">إدارة المخزون</h2>
+
+                    <div class="search-bar">
+                        <input type="text" id="inventorySearch" class="form-control search-input" placeholder="ابحث عن منتج...">
+                        <select id="inventoryCategoryFilter" class="form-control" style="flex: 0 0 150px;">
+                            <option value="">جميع الفئات</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="showAddProductModal()">
+                            <i class="fas fa-plus"></i> إضافة منتج
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportInventoryToExcel()">
+                            <i class="fas fa-download"></i> تصدير Excel
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>اسم المنتج</th>
+                                        <th>الفئة</th>
+                                        <th>السعر</th>
+                                        <th>الكمية</th>
+                                        <th>الحد الأدنى</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventoryTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center">لا توجد منتجات</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== CUSTOMERS PAGE ==================== -->
+                <div id="customersPage" class="page">
+                    <h2 class="page-title">إدارة العملاء</h2>
+
+                    <div class="search-bar">
+                        <input type="text" id="customersSearch" class="form-control search-input" placeholder="ابحث عن عميل...">
+                        <button class="btn btn-primary" onclick="showAddCustomerModal()">
+                            <i class="fas fa-plus"></i> إضافة عميل
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>اسم العميل</th>
+                                        <th>الهاتف</th>
+                                        <th>البريد الإلكتروني</th>
+                                        <th>الرصيد</th>
+                                        <th>الديون</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customersTableBody">
+                                    <tr>
+                                        <td colspan="6" class="text-center">لا توجد عملاء</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== SUPPLIERS PAGE ==================== -->
+                <div id="suppliersPage" class="page">
+                    <h2 class="page-title">إدارة الموردين</h2>
+
+                    <div class="search-bar">
+                        <input type="text" id="suppliersSearch" class="form-control search-input" placeholder="ابحث عن مورد...">
+                        <button class="btn btn-primary" onclick="showAddSupplierModal()">
+                            <i class="fas fa-plus"></i> إضافة مورد
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>اسم المورد</th>
+                                        <th>الهاتف</th>
+                                        <th>البريد الإلكتروني</th>
+                                        <th>الرصيد</th>
+                                        <th>الديون</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="suppliersTableBody">
+                                    <tr>
+                                        <td colspan="6" class="text-center">لا توجد موردين</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== EXPENSES PAGE ==================== -->
+                <div id="expensesPage" class="page">
+                    <h2 class="page-title">إدارة المصاريف</h2>
+
+                    <div class="search-bar">
+                        <input type="text" id="expensesSearch" class="form-control search-input" placeholder="ابحث عن مصروف...">
+                        <select id="expensesCategoryFilter" class="form-control" style="flex: 0 0 150px;">
+                            <option value="">جميع الفئات</option>
+                            <option value="salary">رواتب</option>
+                            <option value="rent">إيجار</option>
+                            <option value="utilities">فواتير</option>
+                            <option value="maintenance">صيانة</option>
+                            <option value="other">أخرى</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="showAddExpenseModal()">
+                            <i class="fas fa-plus"></i> إضافة مصروف
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>الوصف</th>
+                                        <th>الفئة</th>
+                                        <th>المبلغ</th>
+                                        <th>طريقة الدفع</th>
+                                        <th>التاريخ</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expensesTableBody">
+                                    <tr>
+                                        <td colspan="6" class="text-center">لا توجد مصاريف</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== RETURNS PAGE ==================== -->
+                <div id="returnsPage" class="page">
+                    <h2 class="page-title">إدارة المرتجعات</h2>
+
+                    <div class="search-bar">
+                        <input type="text" id="returnsSearch" class="form-control search-input" placeholder="ابحث عن مرتجع...">
+                        <button class="btn btn-primary" onclick="showAddReturnModal()">
+                            <i class="fas fa-plus"></i> إضافة مرتجع
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>رقم الفاتورة</th>
+                                        <th>المنتج</th>
+                                        <th>الكمية</th>
+                                        <th>السبب</th>
+                                        <th>التاريخ</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="returnsTableBody">
+                                    <tr>
+                                        <td colspan="6" class="text-center">لا توجد مرتجعات</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== REPORTS PAGE ==================== -->
+                <div id="reportsPage" class="page">
+                    <h2 class="page-title">التقارير</h2>
+
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">تقرير المبيعات</h3>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">من التاريخ</label>
+                                <input type="date" id="salesReportFromDate" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">إلى التاريخ</label>
+                                <input type="date" id="salesReportToDate" class="form-control">
+                            </div>
+                            <button class="btn btn-primary btn-block" onclick="generateSalesReport()">
+                                <i class="fas fa-file-pdf"></i> تصدير PDF
+                            </button>
+                            <button class="btn btn-secondary btn-block mt-10" onclick="exportSalesReportToExcel()">
+                                <i class="fas fa-file-excel"></i> تصدير Excel
+                            </button>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">تقرير المصاريف</h3>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">من التاريخ</label>
+                                <input type="date" id="expensesReportFromDate" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">إلى التاريخ</label>
+                                <input type="date" id="expensesReportToDate" class="form-control">
+                            </div>
+                            <button class="btn btn-primary btn-block" onclick="generateExpensesReport()">
+                                <i class="fas fa-file-pdf"></i> تصدير PDF
+                            </button>
+                            <button class="btn btn-secondary btn-block mt-10" onclick="exportExpensesReportToExcel()">
+                                <i class="fas fa-file-excel"></i> تصدير Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card mt-20">
+                        <div class="card-header">
+                            <h3 class="card-title">إحصائيات عامة</h3>
+                        </div>
+                        <div class="grid grid-3">
+                            <div>
+                                <p style="color: var(--gray); margin-bottom: 10px;">إجمالي المبيعات</p>
+                                <p style="font-size: 24px; font-weight: bold; color: var(--primary);" id="reportTotalSales">0 ر.س</p>
+                            </div>
+                            <div>
+                                <p style="color: var(--gray); margin-bottom: 10px;">إجمالي المصاريف</p>
+                                <p style="font-size: 24px; font-weight: bold; color: var(--danger);" id="reportTotalExpenses">0 ر.س</p>
+                            </div>
+                            <div>
+                                <p style="color: var(--gray); margin-bottom: 10px;">الأرباح الصافية</p>
+                                <p style="font-size: 24px; font-weight: bold; color: var(--success);" id="reportNetProfit">0 ر.س</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== SALES HISTORY PAGE ==================== -->
+                <div id="salesHistoryPage" class="page">
+                    <h2 class="page-title">سجل المبيعات</h2>
+
+                    <div class="search-bar">
+                        <input type="text" id="salesHistorySearch" class="form-control search-input" placeholder="ابحث عن فاتورة...">
+                        <button class="btn btn-secondary" onclick="exportSalesHistoryToExcel()">
+                            <i class="fas fa-download"></i> تصدير Excel
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>رقم الفاتورة</th>
+                                        <th>التاريخ</th>
+                                        <th>العميل</th>
+                                        <th>المبلغ</th>
+                                        <th>الخصم</th>
+                                        <th>الضريبة</th>
+                                        <th>الإجمالي</th>
+                                        <th>طريقة الدفع</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="salesHistoryTableBody">
+                                    <tr>
+                                        <td colspan="9" class="text-center">لا توجد مبيعات</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== SETTINGS PAGE ==================== -->
+                <div id="settingsPage" class="page">
+                    <h2 class="page-title">الإعدادات</h2>
+
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">معلومات الشركة</h3>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">اسم الشركة</label>
+                                <input type="text" id="companyName" class="form-control" placeholder="أدخل اسم الشركة">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">رقم الهاتف</label>
+                                <input type="tel" id="companyPhone" class="form-control" placeholder="أدخل رقم الهاتف">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">البريد الإلكتروني</label>
+                                <input type="email" id="companyEmail" class="form-control" placeholder="أدخل البريد الإلكتروني">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">شعار الشركة</label>
+                                <input type="file" id="companyLogo" class="form-control" accept="image/*" onchange="handleLogoUpload()">
+                                <div id="logoPreview" style="margin-top: 10px;"></div>
+                            </div>
+                            <button class="btn btn-primary btn-block" onclick="saveCompanySettings()">
+                                <i class="fas fa-save"></i> حفظ الإعدادات
+                            </button>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">إعدادات النظام</h3>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">الضريبة الافتراضية (%)</label>
+                                <input type="number" id="defaultTax" class="form-control" value="15" min="0" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">حد المخزون الأدنى</label>
+                                <input type="number" id="minStockLevel" class="form-control" value="10" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">العملة</label>
+                                <select id="currency" class="form-control">
+                                    <option value="SAR">ريال سعودي (ر.س)</option>
+                                    <option value="AED">درهم إماراتي (د.إ)</option>
+                                    <option value="KWD">دينار كويتي (د.ك)</option>
+                                    <option value="QAR">ريال قطري (ر.ق)</option>
+                                    <option value="BHD">دينار بحريني (د.ب)</option>
+                                    <option value="OMR">ريال عماني (ر.ع)</option>
+                                    <option value="EGP">جنيه مصري (ج.م)</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary btn-block" onclick="saveSystemSettings()">
+                                <i class="fas fa-save"></i> حفظ الإعدادات
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card mt-20">
+                        <div class="card-header">
+                            <h3 class="card-title">بيانات المستخدم</h3>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">اسم المستخدم</label>
+                            <input type="text" id="settingsUserName" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">البريد الإلكتروني</label>
+                            <input type="email" id="settingsUserEmail" class="form-control" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">كلمة المرور الجديدة</label>
+                            <input type="password" id="newPassword" class="form-control" placeholder="اترك فارغاً إذا لم تريد التغيير">
+                        </div>
+                        <button class="btn btn-secondary btn-block" onclick="updateUserPassword()">
+                            <i class="fas fa-key"></i> تحديث كلمة المرور
+                        </button>
+                    </div>
+
+                    <div class="card mt-20">
+                        <div class="card-header">
+                            <h3 class="card-title">البيانات</h3>
+                        </div>
+                        <button class="btn btn-secondary btn-block" onclick="exportAllData()">
+                            <i class="fas fa-download"></i> تصدير جميع البيانات
+                        </button>
+                        <button class="btn btn-danger btn-block mt-10" onclick="clearAllData()">
+                            <i class="fas fa-trash"></i> حذف جميع البيانات
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">إضافة منتج جديد</h2>
+                <button class="modal-close" onclick="closeModal('addProductModal')">&times;</button>
+            </div>
+            <form onsubmit="handleAddProduct(event)">
+                <div class="form-group">
+                    <label class="form-label">اسم المنتج</label>
+                    <input type="text" id="productName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الفئة</label>
+                    <select id="productCategory" class="form-control" required>
+                        <option value="">اختر الفئة</option>
+                        <option value="electronics">إلكترونيات</option>
+                        <option value="clothing">ملابس</option>
+                        <option value="food">أغذية</option>
+                        <option value="furniture">أثاث</option>
+                        <option value="other">أخرى</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">السعر</label>
+                    <input type="number" id="productPrice" class="form-control" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الكمية</label>
+                    <input type="number" id="productQuantity" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الحد الأدنى للمخزون</label>
+                    <input type="number" id="productMinStock" class="form-control" value="10" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-save"></i> إضافة المنتج
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div id="addCustomerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">إضافة عميل جديد</h2>
+                <button class="modal-close" onclick="closeModal('addCustomerModal')">&times;</button>
+            </div>
+            <form onsubmit="handleAddCustomer(event)">
+                <div class="form-group">
+                    <label class="form-label">اسم العميل</label>
+                    <input type="text" id="customerName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الهاتف</label>
+                    <input type="tel" id="customerPhone" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">البريد الإلكتروني</label>
+                    <input type="email" id="customerEmail" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">العنوان</label>
+                    <input type="text" id="customerAddress" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-save"></i> إضافة العميل
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Supplier Modal -->
+    <div id="addSupplierModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">إضافة مورد جديد</h2>
+                <button class="modal-close" onclick="closeModal('addSupplierModal')">&times;</button>
+            </div>
+            <form onsubmit="handleAddSupplier(event)">
+                <div class="form-group">
+                    <label class="form-label">اسم المورد</label>
+                    <input type="text" id="supplierName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الهاتف</label>
+                    <input type="tel" id="supplierPhone" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">البريد الإلكتروني</label>
+                    <input type="email" id="supplierEmail" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">العنوان</label>
+                    <input type="text" id="supplierAddress" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-save"></i> إضافة المورد
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div id="addExpenseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">إضافة مصروف جديد</h2>
+                <button class="modal-close" onclick="closeModal('addExpenseModal')">&times;</button>
+            </div>
+            <form onsubmit="handleAddExpense(event)">
+                <div class="form-group">
+                    <label class="form-label">الوصف</label>
+                    <input type="text" id="expenseDescription" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الفئة</label>
+                    <select id="expenseCategory" class="form-control" required>
+                        <option value="">اختر الفئة</option>
+                        <option value="salary">رواتب</option>
+                        <option value="rent">إيجار</option>
+                        <option value="utilities">فواتير</option>
+                        <option value="maintenance">صيانة</option>
+                        <option value="other">أخرى</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">المبلغ</label>
+                    <input type="number" id="expenseAmount" class="form-control" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">طريقة الدفع</label>
+                    <select id="expensePaymentMethod" class="form-control" required>
+                        <option value="cash">نقدي</option>
+                        <option value="card">بطاقة</option>
+                        <option value="transfer">تحويل بنكي</option>
+                        <option value="check">شيك</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">التاريخ</label>
+                    <input type="date" id="expenseDate" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-save"></i> إضافة المصروف
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Return Modal -->
+    <div id="addReturnModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">إضافة مرتجع جديد</h2>
+                <button class="modal-close" onclick="closeModal('addReturnModal')">&times;</button>
+            </div>
+            <form onsubmit="handleAddReturn(event)">
+                <div class="form-group">
+                    <label class="form-label">رقم الفاتورة</label>
+                    <input type="text" id="returnInvoiceNumber" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">المنتج</label>
+                    <input type="text" id="returnProduct" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الكمية</label>
+                    <input type="number" id="returnQuantity" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">السبب</label>
+                    <select id="returnReason" class="form-control" required>
+                        <option value="">اختر السبب</option>
+                        <option value="defective">معيب</option>
+                        <option value="wrong_item">منتج خاطئ</option>
+                        <option value="not_as_described">غير كما هو موصوف</option>
+                        <option value="customer_request">طلب العميل</option>
+                        <option value="other">أخرى</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-save"></i> إضافة المرتجع
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Invoice Modal -->
+    <div id="invoiceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">الفاتورة</h2>
+                <button class="modal-close" onclick="closeModal('invoiceModal')">&times;</button>
+            </div>
+            <div id="invoiceContent" class="invoice">
+                <!-- Invoice content will be generated here -->
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="printInvoice()">
+                    <i class="fas fa-print"></i> طباعة
+                </button>
+                <button class="btn btn-secondary" onclick="downloadInvoicePDF()">
+                    <i class="fas fa-download"></i> تحميل PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ==================== GLOBAL VARIABLES ====================
+        let currentUser = null;
+        let users = [];
+        let products = [];
+        let customers = [];
+        let suppliers = [];
+        let expenses = [];
+        let returns = [];
+        let sales = [];
+        let cart = [];
+        let companySettings = {
+            name: 'الدفتر الذهبي',
+            phone: '0501234567',
+            email: 'info@goldenledger.com',
+            logo: null,
+            defaultTax: 15,
+            minStockLevel: 10,
+            currency: 'SAR'
+        };
+
+        let charts = {
+            sales: null,
+            expenses: null
+        };
+
+        // ==================== INITIALIZATION ====================
+        function initializeApp() {
+            loadDataFromLocalStorage();
+            initializeSampleData();
+            setupEventListeners();
+            applyDarkModePreference();
+            setDefaultDates();
+        }
+
+        function loadDataFromLocalStorage() {
+            const savedUsers = localStorage.getItem('users');
+            const savedProducts = localStorage.getItem('products');
+            const savedCustomers = localStorage.getItem('customers');
+            const savedSuppliers = localStorage.getItem('suppliers');
+            const savedExpenses = localStorage.getItem('expenses');
+            const savedReturns = localStorage.getItem('returns');
+            const savedSales = localStorage.getItem('sales');
+            const savedSettings = localStorage.getItem('companySettings');
+
+            if (savedUsers) users = JSON.parse(savedUsers);
+            if (savedProducts) products = JSON.parse(savedProducts);
+            if (savedCustomers) customers = JSON.parse(savedCustomers);
+            if (savedSuppliers) suppliers = JSON.parse(savedSuppliers);
+            if (savedExpenses) expenses = JSON.parse(savedExpenses);
+            if (savedReturns) returns = JSON.parse(savedReturns);
+            if (savedSales) sales = JSON.parse(savedSales);
+            if (savedSettings) companySettings = JSON.parse(savedSettings);
+        }
+
+        function saveDataToLocalStorage() {
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('products', JSON.stringify(products));
+            localStorage.setItem('customers', JSON.stringify(customers));
+            localStorage.setItem('suppliers', JSON.stringify(suppliers));
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            localStorage.setItem('returns', JSON.stringify(returns));
+            localStorage.setItem('sales', JSON.stringify(sales));
+            localStorage.setItem('companySettings', JSON.stringify(companySettings));
+        }
+
+        function initializeSampleData() {
+            if (products.length === 0) {
+                products = [
+                    {
+                        id: 1,
+                        name: 'جهاز كمبيوتر محمول',
+                        category: 'electronics',
+                        price: 2500,
+                        quantity: 5,
+                        minStock: 2,
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 2,
+                        name: 'ماوس لاسلكي',
+                        category: 'electronics',
+                        price: 50,
+                        quantity: 20,
+                        minStock: 5,
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 3,
+                        name: 'لوحة مفاتيح ميكانيكية',
+                        category: 'electronics',
+                        price: 150,
+                        quantity: 8,
+                        minStock: 3,
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+                saveDataToLocalStorage();
+            }
+        }
+
+        function setupEventListeners() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeAllModals();
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    e.target.classList.remove('active');
+                }
+            });
+
+            // Auto-save every 15 minutes
+            setInterval(() => {
+                saveDataToLocalStorage();
+                showToast('تم حفظ البيانات تلقائياً', 'info');
+            }, 15 * 60 * 1000);
+
+            // Search functionality
+            document.getElementById('inventorySearch')?.addEventListener('input', filterInventory);
+            document.getElementById('customersSearch')?.addEventListener('input', filterCustomers);
+            document.getElementById('suppliersSearch')?.addEventListener('input', filterSuppliers);
+            document.getElementById('expensesSearch')?.addEventListener('input', filterExpenses);
+            document.getElementById('returnsSearch')?.addEventListener('input', filterReturns);
+            document.getElementById('salesHistorySearch')?.addEventListener('input', filterSalesHistory);
+            document.getElementById('posSearch')?.addEventListener('input', filterPOSProducts);
+        }
+
+        // ==================== AUTHENTICATION ====================
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showToast('الرجاء ملء جميع الحقول', 'warning');
+                return;
+            }
+
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                showAuthPage(false);
+                updateUserInfo();
+                loadDashboard();
+                showToast('تم تسجيل الدخول بنجاح', 'success');
+            } else {
+                showToast('البريد الإلكتروني أو كلمة المرور غير صحيحة', 'error');
+            }
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+            if (!name || !email || !password || !passwordConfirm) {
+                showToast('الرجاء ملء جميع الحقول', 'warning');
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                showToast('كلمات المرور غير متطابقة', 'error');
+                return;
+            }
+
+            if (users.some(u => u.email === email)) {
+                showToast('البريد الإلكتروني مسجل بالفعل', 'error');
+                return;
+            }
+
+            const newUser = {
+                id: Date.now(),
+                name,
+                email,
+                password,
+                role: 'employee',
+                createdAt: new Date().toISOString()
+            };
+
+            users.push(newUser);
+            saveDataToLocalStorage();
+            showToast('تم إنشاء الحساب بنجاح', 'success');
+            toggleAuthForm();
+            document.getElementById('loginEmail').value = email;
+            document.getElementById('loginPassword').value = '';
+        }
+
+        function handleLogout() {
+            if (confirm('هل تريد تسجيل الخروج؟')) {
+                currentUser = null;
+                localStorage.removeItem('currentUser');
+                showAuthPage(true);
+                clearAllForms();
+                showToast('تم تسجيل الخروج بنجاح', 'success');
+            }
+        }
+
+        function toggleAuthForm() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+
+            loginForm.classList.toggle('hidden');
+            registerForm.classList.toggle('hidden');
+
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('registerName').value = '';
+            document.getElementById('registerEmail').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('registerPasswordConfirm').value = '';
+        }
+
+        function showAuthPage(show) {
+            const authPage = document.getElementById('authPage');
+            const appContainer = document.getElementById('appContainer');
+
+            if (show) {
+                authPage.classList.remove('hidden');
+                appContainer.classList.add('hidden');
+            } else {
+                authPage.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+            }
+        }
+
+        // ==================== UI FUNCTIONS ====================
+        function showPage(pageName) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Show selected page
+            const page = document.getElementById(pageName + 'Page');
+            if (page) {
+                page.classList.add('active');
+            }
+
+            // Update active nav item
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.nav-item')?.classList.add('active');
+
+            // Load page data
+            switch (pageName) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'inventory':
+                    loadInventory();
+                    break;
+                case 'customers':
+                    loadCustomers();
+                    break;
+                case 'suppliers':
+                    loadSuppliers();
+                    break;
+                case 'expenses':
+                    loadExpenses();
+                    break;
+                case 'returns':
+                    loadReturns();
+                    break;
+                case 'reports':
+                    loadReports();
+                    break;
+                case 'sales-history':
+                    loadSalesHistory();
+                    break;
+                case 'settings':
+                    loadSettings();
+                    break;
+                case 'pos':
+                    loadPOS();
+                    break;
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+        }
+
+        function applyDarkModePreference() {
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+            }
+        }
+
+        function updateUserInfo() {
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userRole').textContent = currentUser.role === 'admin' ? 'مدير' : 'موظف';
+            }
+        }
+
+        // ==================== MODAL FUNCTIONS ====================
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('active');
+            });
+        }
+
+        // ==================== DASHBOARD FUNCTIONS ====================
+        function loadDashboard() {
+            updateDashboardStats();
+            loadRecentSales();
+            createCharts();
+        }
+
+        function updateDashboardStats() {
+            const totalSales = sales.reduce((sum, sale) => sum + sale.total, 0);
+            const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+            const totalProfit = totalSales - totalExpenses;
+            const lowStockCount = products.filter(p => p.quantity <= p.minStock).length;
+
+            document.getElementById('totalSales').textContent = formatCurrency(totalSales);
+            document.getElementById('totalExpenses').textContent = formatCurrency(totalExpenses);
+            document.getElementById('totalProfit').textContent = formatCurrency(totalProfit);
+            document.getElementById('lowStock').textContent = lowStockCount;
+        }
+
+        function loadRecentSales() {
+            const tbody = document.getElementById('recentSalesBody');
+            const recentSales = sales.slice(-5).reverse();
+
+            if (recentSales.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">لا توجد مبيعات</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = recentSales.map(sale => `
+                <tr>
+                    <td>${sale.invoiceNumber}</td>
+                    <td>${formatDate(sale.date)}</td>
+                    <td>${formatCurrency(sale.total)}</td>
+                    <td>${getPaymentMethodLabel(sale.paymentMethod)}</td>
+                    <td><span class="badge badge-success">مكتملة</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function createCharts() {
+            // Sales Chart
+            const salesCtx = document.getElementById('salesChart')?.getContext('2d');
+            if (salesCtx) {
+                if (charts.sales) charts.sales.destroy();
+                charts.sales = new Chart(salesCtx, {
+                    type: 'line',
+                    data: {
+                        labels: getLast7Days(),
+                        datasets: [{
+                            label: 'المبيعات',
+                            data: getLast7DaysSales(),
+                            borderColor: '#1e3a8a',
+                            backgroundColor: 'rgba(30, 58, 138, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                labels: {
+                                    usePointStyle: true
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Expenses Chart
+            const expensesCtx = document.getElementById('expensesChart')?.getContext('2d');
+            if (expensesCtx) {
+                if (charts.expenses) charts.expenses.destroy();
+                const expensesByCategory = groupExpensesByCategory();
+                charts.expenses = new Chart(expensesCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(expensesByCategory),
+                        datasets: [{
+                            data: Object.values(expensesByCategory),
+                            backgroundColor: [
+                                '#1e3a8a',
+                                '#f59e0b',
+                                '#10b981',
+                                '#ef4444',
+                                '#0ea5e9'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function getLast7Days() {
+            const days = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                days.push(date.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' }));
+            }
+            return days;
+        }
+
+        function getLast7DaysSales() {
+            const data = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                const dayEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+                const daySales = sales.filter(s => {
+                    const saleDate = new Date(s.date);
+                    return saleDate >= dayStart && saleDate < dayEnd;
+                });
+                const total = daySales.reduce((sum, s) => sum + s.total, 0);
+                data.push(total);
+            }
+            return data;
+        }
+
+        function groupExpensesByCategory() {
+            const grouped = {};
+            expenses.forEach(exp => {
+                const category = exp.category;
+                grouped[category] = (grouped[category] || 0) + exp.amount;
+            });
+            return grouped;
+        }
+
+        // ==================== INVENTORY FUNCTIONS ====================
+        function loadInventory() {
+            loadInventoryTable();
+            loadInventoryFilters();
+        }
+
+        function loadInventoryTable() {
+            const tbody = document.getElementById('inventoryTableBody');
+
+            if (products.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center">لا توجد منتجات</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = products.map(product => {
+                const isLowStock = product.quantity <= product.minStock;
+                return `
+                    <tr>
+                        <td>${product.name}</td>
+                        <td>${getCategoryLabel(product.category)}</td>
+                        <td>${formatCurrency(product.price)}</td>
+                        <td>${product.quantity}</td>
+                        <td>${product.minStock}</td>
+                        <td>
+                            ${isLowStock ? '<span class="badge badge-danger">منخفض</span>' : '<span class="badge badge-success">متوفر</span>'}
+                        </td>
+                        <td>
+                            <button class="btn btn-small btn-secondary" onclick="editProduct(${product.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-small btn-danger" onclick="deleteProduct(${product.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function loadInventoryFilters() {
+            const categoryFilter = document.getElementById('inventoryCategoryFilter');
+            const categories = [...new Set(products.map(p => p.category))];
+
+            categoryFilter.innerHTML = '<option value="">جميع الفئات</option>' +
+                categories.map(cat => `<option value="${cat}">${getCategoryLabel(cat)}</option>`).join('');
+        }
+
+        function filterInventory() {
+            const searchTerm = document.getElementById('inventorySearch').value.toLowerCase();
+            const categoryFilter = document.getElementById('inventoryCategoryFilter').value;
+
+            const filtered = products.filter(p =>
+                (p.name.toLowerCase().includes(searchTerm)) &&
+                (categoryFilter === '' || p.category === categoryFilter)
+            );
+
+            const tbody = document.getElementById('inventoryTableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center">لا توجد نتائج</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(product => {
+                const isLowStock = product.quantity <= product.minStock;
+                return `
+                    <tr>
+                        <td>${product.name}</td>
+                        <td>${getCategoryLabel(product.category)}</td>
+                        <td>${formatCurrency(product.price)}</td>
+                        <td>${product.quantity}</td>
+                        <td>${product.minStock}</td>
+                        <td>
+                            ${isLowStock ? '<span class="badge badge-danger">منخفض</span>' : '<span class="badge badge-success">متوفر</span>'}
+                        </td>
+                        <td>
+                            <button class="btn btn-small btn-secondary" onclick="editProduct(${product.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-small btn-danger" onclick="deleteProduct(${product.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function showAddProductModal() {
+            openModal('addProductModal');
+        }
+
+        function handleAddProduct(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('productName').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const quantity = parseInt(document.getElementById('productQuantity').value);
+            const minStock = parseInt(document.getElementById('productMinStock').value);
+
+            if (!name || !category || !price || !quantity) {
+                showToast('الرجاء ملء جميع الحقول', 'warning');
+                return;
+            }
+
+            const newProduct = {
+                id: Date.now(),
+                name,
+                category,
+                price,
+                quantity,
+                minStock,
+                createdAt: new Date().toISOString()
+            };
+
+            products.push(newProduct);
+            saveDataToLocalStorage();
+            closeModal('addProductModal');
+            loadInventory();
+            showToast('تم إضافة المنتج بنجاح', 'success');
+            event.target.reset();
+        }
+
+        function editProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                document.getElementById('productName').value = product.name;
+                document.getElementById('productCategory').value = product.category;
+                document.getElementById('productPrice').value = product.price;
+                document.getElementById('productQuantity').value = product.quantity;
+                document.getElementById('productMinStock').value = product.minStock;
+
+                const form = document.querySelector('#addProductModal form');
+                form.onsubmit = (e) => {
+                    e.preventDefault();
+                    product.name = document.getElementById('productName').value.trim();
+                    product.category = document.getElementById('productCategory').value;
+                    product.price = parseFloat(document.getElementById('productPrice').value);
+                    product.quantity = parseInt(document.getElementById('productQuantity').value);
+                    product.minStock = parseInt(document.getElementById('productMinStock').value);
+
+                    saveDataToLocalStorage();
+                    closeModal('addProductModal');
+                    loadInventory();
+                    showToast('تم تحديث المنتج بنجاح', 'success');
+                    form.onsubmit = handleAddProduct;
+                    form.reset();
+                };
+
+                openModal('addProductModal');
+            }
+        }
+
+        function deleteProduct(productId) {
+            if (confirm('هل تريد حذف هذا المنتج؟')) {
+                products = products.filter(p => p.id !== productId);
+                saveDataToLocalStorage();
+                loadInventory();
+                showToast('تم حذف المنتج بنجاح', 'success');
+            }
+        }
+
+        function exportInventoryToExcel() {
+            const data = [
+                ['اسم المنتج', 'الفئة', 'السعر', 'الكمية', 'الحد الأدنى'],
+                ...products.map(p => [p.name, getCategoryLabel(p.category), p.price, p.quantity, p.minStock])
+            ];
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'المخزون');
+            XLSX.writeFile(wb, 'inventory.xlsx');
+            showToast('تم تصدير البيانات بنجاح', 'success');
+        }
+
+        // ==================== CUSTOMERS FUNCTIONS ====================
+        function loadCustomers() {
+            const tbody = document.getElementById('customersTableBody');
+
+            if (customers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">لا توجد عملاء</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = customers.map(customer => `
+                <tr>
+                    <td>${customer.name}</td>
+                    <td>${customer.phone}</td>
+                    <td>${customer.email || '-'}</td>
+                    <td>${formatCurrency(customer.balance || 0)}</td>
+                    <td>${formatCurrency(customer.debt || 0)}</td>
+                    <td>
+                        <button class="btn btn-small btn-secondary" onclick="editCustomer(${customer.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="deleteCustomer(${customer.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterCustomers() {
+            const searchTerm = document.getElementById('customersSearch').value.toLowerCase();
+            const filtered = customers.filter(c =>
+                c.name.toLowerCase().includes(searchTerm) ||
+                c.phone.includes(searchTerm) ||
+                c.email.toLowerCase().includes(searchTerm)
+            );
+
+            const tbody = document.getElementById('customersTableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">لا توجد نتائج</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(customer => `
+                <tr>
+                    <td>${customer.name}</td>
+                    <td>${customer.phone}</td>
+                    <td>${customer.email || '-'}</td>
+                    <td>${formatCurrency(customer.balance || 0)}</td>
+                    <td>${formatCurrency(customer.debt || 0)}</td>
+                    <td>
+                        <button class="btn btn-small btn-secondary" onclick="editCustomer(${customer.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="deleteCustomer(${customer.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddCustomerModal() {
+            openModal('addCustomerModal');
+        }
+
+        function handleAddCustomer(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const email = document.getElementById('customerEmail').value.trim();
+            const address = document.getElementById('customerAddress').value.trim();
+
+            if (!name || !phone) {
+                showToast('الرجاء ملء الحقول المطلوبة', 'warning');
+                return;
+            }
+
+            const newCustomer = {
+                id: Date.now(),
+                name,
+                phone,
+                email,
+                address,
+                balance: 0,
+                debt: 0,
+                createdAt: new Date().toISOString()
+            };
+
+            customers.push(newCustomer);
+            saveDataToLocalStorage();
+            closeModal('addCustomerModal');
+            loadCustomers();
+            showToast('تم إضافة العميل بنجاح', 'success');
+            event.target.reset();
+        }
+
+        function editCustomer(customerId) {
+            const customer = customers.find(c => c.id === customerId);
+            if (customer) {
+                document.getElementById('customerName').value = customer.name;
+                document.getElementById('customerPhone').value = customer.phone;
+                document.getElementById('customerEmail').value = customer.email || '';
+                document.getElementById('customerAddress').value = customer.address || '';
+
+                const form = document.querySelector('#addCustomerModal form');
+                form.onsubmit = (e) => {
+                    e.preventDefault();
+                    customer.name = document.getElementById('customerName').value.trim();
+                    customer.phone = document.getElementById('customerPhone').value.trim();
+                    customer.email = document.getElementById('customerEmail').value.trim();
+                    customer.address = document.getElementById('customerAddress').value.trim();
+
+                    saveDataToLocalStorage();
+                    closeModal('addCustomerModal');
+                    loadCustomers();
+                    showToast('تم تحديث بيانات العميل بنجاح', 'success');
+                    form.onsubmit = handleAddCustomer;
+                    form.reset();
+                };
+
+                openModal('addCustomerModal');
+            }
+        }
+
+        function deleteCustomer(customerId) {
+            if (confirm('هل تريد حذف هذا العميل؟')) {
+                customers = customers.filter(c => c.id !== customerId);
+                saveDataToLocalStorage();
+                loadCustomers();
+                showToast('تم حذف العميل بنجاح', 'success');
+            }
+        }
+
+        // ==================== SUPPLIERS FUNCTIONS ====================
+        function loadSuppliers() {
+            const tbody = document.getElementById('suppliersTableBody');
+
+            if (suppliers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">لا توجد موردين</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = suppliers.map(supplier => `
+                <tr>
+                    <td>${supplier.name}</td>
+                    <td>${supplier.phone}</td>
+                    <td>${supplier.email || '-'}</td>
+                    <td>${formatCurrency(supplier.balance || 0)}</td>
+                    <td>${formatCurrency(supplier.debt || 0)}</td>
+                    <td>
+                        <button class="btn btn-small btn-secondary" onclick="editSupplier(${supplier.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="deleteSupplier(${supplier.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterSuppliers() {
+            const searchTerm = document.getElementById('suppliersSearch').value.toLowerCase();
+            const filtered = suppliers.filter(s =>
+                s.name.toLowerCase().includes(searchTerm) ||
+                s.phone.includes(searchTerm) ||
+                s.email.toLowerCase().includes(searchTerm)
+            );
+
+            const tbody = document.getElementById('suppliersTableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">لا توجد نتائج</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(supplier => `
+                <tr>
+                    <td>${supplier.name}</td>
+                    <td>${supplier.phone}</td>
+                    <td>${supplier.email || '-'}</td>
+                    <td>${formatCurrency(supplier.balance || 0)}</td>
+                    <td>${formatCurrency(supplier.debt || 0)}</td>
+                    <td>
+                        <button class="btn btn-small btn-secondary" onclick="editSupplier(${supplier.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="deleteSupplier(${supplier.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddSupplierModal() {
+            openModal('addSupplierModal');
+        }
+
+        function handleAddSupplier(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('supplierName').value.trim();
+            const phone = document.getElementById('supplierPhone').value.trim();
+            const email = document.getElementById('supplierEmail').value.trim();
+            const address = document.getElementById('supplierAddress').value.trim();
+
+            if (!name || !phone) {
+                showToast('الرجاء ملء الحقول المطلوبة', 'warning');
+                return;
+            }
+
+            const newSupplier = {
+                id: Date.now(),
+                name,
+                phone,
+                email,
+                address,
+                balance: 0,
+                debt: 0,
+                createdAt: new Date().toISOString()
+            };
+
+            suppliers.push(newSupplier);
+            saveDataToLocalStorage();
+            closeModal('addSupplierModal');
+            loadSuppliers();
+            showToast('تم إضافة المورد بنجاح', 'success');
+            event.target.reset();
+        }
+
+        function editSupplier(supplierId) {
+            const supplier = suppliers.find(s => s.id === supplierId);
+            if (supplier) {
+                document.getElementById('supplierName').value = supplier.name;
+                document.getElementById('supplierPhone').value = supplier.phone;
+                document.getElementById('supplierEmail').value = supplier.email || '';
+                document.getElementById('supplierAddress').value = supplier.address || '';
+
+                const form = document.querySelector('#addSupplierModal form');
+                form.onsubmit = (e) => {
+                    e.preventDefault();
+                    supplier.name = document.getElementById('supplierName').value.trim();
+                    supplier.phone = document.getElementById('supplierPhone').value.trim();
+                    supplier.email = document.getElementById('supplierEmail').value.trim();
+                    supplier.address = document.getElementById('supplierAddress').value.trim();
+
+                    saveDataToLocalStorage();
+                    closeModal('addSupplierModal');
+                    loadSuppliers();
+                    showToast('تم تحديث بيانات المورد بنجاح', 'success');
+                    form.onsubmit = handleAddSupplier;
+                    form.reset();
+                };
+
+                openModal('addSupplierModal');
+            }
+        }
+
+        function deleteSupplier(supplierId) {
+            if (confirm('هل تريد حذف هذا المورد؟')) {
+                suppliers = suppliers.filter(s => s.id !== supplierId);
+                saveDataToLocalStorage();
+                loadSuppliers();
+                showToast('تم حذف المورد بنجاح', 'success');
+            }
+        }
+
+        // ==================== EXPENSES FUNCTIONS ====================
+        function loadExpenses() {
+            const tbody = document.getElementById('expensesTableBody');
+
+            if (expenses.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">لا توجد مصاريف</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = expenses.map(expense => `
+                <tr>
+                    <td>${expense.description}</td>
+                    <td>${getCategoryLabel(expense.category)}</td>
+                    <td>${formatCurrency(expense.amount)}</td>
+                    <td>${getPaymentMethodLabel(expense.paymentMethod)}</td>
+                    <td>${formatDate(expense.date)}</td>
+                    <td>
+                        <button class="btn btn-small btn-danger" onclick="deleteExpense(${expense.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterExpenses() {
+            const searchTerm = document.getElementById('expensesSearch').value.toLowerCase();
+            const categoryFilter = document.getElementById('expensesCategoryFilter').value;
+
+            const filtered = expenses.filter(e =>
+                (e.description.toLowerCase().includes(searchTerm)) &&
+                (categoryFilter === '' || e.category === categoryFilter)
+            );
+
+            const tbody = document.getElementById('expensesTableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">لا توجد نتائج</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(expense => `
+                <tr>
+                    <td>${expense.description}</td>
+                    <td>${getCategoryLabel(expense.category)}</td>
+                    <td>${formatCurrency(expense.amount)}</td>
+                    <td>${getPaymentMethodLabel(expense.paymentMethod)}</td>
+                    <td>${formatDate(expense.date)}</t
