@@ -13,6 +13,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1932,11 +1933,15 @@
         };
 
         // Initialize Firebase
-        let app, db, auth;
+        let app, db, auth, messaging;
         try {
             app = firebase.initializeApp(firebaseConfig);
             db = firebase.database();
             auth = firebase.auth();
+            // Initialize messaging if available
+            if (typeof firebase.messaging !== 'undefined') {
+                messaging = firebase.messaging();
+            }
             console.log('✅ Firebase initialized successfully');
         } catch (e) {
             console.error('❌ Firebase initialization error:', e);
@@ -2089,6 +2094,16 @@
                 'viewer': t('مشاهد', 'Viewer')
             };
             return roles[role] || role;
+        }
+
+        function getPaymentMethodName(method) {
+            const methods = {
+                'cash': t('نقدي', 'Cash'),
+                'card': t('بطاقة', 'Card'),
+                'transfer': t('تحويل بنكي', 'Bank Transfer'),
+                'credit': t('آجل', 'Credit')
+            };
+            return methods[method] || method;
         }
 
         function checkUserPermission(requiredRole) {
@@ -2260,6 +2275,11 @@
                 document.getElementById('appSection').classList.add('active');
                 
                 await initializeApp();
+                
+                // Initialize Firebase Messaging
+                if (messaging) {
+                    initializeFirebaseMessaging();
+                }
                 
                 showNotification(t('مرحباً بك!', 'Welcome!'), 'success');
             } else {
@@ -5431,6 +5451,97 @@
                 checkAndShowAlerts();
             }
         }, 300000);
+
+        // ============================================
+        // === FIREBASE CLOUD MESSAGING SETUP ===
+        // ============================================
+
+        async function initializeFirebaseMessaging() {
+            try {
+                if (messaging) {
+                    // طلب الإذن للإشعارات
+                    const permission = await Notification.requestPermission();
+                    
+                    if (permission === 'granted') {
+                        console.log('✅ تم منح إذن الإشعارات');
+                        
+                        // الحصول على Token
+                        const token = await messaging.getToken({
+                            vapidKey: 'YOUR_VAPID_KEY_HERE' // استبدل هذا بمفتاح VAPID من Firebase Console
+                        });
+                        
+                        console.log('FCM Token:', token);
+                        
+                        // حفظ الـ Token في قاعدة البيانات
+                        if (AppState.currentUser?.uid) {
+                            await db.ref(`users/${AppState.currentUser.uid}/fcmToken`).set({
+                                token: token,
+                                updatedAt: new Date().toISOString(),
+                                platform: 'web'
+                            });
+                        }
+                        
+                        // معالجة الرسائل عندما يكون التطبيق في المقدمة
+                        messaging.onMessage((payload) => {
+                            console.log('📩 رسالة جديدة:', payload);
+                            showPushNotification(payload);
+                        });
+                    } else {
+                        console.log('❌ لم يتم منح إذن الإشعارات');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ خطأ في تهيئة Firebase Messaging:', error);
+            }
+        }
+
+        // عرض الإشعار عند استلامه
+        function showPushNotification(payload) {
+            const { title, body, icon, badge, data } = payload.notification || {};
+            
+            // إنشاء إشعار
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const notification = new Notification(title, {
+                    body: body,
+                    icon: icon || '/icon-192x192.png',
+                    badge: badge || '/badge-72x72.png',
+                    data: data,
+                    tag: data?.type || 'default',
+                    requireInteraction: true
+                });
+                
+                // معالجة النقر على الإشعار
+                notification.onclick = function(event) {
+                    event.preventDefault();
+                    handleNotificationClick(data);
+                    notification.close();
+                };
+            }
+            
+            // أيضاً عرض Toast Notification في التطبيق
+            if (body) {
+                showNotification(body, 'info', title);
+            }
+        }
+
+        // معالجة النقر على الإشعار
+        function handleNotificationClick(data) {
+            console.log('️ تم النقر على الإشعار:', data);
+            
+            // التوجيه للصفحة المناسبة بناءً على نوع الإشعار
+            if (data?.type === 'low_stock') {
+                showPage('products');
+            } else if (data?.type === 'new_sale') {
+                showPage('sales');
+            } else if (data?.type === 'debt_reminder') {
+                showPage('debts');
+            } else if (data?.page) {
+                showPage(data.page);
+            }
+            
+            // إظهار التطبيق إذا كان مخفياً
+            window.focus();
+        }
 
         // ============================================
         // === SERVICE WORKER FOR PWA ===
