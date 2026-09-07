@@ -1251,7 +1251,7 @@
             box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
             cursor: pointer;
             transition: var(--transition);
-            z-index: var(--z-sticky);
+            z-index: var(--z-fixed);
         }
         
         .fab:hover {
@@ -1284,6 +1284,68 @@
         .chat-widget-btn:hover {
             transform: scale(1.15);
             box-shadow: var(--shadow-2xl);
+        }
+
+        /* ============================================ */
+        /* === CHAT MESSAGES STYLES === */
+        /* ============================================ */
+        .chat-message {
+            margin-bottom: 12px;
+            display: flex;
+        }
+        
+        .chat-message.system {
+            justify-content: flex-start;
+        }
+        
+        .chat-message.user {
+            justify-content: flex-end;
+        }
+        
+        .chat-message-content {
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            max-width: 80%;
+            background: var(--gray-100);
+            color: var(--gray-800);
+        }
+        
+        .chat-message.user .chat-message-content {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* ============================================ */
+        /* === TABS STYLES === */
+        /* ============================================ */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--gray-200);
+            padding-bottom: 8px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            font-weight: 600;
+            color: var(--gray-500);
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        
+        .tab:hover {
+            color: var(--gray-700);
+            background: var(--gray-50);
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            background: rgba(67, 97, 238, 0.1);
         }
 
         /* ============================================ */
@@ -1414,6 +1476,7 @@
         .w-100 { width: 100%; }
         .p-2 { padding: 8px; }
         .mx-2 { margin-left: 8px; margin-right: 8px; }
+        .flex-column { flex-direction: column; }
     </style>
 </head>
 <body>
@@ -1525,6 +1588,9 @@
                         <button class="lang-btn active" onclick="switchLanguage('ar')">العربية</button>
                         <button class="lang-btn" onclick="switchLanguage('en')">English</button>
                     </div>
+                    <button class="btn-header" onclick="handleLogout()" title="تسجيل الخروج">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1599,7 +1665,7 @@
                             <input type="text" id="productBarcode">
                         </div>
                     </div>
-                    <div class="form-row">
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div class="form-group">
                             <label data-ar="سعر الشراء" data-en="Cost Price">سعر الشراء</label>
                             <input type="number" id="productCostPrice" step="0.01" min="0" required>
@@ -1609,7 +1675,7 @@
                             <input type="number" id="productSalePrice" step="0.01" min="0" required>
                         </div>
                     </div>
-                    <div class="form-row">
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div class="form-group">
                             <label data-ar="الكمية" data-en="Quantity">الكمية</label>
                             <input type="number" id="productQuantity" min="0" value="0">
@@ -3374,10 +3440,24 @@
                 await db.ref('cashbox').push({
                     type: 'income',
                     amount: saleData.total,
-                    description: t('مبيعات', 'Sales') + ' - ' + saleData.id.substr(-8),
+                    description: t('مبيعات', 'Sales') + ' - ' + saleData.id?.substr(-8) || 'sale',
                     date: new Date().toISOString(),
                     reference: saleRef.key
                 });
+                
+                // إذا كان الدفع آجلاً (Debt)
+                if (paymentMethod === 'credit') {
+                    await db.ref('debts').push({
+                        customerId: customerId || '',
+                        customerName: saleData.customerName,
+                        saleId: saleRef.key,
+                        amount: saleData.total,
+                        remaining: saleData.total,
+                        status: 'pending',
+                        date: new Date().toISOString(),
+                        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 يوم
+                    });
+                }
                 
                 AppState.cart = [];
                 
@@ -4290,8 +4370,8 @@
                     </div>
                     <div class="section-body">
                         <div class="tabs">
-                            <button class="tab active" onclick="switchDebtTab('customer')">${t('ديون العملاء', 'Customer Debts')}</button>
-                            <button class="tab" onclick="switchDebtTab('supplier')">${t('ديون الموردين', 'Supplier Debts')}</button>
+                            <button class="tab active" data-type="customer" onclick="switchDebtTab('customer', event)">${t('ديون العملاء', 'Customer Debts')}</button>
+                            <button class="tab" data-type="supplier" onclick="switchDebtTab('supplier', event)">${t('ديون الموردين', 'Supplier Debts')}</button>
                         </div>
                         <div id="debtsContent">
                             ${renderCustomerDebts()}
@@ -4488,7 +4568,7 @@
             }
         }
 
-        function switchDebtTab(type) {
+        function switchDebtTab(type, event) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             event.target.classList.add('active');
             
@@ -4552,7 +4632,7 @@
         }
 
         function renderCashboxList(movements = null) {
-            const list = movements || AppState.cashbox.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const list = movements || AppState.cashbox.sort((a, b) => new Date(a.date) - new Date(b.date));
             
             if (list.length === 0) {
                 return `
@@ -4562,6 +4642,8 @@
                     </div>
                 `;
             }
+            
+            let runningBalance = 0;
             
             return `
                 <table class="data-table">
@@ -4575,11 +4657,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${list.map((movement, index) => {
-                            const runningBalance = list.slice(index).reduce((sum, m) => {
-                                return m.type === 'income' ? sum + (m.amount || 0) : sum - (m.amount || 0);
-                            }, 0);
-                            
+                        ${list.map((movement) => {
+                            runningBalance += movement.type === 'income' ? (movement.amount || 0) : -(movement.amount || 0);
                             return `
                                 <tr>
                                     <td>${formatDate(movement.date)}</td>
@@ -4816,8 +4895,8 @@
                     </div>
                     <div class="section-body">
                         <div class="tabs">
-                            <button class="tab active" onclick="switchReturnTab('sales')">${t('مرتجعات المبيعات', 'Sales Returns')}</button>
-                            <button class="tab" onclick="switchReturnTab('purchases')">${t('مرتجعات المشتريات', 'Purchase Returns')}</button>
+                            <button class="tab active" data-type="sales" onclick="switchReturnTab('sales', event)">${t('مرتجعات المبيعات', 'Sales Returns')}</button>
+                            <button class="tab" data-type="purchases" onclick="switchReturnTab('purchases', event)">${t('مرتجعات المشتريات', 'Purchase Returns')}</button>
                         </div>
                         <div id="returnsContent">
                             ${renderSalesReturns()}
@@ -4849,7 +4928,7 @@
                 });
             } else {
                 AppState.purchases.forEach(purchase => {
-                    invoiceSelect.innerHTML += `<option value="${purchase.id}">${purchase.invoiceNo || purchase.id.substr(-8)} - ${formatDate(purchase.date)}</option>`;
+                    invoiceSelect.innerHTML += `<option value="${purchase.id}">${purchase.invoiceNo || purchase.id.substr(-8)} - ${formatDate(purchase.purchaseDate || purchase.date)}</option>`;
                 });
             }
         }
@@ -4870,7 +4949,7 @@
                 invoice = AppState.purchases.find(p => p.id === invoiceId);
             }
             
-            if (invoice && invoice.items) {
+            if (invoice && invoice.items && Array.isArray(invoice.items)) {
                 invoice.items.forEach((item, index) => {
                     productSelect.innerHTML += `<option value="${index}">${item.productName || item.name} (${item.quantity} ${t('متوفر', 'available')})</option>`;
                 });
@@ -5045,7 +5124,7 @@
             `;
         }
 
-        function switchReturnTab(type) {
+        function switchReturnTab(type, event) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             event.target.classList.add('active');
             
@@ -5174,7 +5253,7 @@
                         </div>
                         
                         <div class="mt-3">
-                            <h4 class="mb-2" data-ar="المبيعات الشهرية" data-en="Monthly Sales">المبيعات الشهرية</div>
+                            <h4 class="mb-2" data-ar="المبيعات الشهرية" data-en="Monthly Sales">المبيعات الشهرية</h4>
                             <div class="chart-container">
                                 <canvas id="salesChart"></canvas>
                             </div>
@@ -5791,20 +5870,17 @@
         async function initializeFirebaseMessaging() {
             try {
                 if (messaging) {
-                    // طلب الإذن للإشعارات
                     const permission = await Notification.requestPermission();
                     
                     if (permission === 'granted') {
                         console.log('✅ تم منح إذن الإشعارات');
                         
-                        // الحصول على Token
                         const token = await messaging.getToken({
-                            vapidKey: 'YOUR_VAPID_KEY_HERE' // استبدل هذا بمفتاح VAPID من Firebase Console
+                            vapidKey: 'YOUR_VAPID_KEY_HERE'
                         });
                         
                         console.log('FCM Token:', token);
                         
-                        // حفظ الـ Token في قاعدة البيانات
                         if (AppState.currentUser?.uid) {
                             await db.ref(`users/${AppState.currentUser.uid}/fcmToken`).set({
                                 token: token,
@@ -5813,7 +5889,6 @@
                             });
                         }
                         
-                        // معالجة الرسائل عندما يكون التطبيق في المقدمة
                         messaging.onMessage((payload) => {
                             console.log('📩 رسالة جديدة:', payload);
                             showPushNotification(payload);
@@ -5827,11 +5902,9 @@
             }
         }
 
-        // عرض الإشعار عند استلامه
         function showPushNotification(payload) {
             const { title, body, icon, badge, data } = payload.notification || {};
             
-            // إنشاء إشعار
             if ('Notification' in window && Notification.permission === 'granted') {
                 const notification = new Notification(title, {
                     body: body,
@@ -5842,7 +5915,6 @@
                     requireInteraction: true
                 });
                 
-                // معالجة النقر على الإشعار
                 notification.onclick = function(event) {
                     event.preventDefault();
                     handleNotificationClick(data);
@@ -5850,17 +5922,14 @@
                 };
             }
             
-            // أيضاً عرض Toast Notification في التطبيق
             if (body) {
                 showNotification(body, 'info', title);
             }
         }
 
-        // معالجة النقر على الإشعار
         function handleNotificationClick(data) {
             console.log('️ تم النقر على الإشعار:', data);
             
-            // التوجيه للصفحة المناسبة بناءً على نوع الإشعار
             if (data?.type === 'low_stock') {
                 showPage('products');
             } else if (data?.type === 'new_sale') {
@@ -5871,7 +5940,6 @@
                 showPage(data.page);
             }
             
-            // إظهار التطبيق إذا كان مخفياً
             window.focus();
         }
 
@@ -6096,4 +6164,4 @@
         }
     </script>
 </body>
-    </html>
+                            </html>
