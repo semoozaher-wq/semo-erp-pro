@@ -2,6 +2,7 @@
   "rules": {
     ".read": false,
     ".write": false,
+
     "users": {
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
@@ -9,18 +10,70 @@
         ".validate": "newData.hasChildren(['email','role','isActive'])"
       }
     },
-    "products": { ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true", ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true" },
-    "customers": { ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true", ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true" },
-    "suppliers": { ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true", ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true" },
-    "categories": { ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true", ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true" },
-    "sales": { ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true", ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true" },
-    "purchases": { ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true", ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true" },
-    "expenses": { ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true", ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true" },
-    "revenues": { ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true", ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true" },
-    "debts": { ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true", ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true" },
-    "supplierDebts": { ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true", ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true" },
-    "cashbox": { ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true", ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true" },
-    "returns": { ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true", ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true" },
-    "branches": { ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true", ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'" }
+
+    "products": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true"
+    },
+
+    "customers": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true"
+    },
+
+    "suppliers": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true"
+    },
+
+    "categories": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true"
+    },
+
+    "sales": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true"
+    },
+
+    "purchases": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true"
+    },
+
+    "expenses": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true"
+    },
+
+    "revenues": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true"
+    },
+
+    "debts": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true"
+    },
+
+    "supplierDebts": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true"
+    },
+
+    "cashbox": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true"
+    },
+
+    "returns": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true"
+    },
+
+    "branches": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+    }
   }
 }
