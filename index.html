@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#4361ee">
-    <meta name="description" content="الدفتر الذهبي Pro Max - نظام إدارة المبيعات والمخزون المتكامل">
+    <meta name="description" content="SeMo0o FRP - نظام إدارة المبيعات والمخزون المتكامل">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>الدفتر الذهبي Pro Max | Golden Book Pro</title>
+    <title>SeMo0o FRP | إدارة المبيعات والمخزون</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiYWxEZHRyIGFsE2haYmkgUHJvIE1heCIsInNob3J0X25hbWUiOiJhbERkdHIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2Y2ZjhmYSIsInRoZW1lX2NvbG9yIjoiIzQzNjFlZSIsImljb25zIjpbeyJzcmMiOiJodHRwczovL3ZpYS5wbGFjZWhvbGxlci5jb20vMTkyIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9XX0=">
@@ -2061,7 +2061,7 @@
                         <label data-ar="الدور" data-en="Role">الدور</label>
                         <select id="userRole" required>
                             <option value="admin" data-ar="مدير" data-en="Admin">مدير</option>
-                            <option value="cashier" data-ar="كاشير" data-en="Cashier">كاشير</option>
+                            <option value="cashier" data-ar="موظف" data-en="Employee">موظف</option>
                             <option value="viewer" data-ar="مشاهد" data-en="Viewer">مشاهد</option>
                         </select>
                     </div>
@@ -2265,12 +2265,15 @@
         };
 
         // Initialize Firebase
-        let app, db, auth, messaging, storage;
+        let app, db, auth, messaging, storage, accountAuth;
         try {
             app = firebase.initializeApp(firebaseConfig);
             db = firebase.database();
             auth = firebase.auth();
             storage = firebase.storage();
+            // Separate auth instance: creating an employee must never sign out the manager.
+            const accountApp = firebase.initializeApp(firebaseConfig, 'SeMo0oAccountProvisioning');
+            accountAuth = accountApp.auth();
             if (typeof firebase.messaging !== 'undefined') {
                 messaging = firebase.messaging();
             }
@@ -2421,8 +2424,8 @@
 
         function getUserRoleName(role) {
             const roles = {
-                'admin': t('مدير', 'Admin'),
-                'cashier': t('كاشير', 'Cashier'),
+                'admin': t('مدير', 'Manager'),
+                'cashier': t('موظف', 'Employee'),
                 'viewer': t('مشاهد', 'Viewer')
             };
             return roles[role] || role;
@@ -2439,7 +2442,7 @@
         }
 
         function checkUserPermission(requiredRole) {
-            if (!AppState.currentUser) return false;
+            if (!AppState.currentUser || AppState.currentUser.isActive === false) return false;
             
             const userRole = AppState.currentUser.role || 'viewer';
             const userPermissions = AppState.currentUser.permissions || [];
@@ -2548,6 +2551,7 @@
                     name: name,
                     email: email,
                     role: isFirstUser ? 'admin' : 'cashier',
+                    permissions: isFirstUser ? ['admin'] : ['sales', 'products'],
                     currency: currency,
                     createdAt: new Date().toISOString(),
                     isActive: true
@@ -2597,6 +2601,11 @@
                     const userSnapshot = await db.ref('users/' + user.uid).once('value');
                     const userData = userSnapshot.val();
                     if (userData) {
+                        if (userData.isActive === false) {
+                            await auth.signOut();
+                            showNotification(t('هذا الحساب معطل. تواصل مع المدير.', 'This account is disabled. Contact the manager.'), 'error');
+                            return;
+                        }
                         AppState.currentUser = { ...AppState.currentUser, ...userData };
                     }
                 } catch (error) {
@@ -4867,70 +4876,78 @@
 
         async function saveUser(event) {
             event.preventDefault();
-            
+
             if (!checkUserPermission('admin')) {
-                showNotification(t('ليس لديك صلاحية', 'You do not have permission'), 'error');
+                showNotification(t('حساب المدير فقط يمكنه إدارة المستخدمين', 'Only the manager can manage users'), 'error');
                 return;
             }
-            
+
             const userId = document.getElementById('userId').value;
             const name = document.getElementById('userName').value.trim();
-            const email = document.getElementById('userEmail').value.trim();
+            const email = document.getElementById('userEmail').value.trim().toLowerCase();
             const password = document.getElementById('userPassword').value;
             const role = document.getElementById('userRole').value;
             const permissions = Array.from(document.querySelectorAll('input[name="userPermissions"]:checked')).map(cb => cb.value);
-            
+
             if (!name || !email) {
-                showNotification(t('يرجى ملء جميع الحقول المطلوبة', 'Please fill all required fields'), 'warning');
+                showNotification(t('يرجى ملء الاسم والبريد الإلكتروني', 'Name and email are required'), 'warning');
                 return;
             }
-            
+            if (!userId && (!password || password.length < 6)) {
+                showNotification(t('كلمة مرور الموظف يجب أن تكون 6 أحرف على الأقل', 'Employee password must be at least 6 characters'), 'warning');
+                return;
+            }
+            if (userId === AppState.currentUser.uid && role !== 'admin') {
+                showNotification(t('لا يمكن إزالة صلاحيات المدير من حسابك الحالي', 'You cannot remove manager privileges from your current account'), 'warning');
+                return;
+            }
+
             try {
                 if (userId) {
                     const updateData = {
-                        name: name,
-                        role: role,
-                        permissions: permissions,
-                        updatedAt: new Date().toISOString()
+                        name,
+                        role,
+                        permissions: role === 'admin' ? ['admin'] : permissions,
+                        updatedAt: new Date().toISOString(),
+                        updatedBy: AppState.currentUser.uid
                     };
-                    
-                    if (password) {
-                        const user = auth.currentUser;
-                        if (user) {
-                            await user.updatePassword(password);
-                        }
-                    }
-                    
                     await db.ref('users/' + userId).update(updateData);
+                    if (password && userId === AppState.currentUser.uid) {
+                        await auth.currentUser.updatePassword(password);
+                    } else if (password && userId !== AppState.currentUser.uid) {
+                        await auth.sendPasswordResetEmail(email);
+                        showNotification(t('تم تحديث البيانات وإرسال رابط تغيير كلمة المرور للموظف', 'Details updated and a password-reset link was sent to the employee'), 'info');
+                    }
                     showNotification(t('تم تحديث المستخدم بنجاح', 'User updated successfully'), 'success');
                 } else {
-                    if (!password || password.length < 6) {
-                        showNotification(t('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'Password must be at least 6 characters'), 'warning');
-                        return;
-                    }
-                    
-                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    // Use the secondary auth instance so the manager session remains active.
+                    const userCredential = await accountAuth.createUserWithEmailAndPassword(email, password);
                     const uid = userCredential.user.uid;
-                    
                     await db.ref('users/' + uid).set({
-                        name: name,
-                        email: email,
-                        role: role,
-                        permissions: permissions,
+                        name,
+                        email,
+                        role,
+                        permissions: role === 'admin' ? ['admin'] : permissions,
                         isActive: true,
+                        currency: AppState.currentUser.currency || 'LYD',
                         createdAt: new Date().toISOString(),
-                        createdBy: AppState.currentUser?.uid || ''
+                        createdBy: AppState.currentUser.uid
                     });
-                    
-                    showNotification(t('تم إضافة المستخدم بنجاح', 'User added successfully'), 'success');
+                    await accountAuth.signOut();
+                    showNotification(t('تم إنشاء حساب الموظف دون تسجيل خروج المدير', 'Employee account created without signing out the manager'), 'success');
                 }
-                
+
                 closeModal('userModal');
+                await loadUserData();
                 showPage('users');
-                
             } catch (error) {
                 console.error('Error saving user:', error);
-                showNotification(error.message || t('حدث خطأ أثناء حفظ المستخدم', 'Error saving user'), 'error');
+                const messages = {
+                    'auth/email-already-in-use': t('البريد الإلكتروني مستخدم بالفعل', 'Email is already in use'),
+                    'auth/invalid-email': t('البريد الإلكتروني غير صالح', 'Invalid email address'),
+                    'auth/weak-password': t('كلمة المرور ضعيفة', 'Password is too weak')
+                };
+                showNotification(messages[error.code] || error.message || t('حدث خطأ أثناء حفظ المستخدم', 'Could not save user'), 'error');
             }
         }
 
@@ -4953,13 +4970,24 @@
         }
 
         async function deleteUser(userId) {
-            if (!confirm(t('هل أنت متأكد من حذف هذا المستخدم؟', 'Are you sure you want to delete this user?'))) {
+            if (!checkUserPermission('admin')) return;
+            if (userId === AppState.currentUser?.uid) {
+                showNotification(t('لا يمكن حذف حساب المدير الحالي', 'The current manager account cannot be deleted'), 'warning');
+                return;
+            }
+            if (!confirm(t('سيتم تعطيل حساب الموظف وإخفاؤه من القائمة. هل تريد المتابعة؟', 'This will deactivate the employee account. Continue?'))) {
                 return;
             }
             
             try {
-                await db.ref('users/' + userId).remove();
-                showNotification(t('تم حذف المستخدم', 'User deleted'), 'success');
+                await db.ref('users/' + userId).update({
+                    isActive: false,
+                    disabledAt: new Date().toISOString(),
+                    disabledBy: AppState.currentUser.uid
+                });
+                showNotification(t('تم تعطيل حساب الموظف', 'Employee account disabled'), 'success');
+                await loadUserData();
+                showPage('users');
             } catch (error) {
                 console.error('Error deleting user:', error);
                 showNotification(t('حدث خطأ أثناء الحذف', 'Error deleting'), 'error');
@@ -6091,27 +6119,6 @@
         // === INITIALIZE APP ON LOAD ===
         // ============================================
         
-        document.addEventListener('DOMContentLoaded', function() {
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    AppState.currentUser = {
-                        uid: user.uid,
-                        email: user.email
-                    };
-                    
-                    loadUserData().then(() => {
-                        document.getElementById('authSection').classList.remove('active');
-                        document.getElementById('appSection').classList.add('active');
-                        showPage('home');
-                    });
-                } else {
-                    document.getElementById('authSection').classList.add('active');
-                }
-                
-                document.getElementById('loadingScreen').classList.add('hidden');
-            });
-        });
-
         async function loadUserData() {
             if (!AppState.currentUser?.uid) return;
             
@@ -6232,4 +6239,4 @@
         }
     </script>
 </body>
-                    </html>
+                            </html>
