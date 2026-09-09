@@ -1414,6 +1414,42 @@
         .w-100 { width: 100%; }
         .p-2 { padding: 8px; }
         .mx-2 { margin-left: 8px; margin-right: 8px; }
+
+        /* === SeMo0o FRP premium visual system === */
+        :root {
+            --primary: #6d28d9;
+            --primary-light: #8b5cf6;
+            --primary-dark: #4c1d95;
+            --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+            --light: #f7f8fc;
+            --gray-50: #fafaff;
+            --shadow: 0 8px 24px rgba(31, 41, 55, .07);
+            --shadow-lg: 0 18px 45px rgba(31, 41, 55, .12);
+            --radius: 16px;
+            --radius-lg: 22px;
+        }
+        body { background: radial-gradient(circle at 10% 0%, #eef2ff 0, transparent 34%), var(--light); }
+        .auth-screen { background: radial-gradient(circle at 15% 15%, rgba(139,92,246,.22), transparent 34%), linear-gradient(135deg,#f8fafc,#eef2ff); }
+        .auth-form-container, .section-card, .modal-content { border: 1px solid rgba(139,92,246,.12); box-shadow: var(--shadow-lg); }
+        .auth-logo, .loading-logo { background: var(--primary-gradient); box-shadow: 0 16px 35px rgba(109,40,217,.28); }
+        .auth-title { letter-spacing: -.04em; font-weight: 900; }
+        .top-header { background: rgba(255,255,255,.82); border-bottom: 1px solid rgba(99,102,241,.12); backdrop-filter: blur(18px); box-shadow: 0 4px 18px rgba(31,41,55,.05); }
+        .btn, .btn-header, .fab, .chat-widget-btn { transition: transform .2s ease, box-shadow .2s ease, filter .2s ease; }
+        .btn:hover, .btn-header:hover, .fab:hover, .chat-widget-btn:hover { transform: translateY(-2px); filter: saturate(1.1); box-shadow: 0 10px 24px rgba(79,70,229,.2); }
+        .btn-primary { background: var(--primary-gradient); }
+        .section-card { background: rgba(255,255,255,.92); }
+        .section-header { background: linear-gradient(90deg, rgba(124,58,237,.06), transparent); }
+        .data-table th { background: #f3f1ff; color: #4c1d95; }
+        .data-table tr:hover { background: #faf9ff; }
+        .chat-widget-btn { background: linear-gradient(135deg,#06b6d4,#2563eb); box-shadow: 0 12px 28px rgba(37,99,235,.28); }
+        .voice-btn { width: 44px !important; padding: 0 !important; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px !important; }
+        @media (max-width: 700px) { .auth-form-container { width: min(94vw, 460px); padding: 20px; } .top-header { position: sticky; top: 0; z-index: 20; } .main-content { padding: 14px; } .section-card { border-radius: 16px; } }
+
+        .auth-divider { display:flex; align-items:center; gap:12px; color:var(--gray-500); margin:16px 0; font-size:.85rem; }
+        .auth-divider::before, .auth-divider::after { content:""; height:1px; background:var(--gray-200); flex:1; }
+        .btn-google { background:#fff; color:#202124; border:1px solid #dadce0; box-shadow:0 3px 8px rgba(60,64,67,.12); }
+        .btn-google:hover { background:#f8faff; border-color:#4285f4; color:#1a73e8; }
+        .btn-google i { color:#4285f4; }
     </style>
 </head>
 <body>
@@ -1438,7 +1474,7 @@
             <div class="auth-logo">
                 <i class="fas fa-book-open"></i>
             </div>
-            <h1 class="auth-title" data-ar="الدفتر الذهبي" data-en="Golden Book">الدفتر الذهبي</h1>
+            <h1 class="auth-title" data-ar="SeMo0o FRP" data-en="SeMo0o FRP">SeMo0o FRP</h1>
             <p class="auth-subtitle" data-ar="نظام إدارة المبيعات والمخزون المتكامل" data-en="Integrated Sales & Inventory Management">نظام إدارة المبيعات والمخزون المتكامل</p>
         </div>
         
@@ -1463,6 +1499,11 @@
                     <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">
                         <i class="fas fa-sign-in-alt"></i>
                         <span data-ar="تسجيل الدخول" data-en="Login">تسجيل الدخول</span>
+                    </button>
+                    <div class="auth-divider"><span data-ar="أو" data-en="OR">أو</span></div>
+                    <button type="button" class="btn btn-google btn-lg" id="googleLoginBtn" onclick="handleGoogleLogin()">
+                        <i class="fab fa-google"></i>
+                        <span data-ar="الدخول بحساب Google" data-en="Continue with Google">الدخول بحساب Google</span>
                     </button>
                 </form>
             </div>
@@ -2240,6 +2281,9 @@
                 <div style="padding: 16px; border-top: 1px solid var(--gray-200);">
                     <div class="d-flex gap-1">
                         <input type="text" id="chatInput" class="flex-1" placeholder="اكتب رسالتك..." data-placeholder="اكتب رسالتك..." style="padding: 12px; border: 2px solid var(--gray-200); border-radius: var(--radius-sm);">
+                        <button class="btn btn-secondary voice-btn" id="chatVoiceBtn" onclick="toggleVoiceInput()" title="تحدث صوتياً" aria-label="تحدث صوتياً">
+                            <i class="fas fa-microphone"></i>
+                        </button>
                         <button class="btn btn-primary" onclick="sendChatMessage()" style="width: auto; padding: 12px 20px;">
                             <i class="fas fa-paper-plane"></i>
                         </button>
@@ -2584,6 +2628,48 @@
                     console.error('Logout error:', error);
                     showNotification(t('حدث خطأ أثناء تسجيل الخروج', 'Error during logout'), 'error');
                 }
+            }
+        }
+
+        async function handleGoogleLogin() {
+            const button = document.getElementById('googleLoginBtn');
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + t('جاري الدخول...', 'Signing in...');
+            try {
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+                const userRef = db.ref('users/' + user.uid);
+                const snapshot = await userRef.once('value');
+                if (!snapshot.exists()) {
+                    const usersSnapshot = await db.ref('users').once('value');
+                    const isFirstUser = !usersSnapshot.exists() || Object.keys(usersSnapshot.val() || {}).length === 0;
+                    await userRef.set({
+                        name: user.displayName || user.email.split('@')[0],
+                        email: user.email,
+                        photoURL: user.photoURL || '',
+                        role: isFirstUser ? 'admin' : 'cashier',
+                        permissions: isFirstUser ? ['admin'] : ['sales', 'products'],
+                        currency: 'LYD',
+                        isActive: true,
+                        provider: 'google',
+                        createdAt: new Date().toISOString()
+                    });
+                }
+                showNotification(t('تم تسجيل الدخول بحساب Google', 'Signed in with Google'), 'success');
+            } catch (error) {
+                console.error('Google login error:', error);
+                const messages = {
+                    'auth/popup-closed-by-user': t('تم إغلاق نافذة Google', 'Google sign-in window was closed'),
+                    'auth/popup-blocked': t('المتصفح منع نافذة Google المنبثقة', 'The browser blocked the Google popup'),
+                    'auth/operation-not-allowed': t('يجب تفعيل Google من Firebase Authentication', 'Enable Google in Firebase Authentication'),
+                    'auth/unauthorized-domain': t('أضف نطاق الموقع إلى Authorized domains في Firebase', 'Add this domain to Firebase Authorized domains')
+                };
+                showNotification(messages[error.code] || error.message, 'error');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<i class="fab fa-google"></i><span data-ar="الدخول بحساب Google" data-en="Continue with Google">' + t('الدخول بحساب Google', 'Continue with Google') + '</span>';
             }
         }
 
@@ -5783,36 +5869,63 @@
             }
         }
 
+        function appendChatMessage(text, type = 'system') {
+            const messagesContainer = document.getElementById('chatMessages');
+            const msg = document.createElement('div');
+            msg.className = 'chat-message ' + type;
+            msg.innerHTML = `<div class="chat-message-content"><p>${escapeHtml(text)}</p></div>`;
+            messagesContainer.appendChild(msg);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            return msg;
+        }
+
+        function buildLocalAssistantReply(message) {
+            const q = message.toLowerCase();
+            const sales = AppState.sales.reduce((sum, x) => sum + Number(x.totalAmount || x.total || 0), 0);
+            const stock = AppState.products.filter(x => Number(x.quantity || 0) <= Number(x.minStock || 5)).length;
+            if (q.includes('مبيعات') || q.includes('sales')) return `إجمالي المبيعات المسجلة حالياً ${formatCurrency(sales)}.`;
+            if (q.includes('مخزون') || q.includes('stock')) return `يوجد ${stock} منتجاً عند حد إعادة الطلب أو أقل.`;
+            if (q.includes('موظف') || q.includes('مستخدم')) return `عدد الحسابات المسجلة ${AppState.users.length}، وإدارة المستخدمين متاحة للمدير فقط.`;
+            return 'أستطيع مساعدتك في قراءة المبيعات، المخزون، الموظفين والتقارير. جرّب: ما إجمالي المبيعات؟';
+        }
+
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = AppState.currentLang === 'ar' ? 'ar-SA' : 'en-US';
+            utterance.rate = .95;
+            window.speechSynthesis.speak(utterance);
+        }
+
         function sendChatMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
             if (!message) return;
-            
-            const messagesContainer = document.getElementById('chatMessages');
-            
-            const userMsg = document.createElement('div');
-            userMsg.className = 'chat-message user';
-            userMsg.innerHTML = `
-                <div class="chat-message-content">
-                    <p>${escapeHtml(message)}</p>
-                </div>
-            `;
-            messagesContainer.appendChild(userMsg);
-            
+            appendChatMessage(message, 'user');
             input.value = '';
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            
-            setTimeout(() => {
-                const botMsg = document.createElement('div');
-                botMsg.className = 'chat-message system';
-                botMsg.innerHTML = `
-                    <div class="chat-message-content">
-                        <p>${t('شكراً لتواصلك معنا، سيتم الرد عليك قريباً', 'Thank you for contacting us, we will respond soon')}</p>
-                    </div>
-                `;
-                messagesContainer.appendChild(botMsg);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }, 1000);
+            const reply = buildLocalAssistantReply(message);
+            setTimeout(() => { appendChatMessage(reply, 'system'); speakText(reply); }, 350);
+        }
+
+        function toggleVoiceInput() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const button = document.getElementById('chatVoiceBtn');
+            if (!SpeechRecognition) {
+                showNotification(t('المتصفح لا يدعم الإدخال الصوتي', 'Voice input is not supported by this browser'), 'warning');
+                return;
+            }
+            const recognition = new SpeechRecognition();
+            recognition.lang = AppState.currentLang === 'ar' ? 'ar-EG' : 'en-US';
+            recognition.interimResults = false;
+            button.classList.add('active');
+            recognition.onresult = event => {
+                document.getElementById('chatInput').value = event.results[0][0].transcript;
+                sendChatMessage();
+            };
+            recognition.onerror = () => showNotification(t('تعذر التقاط الصوت', 'Could not capture voice'), 'error');
+            recognition.onend = () => button.classList.remove('active');
+            recognition.start();
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -6239,4 +6352,4 @@
         }
     </script>
 </body>
-                            </html>
+                    </html>
