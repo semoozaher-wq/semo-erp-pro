@@ -11,7 +11,7 @@
     <title>SeMo0o FRP | إدارة المبيعات والمخزون</title>
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiYWxEZHRyIGFsE2haYmkgUHJvIE1heCIsInNob3J0X25hbWUiOiJhbERkdHIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2Y2ZjhmYSIsInRoZW1lX2NvbG9yIjoiIzQzNjFlZSIsImljb25zIjpbeyJzcmMiOiJodHRwczovL3ZpYS5wbGFjZWhvbGxlci5jb20vMTkyIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9XX0=">
+    <link rel="manifest" href="manifest.json">
     
     <!-- External Libraries -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -1490,6 +1490,15 @@
         .auth-logo { overflow:hidden; padding:10px; }
         .auth-logo img { width:100%; height:100%; object-fit:contain; border-radius:24%; }
         .sidebar-brand img { width:34px; height:34px; object-fit:contain; border-radius:10px; }
+
+        .install-banner { display:none; position:fixed; z-index:9998; right:16px; left:16px; bottom:18px; max-width:520px; margin:auto; align-items:center; gap:11px; padding:12px; background:rgba(255,255,255,.97); border:1px solid #ddd6fe; border-radius:18px; box-shadow:0 18px 45px rgba(31,41,55,.2); direction:rtl; }
+        .install-banner.show { display:flex; animation:slideUp .3s ease; }
+        .install-banner-icon img { width:44px; height:44px; object-fit:contain; border-radius:12px; }
+        .install-banner-text { flex:1; display:grid; gap:2px; } .install-banner-text strong { color:#312e81; } .install-banner-text span { color:#6b7280; font-size:.78rem; }
+        .install-now { background:var(--primary-gradient); color:#fff; border:0; border-radius:10px; padding:9px 14px; font-family:inherit; font-weight:700; }
+        .install-dismiss { border:0; background:transparent; color:#9ca3af; font-size:1.4rem; padding:4px 7px; }
+        @keyframes slideUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+        @media (max-width:480px) { .install-banner { right:10px; left:10px; bottom:78px; } .install-banner-text span { font-size:.7rem; } }
     </style>
 </head>
 <body>
@@ -1505,6 +1514,12 @@
 
     <!-- Notification Container -->
     <div id="notificationContainer" class="notification-container"></div>
+    <div id="installBanner" class="install-banner" role="dialog" aria-label="تثبيت التطبيق">
+      <div class="install-banner-icon"><img src="logo-primary.png" alt="SeMo0o FRP"></div>
+      <div class="install-banner-text"><strong>ثبّت SeMo0o FRP</strong><span>أضفه إلى شاشة هاتفك ليعمل كتطبيق</span></div>
+      <button class="install-now" onclick="installPWA()">تثبيت</button>
+      <button class="install-dismiss" onclick="dismissInstallBanner()" aria-label="إغلاق">×</button>
+    </div>
 
         <!-- Auth Screen -->
     <div id="authSection" class="auth-screen">
@@ -6363,6 +6378,33 @@
         }
         window.addEventListener('online',updateSyncIndicator); window.addEventListener('offline',updateSyncIndicator);
         updateSyncIndicator();
+
+        // === PWA installation ===
+        let deferredInstallPrompt = null;
+        window.addEventListener('beforeinstallprompt', event => {
+            event.preventDefault();
+            deferredInstallPrompt = event;
+            if (!localStorage.getItem('semoo-install-dismissed')) document.getElementById('installBanner')?.classList.add('show');
+        });
+        window.addEventListener('appinstalled', () => { deferredInstallPrompt = null; document.getElementById('installBanner')?.classList.remove('show'); showNotification('تم تثبيت SeMo0o FRP على جهازك','success'); });
+        async function installPWA() {
+            if (!deferredInstallPrompt) {
+                showNotification('من قائمة المتصفح اختر إضافة إلى الشاشة الرئيسية أو تثبيت التطبيق','info');
+                return;
+            }
+            deferredInstallPrompt.prompt();
+            const result = await deferredInstallPrompt.userChoice;
+            if (result.outcome === 'dismissed') localStorage.setItem('semoo-install-dismissed','1');
+            deferredInstallPrompt = null;
+            document.getElementById('installBanner')?.classList.remove('show');
+        }
+        function dismissInstallBanner() { localStorage.setItem('semoo-install-dismissed','1'); document.getElementById('installBanner')?.classList.remove('show'); }
+        setTimeout(() => {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            if (isMobile && !isStandalone && !localStorage.getItem('semoo-install-dismissed')) document.getElementById('installBanner')?.classList.add('show');
+        }, 1800);
+        if ('serviceWorker' in navigator && location.protocol !== 'file:') window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js').catch(console.warn));
 
         // ============================================
         // === INITIALIZE APP ON LOAD ===
