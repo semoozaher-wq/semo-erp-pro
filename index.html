@@ -1251,7 +1251,7 @@
             box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
             cursor: pointer;
             transition: var(--transition);
-            z-index: var(--z-fixed);
+            z-index: var(--z-sticky);
         }
         
         .fab:hover {
@@ -1284,68 +1284,6 @@
         .chat-widget-btn:hover {
             transform: scale(1.15);
             box-shadow: var(--shadow-2xl);
-        }
-
-        /* ============================================ */
-        /* === CHAT MESSAGES STYLES === */
-        /* ============================================ */
-        .chat-message {
-            margin-bottom: 12px;
-            display: flex;
-        }
-        
-        .chat-message.system {
-            justify-content: flex-start;
-        }
-        
-        .chat-message.user {
-            justify-content: flex-end;
-        }
-        
-        .chat-message-content {
-            padding: 12px 16px;
-            border-radius: var(--radius);
-            max-width: 80%;
-            background: var(--gray-100);
-            color: var(--gray-800);
-        }
-        
-        .chat-message.user .chat-message-content {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* ============================================ */
-        /* === TABS STYLES === */
-        /* ============================================ */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            border-bottom: 2px solid var(--gray-200);
-            padding-bottom: 8px;
-        }
-        
-        .tab {
-            padding: 10px 20px;
-            border: none;
-            background: transparent;
-            font-weight: 600;
-            color: var(--gray-500);
-            border-radius: var(--radius-sm);
-            transition: var(--transition);
-            cursor: pointer;
-            font-size: 0.95rem;
-        }
-        
-        .tab:hover {
-            color: var(--gray-700);
-            background: var(--gray-50);
-        }
-        
-        .tab.active {
-            color: var(--primary);
-            background: rgba(67, 97, 238, 0.1);
         }
 
         /* ============================================ */
@@ -1476,7 +1414,6 @@
         .w-100 { width: 100%; }
         .p-2 { padding: 8px; }
         .mx-2 { margin-left: 8px; margin-right: 8px; }
-        .flex-column { flex-direction: column; }
     </style>
 </head>
 <body>
@@ -1588,9 +1525,6 @@
                         <button class="lang-btn active" onclick="switchLanguage('ar')">العربية</button>
                         <button class="lang-btn" onclick="switchLanguage('en')">English</button>
                     </div>
-                    <button class="btn-header" onclick="handleLogout()" title="تسجيل الخروج">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
                 </div>
             </div>
         </div>
@@ -1665,7 +1599,7 @@
                             <input type="text" id="productBarcode">
                         </div>
                     </div>
-                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-row">
                         <div class="form-group">
                             <label data-ar="سعر الشراء" data-en="Cost Price">سعر الشراء</label>
                             <input type="number" id="productCostPrice" step="0.01" min="0" required>
@@ -1675,7 +1609,7 @@
                             <input type="number" id="productSalePrice" step="0.01" min="0" required>
                         </div>
                     </div>
-                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-row">
                         <div class="form-group">
                             <label data-ar="الكمية" data-en="Quantity">الكمية</label>
                             <input type="number" id="productQuantity" min="0" value="0">
@@ -2613,7 +2547,7 @@
                 await db.ref('users/' + user.uid).set({
                     name: name,
                     email: email,
-                    role: isFirstUser ? 'admin' : 'user',
+                    role: isFirstUser ? 'admin' : 'cashier',
                     currency: currency,
                     createdAt: new Date().toISOString(),
                     isActive: true
@@ -3001,6 +2935,9 @@
                     break;
                 case 'products':
                     renderProductsPage(content);
+                    break;
+                case 'sales':
+                    showSalesPage(content);
                     break;
                 case 'calculator':
                     renderCalculatorPage(content);
@@ -3440,24 +3377,10 @@
                 await db.ref('cashbox').push({
                     type: 'income',
                     amount: saleData.total,
-                    description: t('مبيعات', 'Sales') + ' - ' + saleData.id?.substr(-8) || 'sale',
+                    description: t('مبيعات', 'Sales') + ' - ' + saleRef.key.substr(-8),
                     date: new Date().toISOString(),
                     reference: saleRef.key
                 });
-                
-                // إذا كان الدفع آجلاً (Debt)
-                if (paymentMethod === 'credit') {
-                    await db.ref('debts').push({
-                        customerId: customerId || '',
-                        customerName: saleData.customerName,
-                        saleId: saleRef.key,
-                        amount: saleData.total,
-                        remaining: saleData.total,
-                        status: 'pending',
-                        date: new Date().toISOString(),
-                        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 يوم
-                    });
-                }
                 
                 AppState.cart = [];
                 
@@ -3471,6 +3394,54 @@
                 console.error('Error completing sale:', error);
                 showNotification(t('حدث خطأ أثناء إتمام البيع', 'Error completing sale'), 'error');
             }
+        }
+
+        function showSalesPage(container) {
+            const sales = [...AppState.sales].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+            container.innerHTML = `
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-receipt"></i>
+                            <span>${t('سجل المبيعات', 'Sales History')}</span>
+                        </div>
+                        <button class="btn btn-sm btn-primary" onclick="showPage('pos')">
+                            <i class="fas fa-cash-register"></i> ${t('بيع جديد', 'New Sale')}
+                        </button>
+                    </div>
+                    <div class="section-body">
+                        ${sales.length === 0 ? `
+                            <div class="empty-state">
+                                <div class="empty-state-icon"><i class="fas fa-receipt"></i></div>
+                                <div class="empty-state-text">${t('لا توجد مبيعات', 'No sales found')}</div>
+                            </div>
+                        ` : `
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead><tr>
+                                        <th>${t('التاريخ', 'Date')}</th>
+                                        <th>${t('العميل', 'Customer')}</th>
+                                        <th>${t('عدد الأصناف', 'Items')}</th>
+                                        <th>${t('الدفع', 'Payment')}</th>
+                                        <th>${t('الإجمالي', 'Total')}</th>
+                                    </tr></thead>
+                                    <tbody>
+                                        ${sales.map(sale => `
+                                            <tr>
+                                                <td>${formatDate(sale.date)}</td>
+                                                <td>${escapeHtml(sale.customerName || t('عميل نقدي', 'Cash Customer'))}</td>
+                                                <td>${(sale.items || []).reduce((sum, item) => sum + (Number(item.quantity) || 0), 0)}</td>
+                                                <td>${getPaymentMethodName(sale.paymentMethod || 'cash')}</td>
+                                                <td class="fw-bold text-success">${formatCurrency(sale.total || 0)}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
         }
 
         function renderProductsPage(container) {
@@ -3800,6 +3771,84 @@
             } catch (error) {
                 console.error('Error saving supplier:', error);
                 showNotification(t('حدث خطأ أثناء حفظ المورد', 'Error saving supplier'), 'error');
+            }
+        }
+
+        function showSuppliersPage(container) {
+            const suppliers = [...AppState.suppliers].sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), AppState.currentLang === 'ar' ? 'ar' : 'en'));
+            container.innerHTML = `
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-truck"></i>
+                            <span>${t('الموردون', 'Suppliers')}</span>
+                        </div>
+                        <button class="btn btn-sm btn-primary" onclick="openSupplierModal()">
+                            <i class="fas fa-plus"></i> ${t('إضافة مورد', 'Add Supplier')}
+                        </button>
+                    </div>
+                    <div class="section-body">
+                        ${suppliers.length === 0 ? `
+                            <div class="empty-state">
+                                <div class="empty-state-icon"><i class="fas fa-truck"></i></div>
+                                <div class="empty-state-text">${t('لا يوجد موردون', 'No suppliers found')}</div>
+                                <div class="empty-state-subtext">${t('أضف موردًا جديدًا للبدء', 'Add a supplier to get started')}</div>
+                            </div>
+                        ` : `
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead><tr>
+                                        <th>${t('الاسم', 'Name')}</th>
+                                        <th>${t('الهاتف', 'Phone')}</th>
+                                        <th>${t('العنوان', 'Address')}</th>
+                                        <th>${t('الإجراءات', 'Actions')}</th>
+                                    </tr></thead>
+                                    <tbody>
+                                        ${suppliers.map(supplier => `
+                                            <tr>
+                                                <td>${escapeHtml(supplier.name || '-')}</td>
+                                                <td>${escapeHtml(supplier.phone || '-')}</td>
+                                                <td>${escapeHtml(supplier.address || '-')}</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-warning" onclick="editSupplier('${supplier.id}')"><i class="fas fa-edit"></i></button>
+                                                    <button class="btn btn-sm btn-danger" onclick="deleteSupplier('${supplier.id}')"><i class="fas fa-trash"></i></button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+
+        function editSupplier(supplierId) {
+            const supplier = AppState.suppliers.find(s => s.id === supplierId);
+            if (!supplier) {
+                showNotification(t('المورد غير موجود', 'Supplier not found'), 'error');
+                return;
+            }
+            document.getElementById('supplierModalTitle').textContent = t('تعديل المورد', 'Edit Supplier');
+            document.getElementById('supplierId').value = supplier.id;
+            document.getElementById('supplierName').value = supplier.name || '';
+            document.getElementById('supplierPhone').value = supplier.phone || '';
+            document.getElementById('supplierAddress').value = supplier.address || '';
+            const notes = document.getElementById('supplierNotes');
+            if (notes) notes.value = supplier.notes || '';
+            document.getElementById('supplierModal').classList.add('active');
+        }
+
+        async function deleteSupplier(supplierId) {
+            if (!confirm(t('هل أنت متأكد من حذف هذا المورد؟', 'Are you sure you want to delete this supplier?'))) return;
+            try {
+                await db.ref('suppliers/' + supplierId).remove();
+                showNotification(t('تم حذف المورد', 'Supplier deleted'), 'success');
+                if (AppState.currentPage === 'suppliers') showPage('suppliers');
+            } catch (error) {
+                console.error('Error deleting supplier:', error);
+                showNotification(t('حدث خطأ أثناء حذف المورد', 'Error deleting supplier'), 'error');
             }
         }
 
@@ -4284,6 +4333,46 @@
             }
         }
 
+        async function editRevenue(revenueId) {
+            const revenue = AppState.revenues.find(r => r.id === revenueId);
+            if (!revenue) {
+                showNotification(t('الإيراد غير موجود', 'Revenue not found'), 'error');
+                return;
+            }
+
+            document.getElementById('revenueModalTitle').textContent = t('تعديل الإيراد', 'Edit Revenue');
+            document.getElementById('revenueId').value = revenue.id;
+            document.getElementById('revenueSource').value = revenue.source || 'other';
+            document.getElementById('revenueDescription').value = revenue.description || '';
+            document.getElementById('revenueAmount').value = revenue.amount || '';
+            document.getElementById('revenueDate').value = (revenue.date || '').split('T')[0];
+            const paymentMethod = document.getElementById('revenuePaymentMethod');
+            if (paymentMethod) paymentMethod.value = revenue.paymentMethod || 'cash';
+            const notes = document.getElementById('revenueNotes');
+            if (notes) notes.value = revenue.notes || '';
+            document.getElementById('revenueModal').classList.add('active');
+        }
+
+        async function deleteRevenue(revenueId) {
+            if (!confirm(t('هل أنت متأكد من حذف هذا الإيراد؟', 'Are you sure you want to delete this revenue?'))) return;
+
+            try {
+                const cashboxSnap = await db.ref('cashbox')
+                    .orderByChild('referenceId')
+                    .equalTo(revenueId)
+                    .once('value');
+                const removals = [];
+                cashboxSnap.forEach(child => removals.push(db.ref('cashbox/' + child.key).remove()));
+                await Promise.all(removals);
+                await db.ref('revenues/' + revenueId).remove();
+                showNotification(t('تم حذف الإيراد', 'Revenue deleted'), 'success');
+                showPage('revenues');
+            } catch (error) {
+                console.error('Error deleting revenue:', error);
+                showNotification(t('حدث خطأ أثناء حذف الإيراد', 'Error deleting revenue'), 'error');
+            }
+        }
+
         function showRevenuesPage(container) {
             container.innerHTML = `
                 <div class="section-card">
@@ -4370,8 +4459,8 @@
                     </div>
                     <div class="section-body">
                         <div class="tabs">
-                            <button class="tab active" data-type="customer" onclick="switchDebtTab('customer', event)">${t('ديون العملاء', 'Customer Debts')}</button>
-                            <button class="tab" data-type="supplier" onclick="switchDebtTab('supplier', event)">${t('ديون الموردين', 'Supplier Debts')}</button>
+                            <button class="tab active" onclick="switchDebtTab('customer')">${t('ديون العملاء', 'Customer Debts')}</button>
+                            <button class="tab" onclick="switchDebtTab('supplier')">${t('ديون الموردين', 'Supplier Debts')}</button>
                         </div>
                         <div id="debtsContent">
                             ${renderCustomerDebts()}
@@ -4568,7 +4657,7 @@
             }
         }
 
-        function switchDebtTab(type, event) {
+        function switchDebtTab(type) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             event.target.classList.add('active');
             
@@ -4632,7 +4721,7 @@
         }
 
         function renderCashboxList(movements = null) {
-            const list = movements || AppState.cashbox.sort((a, b) => new Date(a.date) - new Date(b.date));
+            const list = movements || AppState.cashbox.sort((a, b) => new Date(b.date) - new Date(a.date));
             
             if (list.length === 0) {
                 return `
@@ -4642,8 +4731,6 @@
                     </div>
                 `;
             }
-            
-            let runningBalance = 0;
             
             return `
                 <table class="data-table">
@@ -4657,8 +4744,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${list.map((movement) => {
-                            runningBalance += movement.type === 'income' ? (movement.amount || 0) : -(movement.amount || 0);
+                        ${list.map((movement, index) => {
+                            const runningBalance = list.slice(index).reduce((sum, m) => {
+                                return m.type === 'income' ? sum + (m.amount || 0) : sum - (m.amount || 0);
+                            }, 0);
+                            
                             return `
                                 <tr>
                                     <td>${formatDate(movement.date)}</td>
@@ -4895,8 +4985,8 @@
                     </div>
                     <div class="section-body">
                         <div class="tabs">
-                            <button class="tab active" data-type="sales" onclick="switchReturnTab('sales', event)">${t('مرتجعات المبيعات', 'Sales Returns')}</button>
-                            <button class="tab" data-type="purchases" onclick="switchReturnTab('purchases', event)">${t('مرتجعات المشتريات', 'Purchase Returns')}</button>
+                            <button class="tab active" onclick="switchReturnTab('sales')">${t('مرتجعات المبيعات', 'Sales Returns')}</button>
+                            <button class="tab" onclick="switchReturnTab('purchases')">${t('مرتجعات المشتريات', 'Purchase Returns')}</button>
                         </div>
                         <div id="returnsContent">
                             ${renderSalesReturns()}
@@ -4928,7 +5018,7 @@
                 });
             } else {
                 AppState.purchases.forEach(purchase => {
-                    invoiceSelect.innerHTML += `<option value="${purchase.id}">${purchase.invoiceNo || purchase.id.substr(-8)} - ${formatDate(purchase.purchaseDate || purchase.date)}</option>`;
+                    invoiceSelect.innerHTML += `<option value="${purchase.id}">${purchase.invoiceNo || purchase.id.substr(-8)} - ${formatDate(purchase.date)}</option>`;
                 });
             }
         }
@@ -4949,7 +5039,7 @@
                 invoice = AppState.purchases.find(p => p.id === invoiceId);
             }
             
-            if (invoice && invoice.items && Array.isArray(invoice.items)) {
+            if (invoice && invoice.items) {
                 invoice.items.forEach((item, index) => {
                     productSelect.innerHTML += `<option value="${index}">${item.productName || item.name} (${item.quantity} ${t('متوفر', 'available')})</option>`;
                 });
@@ -5124,7 +5214,7 @@
             `;
         }
 
-        function switchReturnTab(type, event) {
+        function switchReturnTab(type) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             event.target.classList.add('active');
             
@@ -5253,7 +5343,7 @@
                         </div>
                         
                         <div class="mt-3">
-                            <h4 class="mb-2" data-ar="المبيعات الشهرية" data-en="Monthly Sales">المبيعات الشهرية</h4>
+                            <h4 class="mb-2" data-ar="المبيعات الشهرية" data-en="Monthly Sales">المبيعات الشهرية</div>
                             <div class="chart-container">
                                 <canvas id="salesChart"></canvas>
                             </div>
@@ -5870,17 +5960,20 @@
         async function initializeFirebaseMessaging() {
             try {
                 if (messaging) {
+                    // طلب الإذن للإشعارات
                     const permission = await Notification.requestPermission();
                     
                     if (permission === 'granted') {
                         console.log('✅ تم منح إذن الإشعارات');
                         
+                        // الحصول على Token
                         const token = await messaging.getToken({
-                            vapidKey: 'YOUR_VAPID_KEY_HERE'
+                            vapidKey: 'YOUR_VAPID_KEY_HERE' // استبدل هذا بمفتاح VAPID من Firebase Console
                         });
                         
                         console.log('FCM Token:', token);
                         
+                        // حفظ الـ Token في قاعدة البيانات
                         if (AppState.currentUser?.uid) {
                             await db.ref(`users/${AppState.currentUser.uid}/fcmToken`).set({
                                 token: token,
@@ -5889,6 +5982,7 @@
                             });
                         }
                         
+                        // معالجة الرسائل عندما يكون التطبيق في المقدمة
                         messaging.onMessage((payload) => {
                             console.log('📩 رسالة جديدة:', payload);
                             showPushNotification(payload);
@@ -5902,9 +5996,11 @@
             }
         }
 
+        // عرض الإشعار عند استلامه
         function showPushNotification(payload) {
             const { title, body, icon, badge, data } = payload.notification || {};
             
+            // إنشاء إشعار
             if ('Notification' in window && Notification.permission === 'granted') {
                 const notification = new Notification(title, {
                     body: body,
@@ -5915,6 +6011,7 @@
                     requireInteraction: true
                 });
                 
+                // معالجة النقر على الإشعار
                 notification.onclick = function(event) {
                     event.preventDefault();
                     handleNotificationClick(data);
@@ -5922,14 +6019,17 @@
                 };
             }
             
+            // أيضاً عرض Toast Notification في التطبيق
             if (body) {
                 showNotification(body, 'info', title);
             }
         }
 
+        // معالجة النقر على الإشعار
         function handleNotificationClick(data) {
             console.log('️ تم النقر على الإشعار:', data);
             
+            // التوجيه للصفحة المناسبة بناءً على نوع الإشعار
             if (data?.type === 'low_stock') {
                 showPage('products');
             } else if (data?.type === 'new_sale') {
@@ -5940,6 +6040,7 @@
                 showPage(data.page);
             }
             
+            // إظهار التطبيق إذا كان مخفياً
             window.focus();
         }
 
@@ -5947,44 +6048,11 @@
         // === SERVICE WORKER FOR PWA ===
         // ============================================
         
+        // النسخة ذات الملف الواحد لا تعتمد على ملف Service Worker خارجي.
+        // يمكن إضافة PWA لاحقًا بإرفاق service-worker.js اختياريًا.
         function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                const swCode = `
-                    const CACHE_NAME = 'golden-book-v1';
-                    const urlsToCache = ['/'];
-                    
-                    self.addEventListener('install', event => {
-                        event.waitUntil(
-                            caches.open(CACHE_NAME)
-                                .then(cache => cache.addAll(urlsToCache))
-                        );
-                    });
-                    
-                    self.addEventListener('fetch', event => {
-                        event.respondWith(
-                            caches.match(event.request)
-                                .then(response => {
-                                    if (response) return response;
-                                    return fetch(event.request);
-                                })
-                        );
-                    });
-                `;
-                
-                const blob = new Blob([swCode], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                
-                navigator.serviceWorker.register(swUrl)
-                    .then(registration => {
-                        console.log('Service Worker registered');
-                    })
-                    .catch(error => {
-                        console.log('Service Worker registration failed:', error);
-                    });
-            }
+            return Promise.resolve();
         }
-
-        document.addEventListener('DOMContentLoaded', registerServiceWorker);
 
         // ============================================
         // === LANGUAGE SWITCHING ===
@@ -6164,4 +6232,4 @@
         }
     </script>
 </body>
-                            </html>
+                    </html>
