@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#4361ee">
+    <meta name="theme-color" content="#4c1d95">
+    <link rel="icon" type="image/png" href="logo-primary.png">
     <meta name="description" content="SeMo0o FRP - نظام إدارة المبيعات والمخزون المتكامل">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1450,14 +1451,51 @@
         .btn-google { background:#fff; color:#202124; border:1px solid #dadce0; box-shadow:0 3px 8px rgba(60,64,67,.12); }
         .btn-google:hover { background:#f8faff; border-color:#4285f4; color:#1a73e8; }
         .btn-google i { color:#4285f4; }
+
+        /* === Professional navigation, responsive mode, offline and backup === */
+        .app-sidebar { position:fixed; top:0; right:0; bottom:0; width:270px; z-index:350; padding:22px 16px; color:#fff; background:linear-gradient(180deg,#27145f,#4c1d95 65%,#312e81); transform:translateX(110%); transition:transform .28s ease; box-shadow:-12px 0 35px rgba(31,20,80,.2); }
+        .app-sidebar.open { transform:translateX(0); }
+        .sidebar-brand { display:flex; align-items:center; gap:10px; font-size:1.15rem; padding:8px 10px 22px; border-bottom:1px solid rgba(255,255,255,.16); }
+        .sidebar-brand i { font-size:1.4rem; }
+        .sidebar-user { display:flex; align-items:center; gap:10px; padding:18px 8px; border-bottom:1px solid rgba(255,255,255,.12); }
+        .sidebar-avatar { width:38px; height:38px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.18); }
+        .sidebar-user small { display:block; opacity:.72; margin-top:2px; }
+        .sidebar-nav { padding:15px 0; display:grid; gap:5px; }
+        .sidebar-nav button,.sidebar-footer button { width:100%; display:flex; align-items:center; gap:12px; padding:12px 13px; border-radius:12px; color:rgba(255,255,255,.86); text-align:right; font-family:inherit; font-size:.92rem; background:transparent; }
+        .sidebar-nav button:hover,.sidebar-footer button:hover { background:rgba(255,255,255,.14); color:#fff; }
+        .sidebar-nav i,.sidebar-footer i { width:20px; text-align:center; }
+        .sidebar-footer { position:absolute; right:16px; left:16px; bottom:20px; display:grid; gap:4px; border-top:1px solid rgba(255,255,255,.14); padding-top:12px; }
+        .sidebar-footer .logout-link { color:#fecaca; }
+        .sidebar-backdrop { display:none; position:fixed; inset:0; z-index:340; background:rgba(15,23,42,.38); backdrop-filter:blur(2px); }
+        .sidebar-backdrop.open { display:block; }
+        .sync-pill { position:fixed; left:18px; top:84px; z-index:250; display:flex; gap:7px; align-items:center; padding:7px 11px; background:rgba(255,255,255,.9); border:1px solid #e5e7eb; color:#16a34a; border-radius:999px; font-size:.76rem; box-shadow:0 4px 12px rgba(0,0,0,.06); }
+        .sync-pill.offline { color:#dc2626; }
+        .backup-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:18px; }
+        .backup-note { padding:14px; background:#f5f3ff; color:#4c1d95; border-radius:12px; line-height:1.7; }
+        .backup-status { margin-top:14px; color:var(--gray-600); font-size:.88rem; }
+        #appSection.device-mobile .main-content { max-width:520px; margin:0 auto; }
+        #appSection.device-mobile .top-header { max-width:520px; margin:auto; }
+        @media (min-width: 1000px) { .app-sidebar { transform:translateX(0); } .sidebar-backdrop { display:none !important; } #appSection { padding-right:270px; } .sidebar-toggle { display:none; } .bottom-nav { display:none; } .main-content { padding-bottom:32px; } }
+        @media (max-width: 999px) { .app-sidebar { width:min(84vw,300px); } .sync-pill { top:auto; bottom:88px; left:12px; } .main-content { padding-bottom:110px; } }
+        @media (max-width: 560px) { .backup-actions { grid-template-columns:1fr; } .header-left { gap:5px; } .btn-header { padding:9px 11px; } }
+
+        .account-chip { display:flex; align-items:center; gap:7px; color:#fff; background:rgba(255,255,255,.15); border-radius:12px; padding:8px 11px; font-family:inherit; max-width:180px; }
+        .account-chip span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .account-profile { display:flex; align-items:center; gap:14px; padding:15px; background:#f5f3ff; border-radius:14px; }
+        .account-profile h3 { margin:0 0 3px; } .account-profile p { margin:0 0 7px; color:var(--gray-600); direction:ltr; text-align:right; }
+        .account-avatar { width:52px; height:52px; border-radius:50%; display:grid; place-items:center; color:#fff; background:var(--primary-gradient); font-size:1.3rem; }
+        .account-actions { display:grid; gap:10px; margin-top:16px; }
+
+        .loading-logo img { width:78%; height:78%; object-fit:contain; border-radius:20%; }
+        .auth-logo { overflow:hidden; padding:10px; }
+        .auth-logo img { width:100%; height:100%; object-fit:contain; border-radius:24%; }
+        .sidebar-brand img { width:34px; height:34px; object-fit:contain; border-radius:10px; }
     </style>
 </head>
 <body>
     <!-- Loading Screen -->
     <div id="loadingScreen" class="loading-screen">
-        <div class="loading-logo">
-            <i class="fas fa-book-open"></i>
-        </div>
+        <div class="loading-logo"><img src="logo-primary.png" alt="SeMo0o FRP"></div>
         <div class="loading-text" data-ar="جاري تحميل النظام..." data-en="Loading System...">جاري تحميل النظام...</div>
         <div class="loading-subtext" data-ar="يرجى الانتظار..." data-en="Please wait...">يرجى الانتظار...</div>
         <div class="loading-bar-container">
@@ -1468,13 +1506,11 @@
     <!-- Notification Container -->
     <div id="notificationContainer" class="notification-container"></div>
 
-    <!-- Auth Screen -->
+        <!-- Auth Screen -->
     <div id="authSection" class="auth-screen">
         <div class="auth-header">
-            <div class="auth-logo">
-                <i class="fas fa-book-open"></i>
-            </div>
             <h1 class="auth-title" data-ar="SeMo0o FRP" data-en="SeMo0o FRP">SeMo0o FRP</h1>
+            <div class="auth-logo"><img src="logo-primary.png" alt="SeMo0o FRP"></div>
             <p class="auth-subtitle" data-ar="نظام إدارة المبيعات والمخزون المتكامل" data-en="Integrated Sales & Inventory Management">نظام إدارة المبيعات والمخزون المتكامل</p>
         </div>
         
@@ -1549,6 +1585,7 @@
         <div class="top-header">
             <div class="header-row">
                 <div class="header-left">
+                    <button class="btn-header sidebar-toggle" onclick="toggleSidebar()" title="القائمة"><i class="fas fa-bars"></i></button>
                     <button class="btn-header" onclick="showPage('pos')">
                         <i class="fas fa-cash-register"></i>
                         <span data-ar="بيع" data-en="Sell">بيع</span>
@@ -1562,6 +1599,7 @@
                     </select>
                 </div>
                 <div class="header-right">
+                    <button class="account-chip" onclick="openAccountPanel()" title="حسابي"><i class="fas fa-user-circle"></i><span id="headerAccountName">حسابي</span></button>
                     <div class="lang-switcher">
                         <button class="lang-btn active" onclick="switchLanguage('ar')">العربية</button>
                         <button class="lang-btn" onclick="switchLanguage('en')">English</button>
@@ -1569,6 +1607,29 @@
                 </div>
             </div>
         </div>
+
+        <!-- Responsive Sidebar -->
+        <aside class="app-sidebar" id="appSidebar">
+            <div class="sidebar-brand"><img src="logo-primary.png" alt="SeMo0o FRP"><strong>SeMo0o FRP</strong></div>
+            <div class="sidebar-user"><div class="sidebar-avatar"><i class="fas fa-user"></i></div><div><b id="sidebarUserName">المستخدم</b><small id="sidebarUserRole">موظف</small></div></div>
+            <nav class="sidebar-nav">
+                <button onclick="showPage('home')"><i class="fas fa-home"></i><span>الرئيسية</span></button>
+                <button onclick="showPage('pos')"><i class="fas fa-cash-register"></i><span>نقطة البيع</span></button>
+                <button onclick="showPage('products')"><i class="fas fa-boxes"></i><span>المنتجات</span></button>
+                <button onclick="showPage('customers')"><i class="fas fa-users"></i><span>العملاء</span></button>
+                <button onclick="showPage('suppliers')"><i class="fas fa-truck"></i><span>الموردون</span></button>
+                <button onclick="showPage('reports')"><i class="fas fa-chart-bar"></i><span>التقارير</span></button>
+                <button onclick="showPage('calculator')"><i class="fas fa-calculator"></i><span>حاسبة الأرباح</span></button>
+                <button id="sidebarUsersLink" onclick="showPage('users')"><i class="fas fa-user-shield"></i><span>المستخدمون</span></button>
+            </nav>
+            <div class="sidebar-footer">
+                <button onclick="toggleDeviceMode()"><i class="fas fa-desktop"></i><span id="deviceModeLabel">وضع الكمبيوتر</span></button>
+                <button onclick="openBackupTools()"><i class="fas fa-cloud-download-alt"></i><span>النسخ الاحتياطي</span></button>
+                <button class="logout-link" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i><span>تسجيل الخروج</span></button>
+            </div>
+        </aside>
+        <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
+        <div class="sync-pill" id="syncPill"><i class="fas fa-cloud"></i><span>متصل</span></div>
 
         <!-- Main Content -->
         <div class="main-content" id="mainContent">
@@ -1612,7 +1673,29 @@
         </nav>
     </div>
 
+    <!-- Personal account panel -->
+    <div id="accountModal" class="modal-overlay">
+      <div class="modal-content account-panel">
+        <div class="modal-header"><h3 class="modal-title">حسابي الشخصي</h3><button class="modal-close" onclick="closeModal('accountModal')"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+          <div class="account-profile"><div class="account-avatar"><i class="fas fa-user"></i></div><div><h3 id="accountPanelName">المستخدم</h3><p id="accountPanelEmail">-</p><span class="badge badge-primary" id="accountPanelRole">موظف</span></div></div>
+          <div class="account-actions"><button class="btn btn-secondary" onclick="auth.sendPasswordResetEmail(AppState.currentUser.email); showNotification('تم إرسال رابط تغيير كلمة المرور إلى بريدك','success')"><i class="fas fa-key"></i> تغيير كلمة المرور</button><button class="btn btn-danger" onclick="closeModal('accountModal'); handleLogout()"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button></div>
+        </div>
+      </div>
+    </div>
+
     <!-- ==================== MODALS ==================== -->
+    <div id="backupModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header"><h3 class="modal-title">النسخ الاحتياطي والمزامنة</h3><button class="modal-close" onclick="closeModal('backupModal')"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+          <p class="backup-note"><i class="fas fa-shield-alt"></i> بياناتك تُزامن تلقائياً مع Firebase وتُحفظ محلياً للعمل عند انقطاع الإنترنت.</p>
+          <div class="backup-actions"><button class="btn btn-primary" onclick="downloadBackup()"><i class="fas fa-download"></i> تنزيل نسخة JSON</button><button class="btn btn-secondary" onclick="document.getElementById('restoreFile').click()"><i class="fas fa-upload"></i> استعادة نسخة</button></div>
+          <input id="restoreFile" type="file" accept="application/json" style="display:none" onchange="restoreBackup(event)">
+          <div id="backupStatus" class="backup-status"></div>
+        </div>
+      </div>
+    </div>
     
     <!-- Product Modal -->
     <div id="productModal" class="modal-overlay">
@@ -2313,6 +2396,7 @@
         try {
             app = firebase.initializeApp(firebaseConfig);
             db = firebase.database();
+            try { db.setPersistenceEnabled(true); } catch (persistenceError) { console.info('Firebase persistence already configured'); }
             auth = firebase.auth();
             storage = firebase.storage();
             // Separate auth instance: creating an employee must never sign out the manager.
@@ -2693,6 +2777,11 @@
                             return;
                         }
                         AppState.currentUser = { ...AppState.currentUser, ...userData };
+                        const sidebarName = document.getElementById('sidebarUserName'); const sidebarRole = document.getElementById('sidebarUserRole');
+                        if (sidebarName) sidebarName.textContent = AppState.currentUser.name || AppState.currentUser.email || 'المستخدم';
+                        if (sidebarRole) sidebarRole.textContent = getUserRoleName(AppState.currentUser.role || 'viewer');
+                        const headerAccountName = document.getElementById('headerAccountName');
+                        if (headerAccountName) headerAccountName.textContent = AppState.currentUser.name || AppState.currentUser.email || 'حسابي';
                     }
                 } catch (error) {
                     console.error('Error loading user data:', error);
@@ -6228,6 +6317,53 @@
             showNotification(lang === 'ar' ? 'تم تغيير اللغة' : 'Language changed', 'info');
         }
 
+        // === Navigation, responsive mode, sync and backup ===
+        function toggleSidebar(force) {
+            const sidebar = document.getElementById('appSidebar'), backdrop = document.getElementById('sidebarBackdrop');
+            const open = force === undefined ? !sidebar.classList.contains('open') : force;
+            sidebar.classList.toggle('open', open); backdrop.classList.toggle('open', open);
+        }
+        function toggleDeviceMode() {
+            const app = document.getElementById('appSection');
+            app.classList.toggle('device-mobile');
+            const mobile = app.classList.contains('device-mobile');
+            document.getElementById('deviceModeLabel').textContent = mobile ? 'وضع الكمبيوتر' : 'وضع الهاتف';
+            showNotification(mobile ? 'تم تفعيل وضع الهاتف' : 'تم تفعيل وضع الكمبيوتر', 'info');
+        }
+        function openAccountPanel() {
+            const u=AppState.currentUser || {}; const name=u.name || u.email || 'المستخدم';
+            document.getElementById('headerAccountName').textContent=name;
+            document.getElementById('accountPanelName').textContent=name;
+            document.getElementById('accountPanelEmail').textContent=u.email || '-';
+            document.getElementById('accountPanelRole').textContent=getUserRoleName(u.role || 'viewer');
+            document.getElementById('accountModal').classList.add('active');
+        }
+
+        function openBackupTools() { document.getElementById('backupModal').classList.add('active'); document.getElementById('backupStatus').textContent = 'آخر مزامنة: ' + new Date().toLocaleString('ar'); }
+        function backupPayload() {
+            const keys=['products','customers','suppliers','categories','sales','purchases','expenses','revenues','debts','supplierDebts','cashbox','users','branches','returns'];
+            return { app:'SeMo0o FRP', version:1, exportedAt:new Date().toISOString(), data:Object.fromEntries(keys.map(k=>[k,AppState[k]||[]])) };
+        }
+        function downloadBackup() {
+            const blob=new Blob([JSON.stringify(backupPayload(),null,2)],{type:'application/json'}), url=URL.createObjectURL(blob), a=document.createElement('a');
+            a.href=url; a.download='semoo-frp-backup-'+new Date().toISOString().slice(0,10)+'.json'; a.click(); URL.revokeObjectURL(url);
+            showNotification('تم تنزيل النسخة الاحتياطية بنجاح','success');
+        }
+        async function restoreBackup(event) {
+            const file=event.target.files?.[0]; if(!file) return;
+            try { const payload=JSON.parse(await file.text()); if(!payload.data) throw new Error('invalid');
+                if(!checkUserPermission('admin')) throw new Error('permission');
+                for(const [key,items] of Object.entries(payload.data)) { if(!Array.isArray(items)) continue; const ref=db.ref(key); for(const item of items) { if(item.id) { const copy={...item}; delete copy.id; await ref.child(item.id).set(copy); } } }
+                await loadUserData(); showPage(AppState.currentPage); showNotification('تمت استعادة النسخة الاحتياطية','success');
+            } catch(e) { showNotification(e.message==='permission'?'الاستعادة متاحة للمدير فقط':'ملف النسخة الاحتياطية غير صالح','error'); }
+            event.target.value='';
+        }
+        function updateSyncIndicator() {
+            const pill=document.getElementById('syncPill'); if(!pill) return; const online=navigator.onLine; pill.classList.toggle('offline',!online); pill.innerHTML=`<i class="fas fa-${online?'cloud':'cloud-slash'}"></i><span>${online?'متصل ومتزامن':'بدون إنترنت — محفوظ محلياً'}</span>`;
+        }
+        window.addEventListener('online',updateSyncIndicator); window.addEventListener('offline',updateSyncIndicator);
+        updateSyncIndicator();
+
         // ============================================
         // === INITIALIZE APP ON LOAD ===
         // ============================================
@@ -6262,7 +6398,7 @@
                     db.ref('debts').once('value'),
                     db.ref('supplierDebts').once('value'),
                     db.ref('cashbox').once('value'),
-                    db.ref('users').once('value'),
+                    (checkUserPermission('admin') ? db.ref('users') : db.ref('users/' + AppState.currentUser.uid)).once('value'),
                     db.ref('categories').once('value'),
                     db.ref('branches').once('value'),
                     db.ref('returns').once('value')
@@ -6319,9 +6455,11 @@
                 });
                 
                 AppState.users = [];
-                usersSnap.forEach(child => {
-                    AppState.users.push({ id: child.key, ...child.val() });
-                });
+                if (checkUserPermission('admin')) {
+                    usersSnap.forEach(child => AppState.users.push({ id: child.key, ...child.val() }));
+                } else if (usersSnap.exists()) {
+                    AppState.users.push({ id: AppState.currentUser.uid, ...usersSnap.val() });
+                }
                 
                 AppState.categories = [];
                 categoriesSnap.forEach(child => {
