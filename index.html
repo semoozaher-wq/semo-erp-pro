@@ -1553,6 +1553,13 @@
         .health-checks { display:grid; gap:9px; margin-bottom:16px; } .health-row { display:flex; justify-content:space-between; gap:10px; padding:11px 12px; border-radius:11px; background:#f8fafc; } .health-ok { color:#15803d; } .health-warn { color:#b45309; } .health-error { color:#b91c1c; }
         .guide-step { display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid #eef2f7; line-height:1.7; } .guide-step b { flex:0 0 28px; height:28px; display:grid; place-items:center; border-radius:50%; color:#fff; background:var(--primary-gradient); }
         @media(max-width:700px){.reliability-tools{bottom:150px;left:10px}}
+
+        .ops-hero { display:flex; justify-content:space-between; gap:18px; align-items:center; padding:26px; border-radius:22px; color:#fff; background:linear-gradient(135deg,#21104f,#4c1d95 60%,#1d4ed8); box-shadow:var(--shadow-lg); } .ops-hero h1 { margin:6px 0; } .ops-hero p { margin:0; opacity:.88; } .ops-hero-actions { display:flex; gap:9px; flex-wrap:wrap; } .ops-hero-actions button { border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.12); color:#fff; padding:11px 13px; border-radius:12px; font-family:inherit; cursor:pointer; }
+        .ops-kpis { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin:16px 0; } .ops-kpis div { display:grid; gap:6px; padding:16px 10px; text-align:center; background:#fff; border-radius:15px; box-shadow:var(--shadow); } .ops-kpis i { color:var(--primary); font-size:1.2rem; } .ops-kpis strong { color:#312e81; font-size:1.08rem; } .ops-kpis span { color:#6b7280; font-size:.76rem; }
+        .ops-columns { display:grid; grid-template-columns:1.25fr .75fr; gap:16px; } .ops-alerts { display:grid; gap:8px; } .ops-alerts button { display:flex; align-items:center; gap:10px; border:1px solid #ede9fe; background:#faf5ff; padding:12px; border-radius:11px; color:#4c1d95; font-family:inherit; text-align:right; cursor:pointer; } .ops-alerts button span { flex:1; } .ops-alerts button b { font-size:.78rem; } .ops-shortcuts { display:grid; grid-template-columns:1fr 1fr; gap:10px; } .ops-shortcuts button { padding:14px 8px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; color:#312e81; font-family:inherit; cursor:pointer; } .ops-shortcuts i { display:block; margin-bottom:6px; font-size:1.15rem; } .ops-status { display:flex; gap:18px; flex-wrap:wrap; color:#4b5563; font-size:.86rem; } .status-online { color:#16a34a; } .status-offline { color:#dc2626; }
+        @media(max-width:1000px){.ops-kpis{grid-template-columns:repeat(3,1fr)}} @media(max-width:700px){.ops-hero{display:block;padding:20px}.ops-hero-actions{margin-top:16px}.ops-columns{grid-template-columns:1fr}.ops-kpis{grid-template-columns:1fr 1fr}}
+
+        .import-preview { max-height:260px; overflow:auto; margin:12px 0; } .import-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:10px 0; } .import-summary div { background:#f8fafc; border-radius:11px; padding:10px; text-align:center; } .import-summary strong { display:block; color:var(--primary); font-size:1.2rem; } .import-status { margin-top:12px; line-height:1.7; } .import-ok { color:#15803d; } .import-warn { color:#b45309; } @media(max-width:700px){.import-summary{grid-template-columns:1fr 1fr}}
     </style>
 </head>
 <body>
@@ -1571,6 +1578,9 @@
     <div id="reliabilityTools" class="reliability-tools" style="display:none">
       <button onclick="openSystemHealth()" title="فحص صحة النظام"><i class="fas fa-heart-pulse"></i></button>
       <button onclick="openBeginnerGuide()" title="مساعدة البائع"><i class="fas fa-graduation-cap"></i></button>
+    </div>
+    <div id="importDataModal" class="modal-overlay">
+      <div class="modal-content import-modal"><div class="modal-header"><h3 class="modal-title">استعادة بيانات من تطبيق آخر</h3><button class="modal-close" onclick="closeModal('importDataModal')"><i class="fas fa-times"></i></button></div><div class="modal-body"><p class="backup-note"><i class="fas fa-shield-halved"></i> اختر نسخة JSON أو جدول CSV / TSV / XLSX. سيتم تحليل الملف ومعاينته قبل دمج أي بيانات.</p><input id="externalImportFile" type="file" accept=".json,.csv,.tsv,.xlsx,.xls,application/json,text/csv" onchange="previewExternalImport(event)"><div id="externalImportStatus" class="import-status"></div><div id="externalImportPreview" class="import-preview"></div><div class="backup-actions"><button class="btn btn-primary" id="confirmExternalImport" onclick="confirmExternalImport()" disabled><i class="fas fa-file-import"></i> تأكيد الدمج</button><button class="btn btn-secondary" onclick="closeModal('importDataModal')">إلغاء</button></div></div></div>
     </div>
     <div id="systemHealthModal" class="modal-overlay">
       <div class="modal-content">
@@ -1706,6 +1716,7 @@
             <div class="sidebar-user"><div class="sidebar-avatar"><i class="fas fa-user"></i></div><div><b id="sidebarUserName">المستخدم</b><small id="sidebarUserRole">موظف</small></div></div>
             <nav class="sidebar-nav">
                 <button onclick="showPage('home')"><i class="fas fa-home"></i><span>الرئيسية</span></button>
+                <button onclick="showPage('operations')"><i class="fas fa-gauge-high"></i><span>مركز التشغيل الموحد</span></button>
                 <button onclick="showPage('pos')"><i class="fas fa-cash-register"></i><span>نقطة البيع</span></button>
                 <button onclick="showPage('products')"><i class="fas fa-boxes"></i><span>المنتجات</span></button>
                 <button onclick="showPage('customers')"><i class="fas fa-users"></i><span>العملاء</span></button>
@@ -2550,7 +2561,8 @@
             isOnline: navigator.onLine,
             isLoading: false,
             localSnapshotAt: null,
-            pendingOperations: 0
+            pendingOperations: 0,
+            lastOperationId: null
         };
 
         // ============================================
@@ -3290,6 +3302,9 @@
                 case 'home':
                     renderHomePage(content);
                     break;
+                case 'operations':
+                    renderOperationsCenter(content);
+                    break;
                 case 'pos':
                     renderPOSPage(content);
                     break;
@@ -3404,6 +3419,42 @@
         function showDeliveryBoard(){ const el=document.getElementById('wholesaleDetail');if(!el)return;el.style.display='block';el.innerHTML='<div class="section-body"><h3>لوحة التوصيل</h3><p class="text-muted">الطلبات الجديدة تظهر هنا بعد تسجيلها، ويمكن تعيين المندوب وحالة التسليم من صفحة الطلبات.</p><button class="btn btn-primary" onclick="showPage(\'orders\')">فتح الطلبات</button></div>'; }
         function showSupplierCompare(){ const el=document.getElementById('wholesaleDetail');if(!el)return;el.style.display='block';el.innerHTML='<div class="section-body"><h3>مقارنة الموردين</h3><p class="text-muted">أضف أسعار الشراء ومدة التوريد داخل ملف المورد، وسيتم توسيع المقارنة تلقائياً.</p><button class="btn btn-primary" onclick="showPage(\'suppliers\')">فتح الموردين</button></div>'; }
         function reorderCustomer(){ const id=document.getElementById('wholesaleCustomerSelect')?.value;if(!id)return showNotification('اختر تاجراً أولاً','warning');showNotification('تم تجهيز مساحة إعادة الطلب للتاجر؛ اختر المنتجات من نقطة البيع','info');showPage('pos'); }
+
+        let pendingExternalImport = null;
+        function openExternalImport(){ pendingExternalImport=null; const f=document.getElementById('externalImportFile');if(f)f.value='';document.getElementById('externalImportStatus').innerHTML='';document.getElementById('externalImportPreview').innerHTML='';document.getElementById('confirmExternalImport').disabled=true;document.getElementById('importDataModal')?.classList.add('active'); }
+        function normalizeImportKey(k){return String(k||'').trim().toLowerCase().replace(/[\s_\-]+/g,'');}
+        function importValue(row, keys){for(const k of keys){const target=normalizeImportKey(k);const found=Object.keys(row).find(x=>normalizeImportKey(x)===target);if(found&&row[found]!==''&&row[found]!==undefined)return row[found];}return '';}
+        function normalizeImportedRows(rows){const products=[],customers=[],categories=[],suppliers=[];rows.forEach(row=>{const name=String(importValue(row,['name','product','productname','اسم','اسم المنتج','المنتج','item'])||'').trim();const phone=String(importValue(row,['phone','mobile','telephone','الهاتف','رقم الهاتف'])||'').trim();const type=String(importValue(row,['type','kind','نوع','category','الفئة'])||'').toLowerCase();if(name&&(type.includes('supplier')||type.includes('مورد'))){suppliers.push({name,phone,address:importValue(row,['address','العنوان'])||'',notes:importValue(row,['notes','ملاحظات'])||''});return;}if(name&&(!phone||type.includes('product')||type.includes('منتج')||importValue(row,['salePrice','price','سعر البيع','السعر'])!=='')&& !type.includes('customer') && !type.includes('عميل')){products.push({name,category:importValue(row,['category','الفئة'])||'',barcode:importValue(row,['barcode','sku','الباركود'])||'',costPrice:Number(importValue(row,['costPrice','cost','purchasePrice','سعر الشراء'])||0),salePrice:Number(importValue(row,['salePrice','price','سعر البيع','السعر'])||0),wholesalePrice:Number(importValue(row,['wholesalePrice','سعر الجملة'])||0),quantity:Number(importValue(row,['quantity','stock','qty','الكمية','المخزون'])||0),minStock:Number(importValue(row,['minStock','minimum','الحد الأدنى'])||5),packSize:Number(importValue(row,['packSize','carton','pack','عدد القطع'])||1),unit:importValue(row,['unit','الوحدة'])||'piece'});return;}if(name&&phone){customers.push({name,phone,address:importValue(row,['address','العنوان'])||'',tier:importValue(row,['tier','customerType','نوع العميل'])||'retail',balance:Number(importValue(row,['balance','debt','الرصيد','الدين'])||0),creditLimit:Number(importValue(row,['creditLimit','الحد الائتماني'])||0),paymentDays:Number(importValue(row,['paymentDays','أيام السداد'])||0),notes:importValue(row,['notes','ملاحظات'])||''});}});return {products,customers,categories,suppliers};}
+        async function parseExternalFile(file){const ext=file.name.toLowerCase().split('.').pop();if(ext==='json'){const obj=JSON.parse(await file.text());if(obj.products||obj.customers||obj.categories)return {products:Object.values(obj.products||{}),customers:Object.values(obj.customers||{}),categories:Object.values(obj.categories||{}),suppliers:Object.values(obj.suppliers||{})};const rows=Array.isArray(obj)?obj:[obj];return normalizeImportedRows(rows);}if(ext==='xlsx'||ext==='xls'){if(typeof XLSX==='undefined')throw new Error('مكتبة Excel غير متاحة');const data=await file.arrayBuffer();const wb=XLSX.read(data,{type:'array'});let rows=[];wb.SheetNames.forEach(n=>{rows=rows.concat(XLSX.utils.sheet_to_json(wb.Sheets[n],{defval:''}))});return normalizeImportedRows(rows);}const text=await file.text();const lines=text.split(/\r?\n/).filter(Boolean);if(!lines.length)return {products:[],customers:[],categories:[]};const sep=ext==='tsv'?'\t':(lines[0].includes(';')?';':',');const headers=lines.shift().split(sep).map(x=>x.trim().replace(/^['"]|['"]$/g,''));const rows=lines.map(line=>{const vals=line.split(sep).map(x=>x.trim().replace(/^['"]|['"]$/g,''));return Object.fromEntries(headers.map((h,i)=>[h,vals[i]||'']))});return normalizeImportedRows(rows);}
+        async function previewExternalImport(event){const file=event.target.files?.[0];if(!file)return;const status=document.getElementById('externalImportStatus');const preview=document.getElementById('externalImportPreview');const confirm=document.getElementById('confirmExternalImport');confirm.disabled=true;pendingExternalImport=null;status.innerHTML='جاري تحليل الملف...';try{const data=await parseExternalFile(file);pendingExternalImport=data;const total=data.products.length+data.customers.length+data.categories.length+data.suppliers.length;status.innerHTML=`<span class="import-ok"><i class="fas fa-check"></i> تمت قراءة ${total} سجل من ${file.name}</span>`;preview.innerHTML=`<div class="import-summary"><div><strong>${data.products.length}</strong>منتج</div><div><strong>${data.customers.length}</strong>عميل</div><div><strong>${data.categories.length}</strong>فئة</div><div><strong>${data.suppliers.length}</strong>مورد</div></div><p class="text-muted">سيتم الدمج بالإضافة إلى البيانات الحالية، ولن يتم الحذف. المنتجات المطابقة بالاسم سيتم تحديثها، والعملاء المطابقون بالهاتف سيتم تحديثهم.</p>`;confirm.disabled=!total;}catch(e){status.innerHTML='<span class="import-warn"><i class="fas fa-triangle-exclamation"></i> تعذر قراءة الملف. استخدم JSON أو CSV أو TSV أو XLSX صحيحاً.</span>';console.error(e)}}
+        async function confirmExternalImport(){if(!pendingExternalImport)return;const data=pendingExternalImport;let added=0,updated=0;try{for(const item of data.products){const old=AppState.products.find(p=>String(p.name).trim().toLowerCase()===String(item.name).trim().toLowerCase());if(old){await db.ref('products/'+old.id).update(item);Object.assign(old,item);updated++;}else{const r=await db.ref('products').push({...item,createdAt:new Date().toISOString()});AppState.products.push({id:r.key,...item});added++;}}for(const item of data.customers){const old=AppState.customers.find(c=>String(c.phone||'').replace(/\D/g,'')===String(item.phone||'').replace(/\D/g,''));if(old){await db.ref('customers/'+old.id).update(item);Object.assign(old,item);updated++;}else{const r=await db.ref('customers').push({...item,createdAt:new Date().toISOString()});AppState.customers.push({id:r.key,...item});added++;}}for(const item of data.suppliers){const old=AppState.suppliers.find(x=>String(x.name).trim().toLowerCase()===String(item.name).trim().toLowerCase());if(old){await db.ref('suppliers/'+old.id).update(item);Object.assign(old,item);updated++;}else{const r=await db.ref('suppliers').push({...item,createdAt:new Date().toISOString()});AppState.suppliers.push({id:r.key,...item});added++;}}closeModal('importDataModal');pendingExternalImport=null;showNotification(`تم دمج البيانات: ${added} جديد و${updated} محدث`,'success');writeAudit('import','external',{added,updated});if(AppState.currentPage==='operations')renderOperationsCenter(document.getElementById('mainContent'));}catch(e){console.error(e);showNotification('تعذر دمج البيانات؛ لم يكتمل الاستيراد','error');}}
+
+        function shareLatestInvoiceWhatsApp() {
+            const sales = [...(AppState.sales || [])].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+            const sale = sales[0];
+            if (!sale) return showNotification('لا توجد فاتورة لإرسالها بعد', 'warning');
+            const customer = AppState.customers.find(c => c.id === sale.customerId);
+            let phone = customer?.phone || sale.phone || prompt('اكتب رقم هاتف العميل مع مفتاح الدولة');
+            if (!phone) return;
+            phone = String(phone).replace(/[^0-9+]/g, '');
+            if (phone.startsWith('00')) phone = phone.slice(2);
+            if (phone.startsWith('+')) phone = phone.slice(1);
+            const items = (sale.items || []).map(i => `• ${i.name || 'منتج'} × ${i.quantity || 1} = ${formatCurrency((Number(i.price) || 0) * (Number(i.quantity) || 0))}`).join('\n');
+            const message = `SeMo0o FRP — فاتورة بيع\nرقم العملية: ${sale.operationId || sale.id || '-'}\nالتاريخ: ${formatDate(sale.date)}\nالعميل: ${customer?.name || sale.customerName || 'عميل نقدي'}\n\n${items || 'لا توجد تفاصيل'}\n\nالإجمالي: ${formatCurrency(sale.total || sale.totalAmount || 0)}\nطريقة الدفع: ${getPaymentMethodName(sale.paymentMethod || 'cash')}\n\nشكراً لتعاملكم معنا.`;
+            window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(message), '_blank', 'noopener,noreferrer');
+            writeAudit('share', 'invoice', sale.id || sale.operationId, {channel: 'whatsapp'});
+        }
+
+        function renderOperationsCenter(container){
+            const low=AppState.products.filter(p=>Number(p.quantity||0)<=Number(p.minStock||5));
+            const wholesale=AppState.customers.filter(c=>c.tier==='wholesale'||c.tier==='vip');
+            const debt=AppState.customers.filter(c=>Number(c.balance||0)>0);
+            const today=new Date().toISOString().slice(0,10);
+            const todaySales=AppState.sales.filter(x=>(x.date||'').slice(0,10)===today);
+            const todayTotal=todaySales.reduce((a,x)=>a+Number(x.total||x.totalAmount||0),0);
+            const orders=AppState.orders||[];
+            container.innerHTML=`<div class="ops-hero"><div><span class="eyebrow">SeMo0o FRP WHOLESALE ERP</span><h1>مركز التشغيل الموحد</h1><p>من الطلب إلى التحصيل والتوصيل — كل ما يحتاجه فريقك في شاشة واحدة.</p></div><div class="ops-hero-actions"><button onclick="runSystemHealthCheck();openSystemHealth()"><i class="fas fa-heart-pulse"></i> فحص الصحة</button><button onclick="processOfflineOutbox()"><i class="fas fa-cloud-arrow-up"></i> مزامنة الآن</button></div></div><div class="ops-kpis"><div><i class="fas fa-sack-dollar"></i><strong>${formatCurrency(todayTotal)}</strong><span>مبيعات اليوم</span></div><div><i class="fas fa-users"></i><strong>${wholesale.length}</strong><span>تجار الجملة</span></div><div><i class="fas fa-file-invoice-dollar"></i><strong>${debt.length}</strong><span>حسابات للتحصيل</span></div><div><i class="fas fa-boxes-stacked"></i><strong>${low.length}</strong><span>منتجات لإعادة الطلب</span></div><div><i class="fas fa-clock"></i><strong>${orders.filter(o=>o.status==='new').length}</strong><span>طلبات جديدة</span></div><div><i class="fas fa-cloud-arrow-up"></i><strong>${AppState.pendingOperations||0}</strong><span>عمليات معلقة</span></div></div><div class="ops-columns"><section class="section-card"><div class="section-header"><div class="section-title"><i class="fas fa-list-check"></i><span>يحتاج إجراءً الآن</span></div></div><div class="section-body ops-alerts">${low.slice(0,5).map(p=>`<button onclick="showPage('forecast')"><i class="fas fa-triangle-exclamation"></i><span>إعادة طلب: ${escapeHtml(p.name)}</span><b>${p.quantity||0}</b></button>`).join('')}${debt.slice(0,5).map(c=>`<button onclick="showPage('customers')"><i class="fas fa-hand-holding-dollar"></i><span>تحصيل: ${escapeHtml(c.name)}</span><b>${formatCurrency(c.balance)}</b></button>`).join('')}${orders.filter(o=>o.status==='new').slice(0,5).map(o=>`<button onclick="showPage('orders')"><i class="fas fa-bag-shopping"></i><span>طلب جديد: ${escapeHtml(o.customerName||'عميل')}</span><b>جديد</b></button>`).join('')}${!low.length&&!debt.length&&!orders.filter(o=>o.status==='new').length?'<div class="empty-state">لا توجد تنبيهات عاجلة</div>':''}</div></section><section class="section-card"><div class="section-header"><div class="section-title"><i class="fas fa-bolt"></i><span>اختصارات الفريق</span></div></div><div class="section-body ops-shortcuts"><button onclick="showPage('pos')"><i class="fas fa-cash-register"></i> بيع سريع</button><button onclick="showPage('wholesale')"><i class="fas fa-building"></i> مركز الجملة</button><button onclick="showPage('catalog')"><i class="fas fa-tags"></i> قائمة الأسعار</button><button onclick="openCustomerModal()"><i class="fas fa-user-plus"></i> تاجر جديد</button><button onclick="showPage('suppliers')"><i class="fas fa-truck"></i> الموردون</button><button onclick="showPage('orders')"><i class="fas fa-truck-fast"></i> التوصيل</button><button onclick="shareLatestInvoiceWhatsApp()"><i class="fab fa-whatsapp"></i> فاتورة WhatsApp</button><button onclick="openExternalImport()"><i class="fas fa-file-import"></i> استيراد نسخة</button><button onclick="showPage('activity')"><i class="fas fa-history"></i> سجل النشاط</button></div></section></div><div class="section-card"><div class="section-header"><div class="section-title"><i class="fas fa-shield-halved"></i><span>حالة التشغيل</span></div></div><div class="section-body ops-status"><span><i class="fas fa-circle ${navigator.onLine?'status-online':'status-offline'}"></i> ${navigator.onLine?'متصل':'بدون إنترنت'}</span><span><i class="fas fa-database"></i> IndexedDB ${window.indexedDB?'جاهز':'غير متاح'}</span><span><i class="fas fa-cloud"></i> آخر حفظ: ${localStorage.getItem('semoo-last-local-save')?new Date(localStorage.getItem('semoo-last-local-save')).toLocaleTimeString('ar'):'لم يتم بعد'}</span><span><i class="fas fa-user-shield"></i> ${getUserRoleName(AppState.currentUser?.role||'viewer')}</span></div></div>`;
+        }
 
         // ============================================
         // === PAGE RENDERING FUNCTIONS ===
@@ -3797,7 +3848,10 @@
             const projectedBalance = Number(selectedCustomer?.balance||0) + calculateCartTotal();
             if (paymentMethod==='credit' && selectedCustomer && Number(selectedCustomer.creditLimit||0)>0 && projectedBalance>Number(selectedCustomer.creditLimit)) { showNotification(t('تجاوز الحد الائتماني للعميل','Customer credit limit exceeded'),'error'); return; }
             
+            const operationId = (crypto.randomUUID ? crypto.randomUUID() : generateId());
+            AppState.lastOperationId = operationId;
             const saleData = {
+                operationId,
                 customerId: customerId,
                 customerName: customerId ? (AppState.customers.find(c => c.id === customerId)?.name || '') : '',
                 paymentMethod: paymentMethod,
@@ -3847,7 +3901,11 @@
                 
             } catch (error) {
                 console.error('Error completing sale:', error);
-                showNotification(t('حدث خطأ أثناء إتمام البيع', 'Error completing sale'), 'error');
+                if (!navigator.onLine) {
+                    await queueOfflineOperation('sales', { ...saleData, _offlineCart: AppState.cart, _offlineQueuedAt: new Date().toISOString() }, 'offlineSale');
+                    AppState.cart = []; closeModal('saleModal'); showPage('operations');
+                    showNotification(t('تم حفظ البيع على الجهاز وسيتم رفعه عند عودة الإنترنت', 'Sale saved on device and will sync when online'), 'warning');
+                } else showNotification(t('حدث خطأ أثناء إتمام البيع', 'Error completing sale'), 'error');
             }
         }
 
@@ -6699,7 +6757,8 @@
                     usersSnap,
                     categoriesSnap,
                     branchesSnap,
-                    returnsSnap
+                    returnsSnap,
+                    ordersSnap
                 ] = await Promise.all([
                     db.ref('products').once('value'),
                     db.ref('customers').once('value'),
@@ -6714,7 +6773,8 @@
                     (checkUserPermission('admin') ? db.ref('users') : db.ref('users/' + AppState.currentUser.uid)).once('value'),
                     db.ref('categories').once('value'),
                     db.ref('branches').once('value'),
-                    db.ref('returns').once('value')
+                    db.ref('returns').once('value'),
+                    db.ref('orders').once('value')
                 ]);
                 
                 AppState.products = [];
@@ -6788,6 +6848,8 @@
                 returnsSnap.forEach(child => {
                     AppState.returns.push({ id: child.key, ...child.val() });
                 });
+                AppState.orders = [];
+                ordersSnap.forEach(child => { AppState.orders.push({ id: child.key, ...child.val() }); });
                 
                 if (!AppState.branches.find(b => b.id === 'main')) {
                     AppState.branches.push({
@@ -6809,9 +6871,9 @@
         async function recoverLocalSnapshot(){ try{const db=await openLocalReliability();const snap=await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.snapshotStore,'readonly');const r=tx.objectStore(LocalReliability.snapshotStore).get('latest');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});if(!snap||!snap.cart?.length)return;const age=Date.now()-new Date(snap.createdAt).getTime();if(age>24*60*60*1000)return;if(confirm('وجدنا سلة بيع محفوظة من '+new Date(snap.createdAt).toLocaleString('ar')+'\nهل تريد استعادتها؟')){AppState.cart=snap.cart;showNotification('تمت استعادة السلة المحفوظة','success');if(AppState.currentPage==='pos')showPage('pos')}}catch(e){console.warn('Recovery skipped',e)} }
         async function queueOfflineOperation(path,payload,method='set'){ try{const db=await openLocalReliability();const op={id:crypto.randomUUID?crypto.randomUUID():generateId(),path,payload,method,createdAt:new Date().toISOString(),attempts:0};await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).put(op);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});updatePendingCount()}catch(e){console.warn('Outbox queue failed',e)} }
         async function updatePendingCount(){try{const db=await openLocalReliability();const count=await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readonly');const r=tx.objectStore(LocalReliability.outboxStore).count();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});AppState.pendingOperations=count;const pill=document.getElementById('syncPill');if(pill&&count)pill.innerHTML=`<i class="fas fa-cloud-arrow-up"></i><span>${navigator.onLine?'متصل — '+count+' معلقة':'بدون إنترنت — '+count+' معلقة'}</span>`;}catch(e){}}
-        async function processOfflineOutbox(){ if(!navigator.onLine)return showNotification('لا يوجد اتصال حالياً','warning'); try{const db=await openLocalReliability();const ops=await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readonly');const r=tx.objectStore(LocalReliability.outboxStore).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});let done=0;for(const op of ops){try{const ref=dbRefForOfflinePath(op.path);if(!ref)continue;if(op.method==='update')await ref.update(op.payload);else if(op.method==='push')await ref.push(op.payload);else await ref.set(op.payload);await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).delete(op.id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});done++;}catch(e){console.warn('Pending operation failed',e)}}updatePendingCount();showNotification(done?'تمت مزامنة '+done+' عملية':'لا توجد عمليات قابلة للمزامنة الآن',done?'success':'info');}catch(e){showNotification('تعذر فحص العمليات المعلقة','error')} }
+        async function processOfflineOutbox(){ if(!navigator.onLine)return showNotification('لا يوجد اتصال حالياً','warning'); try{const db=await openLocalReliability();const ops=await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readonly');const r=tx.objectStore(LocalReliability.outboxStore).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});let done=0;for(const op of ops){try{const ref=dbRefForOfflinePath(op.path);if(!ref)continue;if(op.method==='offlineSale'){const sale={...op.payload};const cart=sale._offlineCart||[];delete sale._offlineCart;delete sale._offlineQueuedAt;const existing=await db.ref('sales').orderByChild('operationId').equalTo(sale.operationId).once('value');if(existing.exists()){await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).delete(op.id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});continue;}const saleRef=await db.ref('sales').push(sale);for(const item of cart){const product=AppState.products.find(p=>p.id===item.productId);if(product)await db.ref('products/'+product.id).update({quantity:Math.max(0,Number(product.quantity||0)-Number(item.quantity||0))});}await db.ref('cashbox').push({type:'income',amount:sale.total,description:'مبيعات مؤجلة - '+saleRef.key.slice(-8),date:new Date().toISOString(),reference:saleRef.key});}else if(op.method==='update')await ref.update(op.payload);else if(op.method==='push')await ref.push(op.payload);else await ref.set(op.payload);await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).delete(op.id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});done++;}catch(e){console.warn('Pending operation failed',e)}}updatePendingCount();showNotification(done?'تمت مزامنة '+done+' عملية':'لا توجد عمليات قابلة للمزامنة الآن',done?'success':'info');}catch(e){showNotification('تعذر فحص العمليات المعلقة','error')} }
         function dbRefForOfflinePath(path){return (typeof db!=='undefined'&&db&&path)?db.ref(path):null}
-        async function runSystemHealthCheck(){const box=document.getElementById('healthChecks');if(!box)return;box.innerHTML='<div class="health-row">جاري الفحص...</div>';const checks=[];checks.push(['الاتصال بالإنترنت',navigator.onLine,'متصل','غير متصل']);checks.push(['Firebase Authentication',!!window.auth&&!!auth.currentUser,auth?.currentUser?'حساب مسجل':'لا يوجد حساب']);checks.push(['قاعدة Firebase',!!window.db,'تم تحميلها','غير متاحة']);checks.push(['IndexedDB للحفظ المحلي',!!window.indexedDB,'متاح','غير متاح']);checks.push(['Service Worker',!!navigator.serviceWorker,'متاح','غير مسجل']);checks.push(['المزامنة المحلية',true,(localStorage.getItem('semoo-last-local-save')?'آخر حفظ '+new Date(localStorage.getItem('semoo-last-local-save')).toLocaleTimeString('ar'):'جاهز للحفظ'),'لم يتم الحفظ بعد']);box.innerHTML=checks.map(c=>`<div class="health-row"><span>${c[0]}</span><b class="${c[1]?'health-ok':'health-warn'}"><i class="fas fa-${c[1]?'check':'triangle-exclamation'}"></i> ${c[1]?c[2]:c[3]}</b></div>`).join('');updatePendingCount()}
+        async function runSystemHealthCheck(){const box=document.getElementById('healthChecks');if(!box)return;box.innerHTML='<div class="health-row">جاري الفحص...</div>';const checks=[];checks.push(['الاتصال بالإنترنت',navigator.onLine,'متصل','غير متصل']);checks.push(['Firebase Authentication',(typeof auth!=='undefined'&&!!auth&&!!auth.currentUser),((typeof auth!=='undefined'&&auth?.currentUser)?'حساب مسجل':'لا يوجد حساب')]);checks.push(['قاعدة Firebase',(typeof db!=='undefined'&&!!db),'تم تحميلها','غير متاحة']);checks.push(['IndexedDB للحفظ المحلي',!!window.indexedDB,'متاح','غير متاح']);checks.push(['Service Worker',!!navigator.serviceWorker,'متاح','غير مسجل']);checks.push(['المزامنة المحلية',true,(localStorage.getItem('semoo-last-local-save')?'آخر حفظ '+new Date(localStorage.getItem('semoo-last-local-save')).toLocaleTimeString('ar'):'جاهز للحفظ'),'لم يتم الحفظ بعد']);box.innerHTML=checks.map(c=>`<div class="health-row"><span>${c[0]}</span><b class="${c[1]?'health-ok':'health-warn'}"><i class="fas fa-${c[1]?'check':'triangle-exclamation'}"></i> ${c[1]?c[2]:c[3]}</b></div>`).join('');updatePendingCount()}
         function openSystemHealth(){document.getElementById('systemHealthModal')?.classList.add('active');runSystemHealthCheck()}
         function openBeginnerGuide(){document.getElementById('beginnerGuideModal')?.classList.add('active')}
         function finishBeginnerGuide(){localStorage.setItem('semoo-beginner-guide-seen','1');closeModal('beginnerGuideModal');showNotification('يمكنك فتح المساعدة من زر القبعة في أي وقت','success')}
