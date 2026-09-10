@@ -3429,16 +3429,31 @@
         async function previewExternalImport(event){const file=event.target.files?.[0];if(!file)return;const status=document.getElementById('externalImportStatus');const preview=document.getElementById('externalImportPreview');const confirm=document.getElementById('confirmExternalImport');confirm.disabled=true;pendingExternalImport=null;status.innerHTML='جاري تحليل الملف...';try{const data=await parseExternalFile(file);pendingExternalImport=data;const total=data.products.length+data.customers.length+data.categories.length+data.suppliers.length;status.innerHTML=`<span class="import-ok"><i class="fas fa-check"></i> تمت قراءة ${total} سجل من ${file.name}</span>`;preview.innerHTML=`<div class="import-summary"><div><strong>${data.products.length}</strong>منتج</div><div><strong>${data.customers.length}</strong>عميل</div><div><strong>${data.categories.length}</strong>فئة</div><div><strong>${data.suppliers.length}</strong>مورد</div></div><p class="text-muted">سيتم الدمج بالإضافة إلى البيانات الحالية، ولن يتم الحذف. المنتجات المطابقة بالاسم سيتم تحديثها، والعملاء المطابقون بالهاتف سيتم تحديثهم.</p>`;confirm.disabled=!total;}catch(e){status.innerHTML='<span class="import-warn"><i class="fas fa-triangle-exclamation"></i> تعذر قراءة الملف. استخدم JSON أو CSV أو TSV أو XLSX صحيحاً.</span>';console.error(e)}}
         async function confirmExternalImport(){if(!pendingExternalImport)return;const data=pendingExternalImport;let added=0,updated=0;try{for(const item of data.products){const old=AppState.products.find(p=>String(p.name).trim().toLowerCase()===String(item.name).trim().toLowerCase());if(old){await db.ref('products/'+old.id).update(item);Object.assign(old,item);updated++;}else{const r=await db.ref('products').push({...item,createdAt:new Date().toISOString()});AppState.products.push({id:r.key,...item});added++;}}for(const item of data.customers){const old=AppState.customers.find(c=>String(c.phone||'').replace(/\D/g,'')===String(item.phone||'').replace(/\D/g,''));if(old){await db.ref('customers/'+old.id).update(item);Object.assign(old,item);updated++;}else{const r=await db.ref('customers').push({...item,createdAt:new Date().toISOString()});AppState.customers.push({id:r.key,...item});added++;}}for(const item of data.suppliers){const old=AppState.suppliers.find(x=>String(x.name).trim().toLowerCase()===String(item.name).trim().toLowerCase());if(old){await db.ref('suppliers/'+old.id).update(item);Object.assign(old,item);updated++;}else{const r=await db.ref('suppliers').push({...item,createdAt:new Date().toISOString()});AppState.suppliers.push({id:r.key,...item});added++;}}closeModal('importDataModal');pendingExternalImport=null;showNotification(`تم دمج البيانات: ${added} جديد و${updated} محدث`,'success');writeAudit('import','external',{added,updated});if(AppState.currentPage==='operations')renderOperationsCenter(document.getElementById('mainContent'));}catch(e){console.error(e);showNotification('تعذر دمج البيانات؛ لم يكتمل الاستيراد','error');}}
 
+        function normalizeArabicDigits(value){return String(value||'').replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/[۰-۹]/g,d=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)));}
+        function validateWhatsAppPhone(raw){
+            let value=normalizeArabicDigits(raw).trim().replace(/[\s().-]/g,'');
+            if(value.startsWith('00')) value='+'+value.slice(2);
+            if(!value.startsWith('+')) return {ok:false,message:'اكتب رقم العميل بصيغة دولية، مثال: +218XXXXXXXXX'};
+            const digits=value.slice(1);
+            if(!/^\d+$/.test(digits)) return {ok:false,message:'رقم الهاتف يحتوي على رموز غير صحيحة'};
+            if(digits.length<8||digits.length>15) return {ok:false,message:'طول رقم الهاتف غير صحيح'};
+            const supported=['218','20','216','970','966','962','971','974','965','961','90','1','33','49','44'];
+            if(!supported.some(prefix=>digits.startsWith(prefix))) return {ok:false,message:'مفتاح الدولة غير مدعوم؛ اكتب الرقم مع مفتاح الدولة الصحيح'};
+            return {ok:true,phone:digits};
+        }
+        function maskPhone(phone){return phone.length>6?phone.slice(0,3)+'****'+phone.slice(-3):phone;}
+
         function shareLatestInvoiceWhatsApp() {
             const sales = [...(AppState.sales || [])].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
             const sale = sales[0];
             if (!sale) return showNotification('لا توجد فاتورة لإرسالها بعد', 'warning');
             const customer = AppState.customers.find(c => c.id === sale.customerId);
-            let phone = customer?.phone || sale.phone || prompt('اكتب رقم هاتف العميل مع مفتاح الدولة');
+            let phone = customer?.phone || sale.phone || prompt('اكتب رقم هاتف العميل مع مفتاح الدولة، مثال: +218XXXXXXXXX');
             if (!phone) return;
-            phone = String(phone).replace(/[^0-9+]/g, '');
-            if (phone.startsWith('00')) phone = phone.slice(2);
-            if (phone.startsWith('+')) phone = phone.slice(1);
+            const phoneCheck=validateWhatsAppPhone(phone);
+            if(!phoneCheck.ok){showNotification(phoneCheck.message,'error');return;}
+            phone=phoneCheck.phone;
+            if(!confirm('سيتم فتح WhatsApp للرقم: '+maskPhone(phone)+'\nتأكد من الرقم قبل الإرسال.')) return;
             const items = (sale.items || []).map(i => `• ${i.name || 'منتج'} × ${i.quantity || 1} = ${formatCurrency((Number(i.price) || 0) * (Number(i.quantity) || 0))}`).join('\n');
             const message = `SeMo0o FRP — فاتورة بيع\nرقم العملية: ${sale.operationId || sale.id || '-'}\nالتاريخ: ${formatDate(sale.date)}\nالعميل: ${customer?.name || sale.customerName || 'عميل نقدي'}\n\n${items || 'لا توجد تفاصيل'}\n\nالإجمالي: ${formatCurrency(sale.total || sale.totalAmount || 0)}\nطريقة الدفع: ${getPaymentMethodName(sale.paymentMethod || 'cash')}\n\nشكراً لتعاملكم معنا.`;
             window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(message), '_blank', 'noopener,noreferrer');
