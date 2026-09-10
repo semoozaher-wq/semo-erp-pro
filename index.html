@@ -1547,6 +1547,12 @@
         .wholesale-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:16px 0; } .wholesale-stats div { padding:18px; display:grid; gap:5px; text-align:center; background:#fff; border-radius:16px; box-shadow:var(--shadow); } .wholesale-stats strong { color:var(--primary); font-size:1.35rem; } .wholesale-stats span { color:#6b7280; font-size:.85rem; }
         .wholesale-grid { display:grid; grid-template-columns:1.2fr 1fr; gap:16px; } .wholesale-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; } .wholesale-actions button { border:1px solid #e9d5ff; background:#faf5ff; border-radius:12px; padding:14px; color:#4c1d95; font-family:inherit; cursor:pointer; } .wholesale-actions button:hover { background:#ede9fe; }
         @media(max-width:700px){.wholesale-stats{grid-template-columns:1fr 1fr}.wholesale-grid{grid-template-columns:1fr}.wholesale-hero > i{font-size:2.5rem}}
+
+        .reliability-tools { position:fixed; left:14px; bottom:142px; z-index:300; display:grid; gap:8px; }
+        .reliability-tools button { width:42px; height:42px; border:0; border-radius:50%; color:#fff; background:#312e81; box-shadow:0 8px 20px rgba(49,46,129,.25); cursor:pointer; }
+        .health-checks { display:grid; gap:9px; margin-bottom:16px; } .health-row { display:flex; justify-content:space-between; gap:10px; padding:11px 12px; border-radius:11px; background:#f8fafc; } .health-ok { color:#15803d; } .health-warn { color:#b45309; } .health-error { color:#b91c1c; }
+        .guide-step { display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid #eef2f7; line-height:1.7; } .guide-step b { flex:0 0 28px; height:28px; display:grid; place-items:center; border-radius:50%; color:#fff; background:var(--primary-gradient); }
+        @media(max-width:700px){.reliability-tools{bottom:150px;left:10px}}
     </style>
 </head>
 <body>
@@ -1562,6 +1568,19 @@
 
     <!-- Notification Container -->
     <div id="notificationContainer" class="notification-container"></div>
+    <div id="reliabilityTools" class="reliability-tools" style="display:none">
+      <button onclick="openSystemHealth()" title="فحص صحة النظام"><i class="fas fa-heart-pulse"></i></button>
+      <button onclick="openBeginnerGuide()" title="مساعدة البائع"><i class="fas fa-graduation-cap"></i></button>
+    </div>
+    <div id="systemHealthModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header"><h3 class="modal-title">صحة النظام والمزامنة</h3><button class="modal-close" onclick="closeModal('systemHealthModal')"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body"><div id="healthChecks" class="health-checks"></div><div class="backup-actions"><button class="btn btn-primary" onclick="runSystemHealthCheck()"><i class="fas fa-rotate"></i> فحص الآن</button><button class="btn btn-secondary" onclick="processOfflineOutbox()"><i class="fas fa-cloud-arrow-up"></i> مزامنة المعلّق</button></div></div>
+      </div>
+    </div>
+    <div id="beginnerGuideModal" class="modal-overlay">
+      <div class="modal-content"><div class="modal-header"><h3 class="modal-title">مساعد البائع</h3><button class="modal-close" onclick="closeModal('beginnerGuideModal')"><i class="fas fa-times"></i></button></div><div class="modal-body"><div class="guide-step"><b>1</b><span>أضف المنتجات وحدد سعر البيع وسعر الجملة وعدد القطع في الكرتونة.</span></div><div class="guide-step"><b>2</b><span>أضف العميل وحدد قطاعي أو جملة أو تاجر مميز والحد الائتماني.</span></div><div class="guide-step"><b>3</b><span>من نقطة البيع اختر العميل؛ سيحسب النظام السعر المناسب تلقائياً.</span></div><div class="guide-step"><b>4</b><span>راجع السلة ثم أكد البيع. البيع بالصوت يجهز السلة ولا يحفظ قبل تأكيدك.</span></div><div class="guide-step"><b>5</b><span>عند انقطاع الإنترنت سيحفظ التطبيق الحالة محلياً ويزامنها عند عودة الاتصال.</span></div><button class="btn btn-primary w-100 mt-2" onclick="finishBeginnerGuide()">فهمت، ابدأ العمل</button></div></div>
+    </div>
     <div id="installBanner" class="install-banner" role="dialog" aria-label="تثبيت التطبيق">
       <div class="install-banner-icon"><img src="logo-primary.png" alt="SeMo0o FRP"></div>
       <div class="install-banner-text"><strong>ثبّت SeMo0o FRP</strong><span>أضفه إلى شاشة هاتفك ليعمل كتطبيق</span></div>
@@ -2527,7 +2546,9 @@
             
             // UI state
             isOnline: navigator.onLine,
-            isLoading: false
+            isLoading: false,
+            localSnapshotAt: null,
+            pendingOperations: 0
         };
 
         // ============================================
@@ -6776,6 +6797,22 @@
                 console.error('Error loading user data:', error);
             }
         }
+
+        // === Reliability layer: IndexedDB snapshots, recovery, diagnostics, and beginner help ===
+        const LocalReliability = { db:null, dbName:'semoo-frp-local-v1', snapshotStore:'snapshots', outboxStore:'outbox' };
+        function openLocalReliability(){ return new Promise((resolve,reject)=>{ if(LocalReliability.db)return resolve(LocalReliability.db); const req=indexedDB.open(LocalReliability.dbName,1); req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(LocalReliability.snapshotStore))db.createObjectStore(LocalReliability.snapshotStore,{keyPath:'id'});if(!db.objectStoreNames.contains(LocalReliability.outboxStore))db.createObjectStore(LocalReliability.outboxStore,{keyPath:'id'});};req.onsuccess=()=>{LocalReliability.db=req.result;resolve(req.result)};req.onerror=()=>reject(req.error);}); }
+        async function saveLocalSnapshot(reason='auto'){ try{const db=await openLocalReliability();const snapshot={id:'latest',reason,createdAt:new Date().toISOString(),cart:AppState.cart||[],page:AppState.currentPage||'home',data:{products:AppState.products||[],customers:AppState.customers||[],categories:AppState.categories||[],settings:AppState.settings||{}}};await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.snapshotStore,'readwrite');tx.objectStore(LocalReliability.snapshotStore).put(snapshot);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});AppState.localSnapshotAt=snapshot.createdAt;localStorage.setItem('semoo-last-local-save',snapshot.createdAt);}catch(e){console.warn('Local snapshot failed',e)} }
+        async function recoverLocalSnapshot(){ try{const db=await openLocalReliability();const snap=await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.snapshotStore,'readonly');const r=tx.objectStore(LocalReliability.snapshotStore).get('latest');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});if(!snap||!snap.cart?.length)return;const age=Date.now()-new Date(snap.createdAt).getTime();if(age>24*60*60*1000)return;if(confirm('وجدنا سلة بيع محفوظة من '+new Date(snap.createdAt).toLocaleString('ar')+'\nهل تريد استعادتها؟')){AppState.cart=snap.cart;showNotification('تمت استعادة السلة المحفوظة','success');if(AppState.currentPage==='pos')showPage('pos')}}catch(e){console.warn('Recovery skipped',e)} }
+        async function queueOfflineOperation(path,payload,method='set'){ try{const db=await openLocalReliability();const op={id:crypto.randomUUID?crypto.randomUUID():generateId(),path,payload,method,createdAt:new Date().toISOString(),attempts:0};await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).put(op);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});updatePendingCount()}catch(e){console.warn('Outbox queue failed',e)} }
+        async function updatePendingCount(){try{const db=await openLocalReliability();const count=await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readonly');const r=tx.objectStore(LocalReliability.outboxStore).count();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});AppState.pendingOperations=count;const pill=document.getElementById('syncPill');if(pill&&count)pill.innerHTML=`<i class="fas fa-cloud-arrow-up"></i><span>${navigator.onLine?'متصل — '+count+' معلقة':'بدون إنترنت — '+count+' معلقة'}</span>`;}catch(e){}}
+        async function processOfflineOutbox(){ if(!navigator.onLine)return showNotification('لا يوجد اتصال حالياً','warning'); try{const db=await openLocalReliability();const ops=await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readonly');const r=tx.objectStore(LocalReliability.outboxStore).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});let done=0;for(const op of ops){try{const ref=dbRefForOfflinePath(op.path);if(!ref)continue;if(op.method==='update')await ref.update(op.payload);else if(op.method==='push')await ref.push(op.payload);else await ref.set(op.payload);await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).delete(op.id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});done++;}catch(e){console.warn('Pending operation failed',e)}}updatePendingCount();showNotification(done?'تمت مزامنة '+done+' عملية':'لا توجد عمليات قابلة للمزامنة الآن',done?'success':'info');}catch(e){showNotification('تعذر فحص العمليات المعلقة','error')} }
+        function dbRefForOfflinePath(path){return (typeof db!=='undefined'&&db&&path)?db.ref(path):null}
+        async function runSystemHealthCheck(){const box=document.getElementById('healthChecks');if(!box)return;box.innerHTML='<div class="health-row">جاري الفحص...</div>';const checks=[];checks.push(['الاتصال بالإنترنت',navigator.onLine,'متصل','غير متصل']);checks.push(['Firebase Authentication',!!window.auth&&!!auth.currentUser,auth?.currentUser?'حساب مسجل':'لا يوجد حساب']);checks.push(['قاعدة Firebase',!!window.db,'تم تحميلها','غير متاحة']);checks.push(['IndexedDB للحفظ المحلي',!!window.indexedDB,'متاح','غير متاح']);checks.push(['Service Worker',!!navigator.serviceWorker,'متاح','غير مسجل']);checks.push(['المزامنة المحلية',true,(localStorage.getItem('semoo-last-local-save')?'آخر حفظ '+new Date(localStorage.getItem('semoo-last-local-save')).toLocaleTimeString('ar'):'جاهز للحفظ'),'لم يتم الحفظ بعد']);box.innerHTML=checks.map(c=>`<div class="health-row"><span>${c[0]}</span><b class="${c[1]?'health-ok':'health-warn'}"><i class="fas fa-${c[1]?'check':'triangle-exclamation'}"></i> ${c[1]?c[2]:c[3]}</b></div>`).join('');updatePendingCount()}
+        function openSystemHealth(){document.getElementById('systemHealthModal')?.classList.add('active');runSystemHealthCheck()}
+        function openBeginnerGuide(){document.getElementById('beginnerGuideModal')?.classList.add('active')}
+        function finishBeginnerGuide(){localStorage.setItem('semoo-beginner-guide-seen','1');closeModal('beginnerGuideModal');showNotification('يمكنك فتح المساعدة من زر القبعة في أي وقت','success')}
+        function initReliabilityLayer(){if(!window.indexedDB)return;document.getElementById('reliabilityTools')?.style.setProperty('display','grid');openLocalReliability().then(()=>{updatePendingCount();setTimeout(recoverLocalSnapshot,800)});setInterval(()=>saveLocalSnapshot('interval'),5*60*1000);window.addEventListener('online',()=>{updatePendingCount();processOfflineOutbox()});window.addEventListener('beforeunload',()=>{try{saveLocalSnapshot('beforeunload')}catch(e){}});if(!localStorage.getItem('semoo-beginner-guide-seen'))setTimeout(openBeginnerGuide,1200)}
+        document.addEventListener('DOMContentLoaded',initReliabilityLayer);
     </script>
 </body>
                     </html>
