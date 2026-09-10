@@ -73,6 +73,15 @@
     "activity": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
       ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true"
+    },
+    "accountingEntries": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isActive').val() === true",
+      ".indexOn": [
+        "operationId",
+        "date",
+        "source"
+      ]
     }
   }
 }
