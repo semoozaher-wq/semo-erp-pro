@@ -1503,6 +1503,38 @@
         .verification-notice { max-width:560px; margin:0 auto 16px; padding:18px; display:grid; gap:9px; text-align:center; color:#312e81; background:#eef2ff; border:1px solid #c7d2fe; border-radius:16px; box-shadow:0 8px 22px rgba(49,46,129,.1); }
         .verification-notice i { font-size:2rem; color:#4f46e5; } .verification-notice span { color:#4b5563; font-size:.9rem; line-height:1.7; }
         .verification-notice .btn { width:100%; }
+
+        .auth-title { color:#fff !important; font-family:'Tajawal', system-ui, sans-serif; font-size:clamp(2rem,5vw,3rem); letter-spacing:.02em; text-shadow:0 4px 18px rgba(30,20,80,.35); font-weight:900; }
+        .forgot-password-row { display:flex; justify-content:flex-start; margin:-5px 0 14px; }
+        .forgot-password { border:0; background:transparent; color:var(--primary); font-family:inherit; font-weight:700; font-size:.86rem; cursor:pointer; padding:4px 0; }
+        .forgot-password:hover { color:var(--primary-dark); text-decoration:underline; }
+
+        .catalog-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; }
+        .catalog-card { display:grid; gap:8px; padding:16px; border:1px solid #e5e7eb; border-radius:16px; background:#fff; box-shadow:var(--shadow); }
+        .catalog-card h3 { margin:0; font-size:1rem; } .catalog-card small { color:#6b7280; } .catalog-card strong { color:var(--primary); font-size:1.15rem; }
+        .catalog-card-icon { width:42px; height:42px; display:grid; place-items:center; border-radius:12px; color:#fff; background:var(--primary-gradient); }
+
+        .auth-header { position:relative; overflow:hidden; width:min(92vw,560px); margin:24px auto 20px; padding:28px 24px 24px; border-radius:28px; background:linear-gradient(135deg,#21104f 0%,#4c1d95 55%,#1d4ed8 100%); box-shadow:0 18px 42px rgba(49,27,110,.28); }
+        .auth-header::after { content:""; position:absolute; width:220px; height:220px; left:-80px; bottom:-130px; border-radius:50%; background:rgba(255,255,255,.10); pointer-events:none; }
+        .auth-header .auth-title { position:relative; z-index:1; margin:0 0 18px; color:#fff !important; }
+        .auth-header .auth-logo { position:relative; z-index:1; margin:0 auto 16px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.24); box-shadow:0 10px 28px rgba(0,0,0,.22); }
+        .auth-header .auth-subtitle { position:relative; z-index:1; margin:0; color:rgba(255,255,255,.92); text-shadow:0 2px 8px rgba(0,0,0,.22); }
+        @media (max-width:560px) { .auth-header { margin-top:12px; padding:22px 16px 20px; border-radius:22px; } }
+
+        /* === Refined authentication experience === */
+        .auth-screen { padding:24px 14px 42px; }
+        .auth-form-container { position:relative; overflow:hidden; background:rgba(255,255,255,.94); border:1px solid rgba(124,58,237,.14); border-radius:28px; padding:26px; box-shadow:0 22px 60px rgba(49,46,129,.16); }
+        .auth-form-container::before { content:""; position:absolute; top:0; right:0; left:0; height:4px; background:var(--primary-gradient); }
+        .auth-tabs { background:#f3f4f6; padding:5px; border-radius:14px; gap:5px; }
+        .auth-tab { border-radius:11px; font-size:.95rem; transition:all .2s ease; }
+        .auth-tab.active { box-shadow:0 5px 14px rgba(79,70,229,.16); }
+        .auth-form .form-group { margin-bottom:18px; }
+        .auth-form label { color:#312e81; font-weight:800; margin-bottom:7px; }
+        .auth-form input, .auth-form select { min-height:50px; border:1.5px solid #e5e7eb; border-radius:13px; background:#fff; transition:border-color .2s, box-shadow .2s, transform .2s; }
+        .auth-form input:focus, .auth-form select:focus { border-color:#7c3aed; box-shadow:0 0 0 4px rgba(124,58,237,.12); transform:translateY(-1px); }
+        .auth-form .btn-lg { min-height:52px; border-radius:14px; font-size:1rem; font-weight:800; }
+        .auth-subtitle { font-weight:600; }
+        @media (max-width:560px) { .auth-screen { padding:12px 10px 28px; } .auth-form-container { padding:20px 16px; border-radius:22px; } }
     </style>
 </head>
 <body>
@@ -1557,6 +1589,7 @@
                         <label data-ar="كلمة المرور" data-en="Password">كلمة المرور</label>
                         <input type="password" id="loginPassword" required placeholder="••••••••" minlength="6" autocomplete="current-password">
                     </div>
+                    <div class="forgot-password-row"><button type="button" class="forgot-password" onclick="sendPasswordReset()"><i class="fas fa-key"></i> نسيت كلمة المرور؟</button></div>
                     <div id="loginError" class="text-center text-danger mb-2" style="display: none;"></div>
                     <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">
                         <i class="fas fa-sign-in-alt"></i>
@@ -1647,6 +1680,10 @@
                 <button onclick="showPage('reports')"><i class="fas fa-chart-bar"></i><span>التقارير</span></button>
                 <button onclick="showPage('calculator')"><i class="fas fa-calculator"></i><span>حاسبة الأرباح</span></button>
                 <button id="sidebarUsersLink" onclick="showPage('users')"><i class="fas fa-user-shield"></i><span>المستخدمون</span></button>
+                <button onclick="showPage('catalog')"><i class="fas fa-store"></i><span>كتالوج العملاء</span></button>
+                <button onclick="showPage('orders')"><i class="fas fa-shopping-bag"></i><span>طلبات العملاء</span></button>
+                <button onclick="showPage('activity')"><i class="fas fa-history"></i><span>سجل النشاط</span></button>
+                <button onclick="showPage('settings')"><i class="fas fa-cog"></i><span>إعدادات النشاط</span></button>
             </nav>
             <div class="sidebar-footer">
                 <button onclick="toggleDeviceMode()"><i class="fas fa-desktop"></i><span id="deviceModeLabel">وضع الكمبيوتر</span></button>
@@ -2460,6 +2497,9 @@
             users: [],
             branches: [],
             returns: [],
+            orders: [],
+            activity: [],
+            settings: {},
             
             // POS state
             cart: [],
@@ -2627,6 +2667,28 @@
             } else {
                 document.querySelector('.auth-tab:last-child').classList.add('active');
                 document.getElementById('registerForm').classList.add('active');
+            }
+        }
+
+        async function sendPasswordReset() {
+            const emailInput = document.getElementById('loginEmail');
+            const email = emailInput.value.trim();
+            const errorDiv = document.getElementById('loginError');
+            if (!email) {
+                errorDiv.textContent = t('اكتب بريدك الإلكتروني أولاً ثم اضغط نسيت كلمة المرور', 'Enter your email first, then click Forgot password');
+                errorDiv.style.display = 'block';
+                emailInput.focus();
+                return;
+            }
+            try {
+                await auth.sendPasswordResetEmail(email, { url: window.location.origin + window.location.pathname, handleCodeInApp: false });
+                errorDiv.style.display = 'none';
+                showNotification(t('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك', 'A password reset link was sent to your email'), 'success');
+            } catch (error) {
+                const message = error.code === 'auth/user-not-found' ? t('لا يوجد حساب بهذا البريد', 'No account found with this email') : (error.code === 'auth/invalid-email' ? t('البريد الإلكتروني غير صالح', 'Invalid email address') : t('تعذر إرسال الرابط، حاول لاحقاً', 'Could not send the link; try again later'));
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                showNotification(message, 'error');
             }
         }
 
@@ -2899,6 +2961,7 @@
                     loadBranches(),
                     loadReturns()
                 ]);
+                await seedDemoCatalog();
                 
                 showPage('home');
                 updateBranchSelector();
@@ -3218,10 +3281,51 @@
                 case 'returns':
                     showReturnsPage(content);
                     break;
+                case 'catalog':
+                    renderCustomerCatalogPage(content);
+                    break;
+                case 'orders':
+                    renderCustomerOrdersPage(content);
+                    break;
+                case 'activity':
+                    renderActivityPage(content);
+                    break;
+                case 'settings':
+                    renderBusinessSettingsPage(content);
+                    break;
                 default:
                     renderHomePage(content);
             }
         }
+
+        // === Professional modules: settings, catalog, orders, loyalty, audit ===
+        async function writeAudit(action, entity, entityId='', details={}) {
+            try { await db.ref('activity').push({ action, entity, entityId, details, userId:AppState.currentUser?.uid||'', userName:AppState.currentUser?.name||AppState.currentUser?.email||'', device:navigator.userAgent.slice(0,80), createdAt:new Date().toISOString() }); } catch(e) { console.warn('Audit log skipped',e); }
+        }
+        async function seedDemoCatalog() {
+            if (!checkUserPermission('admin') || localStorage.getItem('semoo-demo-seeded-v1') || AppState.products.length) return;
+            const categoryData=[{name:'أكياس بلاستيكية',description:'أكياس للتغليف والاستخدام اليومي',color:'#7c3aed'},{name:'مستلزمات المقاهي',description:'أكواب وأدوات تقديم المشروبات',color:'#06b6d4'},{name:'مستلزمات الأفراح',description:'تجهيزات الضيافة والحفلات',color:'#ec4899'}];
+            const categoryIds={};
+            for(const c of categoryData){ const ref=await db.ref('categories').push({...c,createdAt:new Date().toISOString()}); categoryIds[c.name]=ref.key; }
+            const items=[
+              ['كيس تسوق متوسط','أكياس بلاستيكية',0.08,0.15,1000,'قطعة'],['كيس قمامة كبير','أكياس بلاستيكية',0.35,0.60,300,'قطعة'],['رول أكياس شفافة','أكياس بلاستيكية',4.5,7.5,80,'رول'],
+              ['كوب ورقي 8 أونصة','مستلزمات المقاهي',0.12,0.25,1000,'قطعة'],['غطاء كوب 8 أونصة','مستلزمات المقاهي',0.08,0.18,1000,'قطعة'],['ملعقة خشبية','مستلزمات المقاهي',0.04,0.10,1500,'قطعة'],
+              ['كأس بلاستيك فاخر','مستلزمات الأفراح',0.35,0.75,500,'قطعة'],['طبق تقديم ذهبي','مستلزمات الأفراح',1.8,3.5,120,'قطعة'],['مناديل ضيافة فاخرة','مستلزمات الأفراح',2.5,4.5,100,'علبة']
+            ];
+            for(const [name,cat,cost,sale,quantity,unit] of items) await db.ref('products').push({name,category:categoryIds[cat],categoryName:cat,costPrice:cost,salePrice:sale,quantity,minStock:Math.max(10,Math.floor(quantity*.1)),unit,description:'منتج تجريبي قابل للتعديل',createdAt:new Date().toISOString()});
+            localStorage.setItem('semoo-demo-seeded-v1','1'); await writeAudit('seed_demo_catalog','products','',{count:items.length}); await loadUserData(); showNotification('تمت إضافة منتجات تجريبية للفئات الثلاث','success');
+        }
+        function renderBusinessSettingsPage(container) {
+            const st=AppState.settings||{};
+            container.innerHTML=`<div class="section-card"><div class="section-header"><div class="section-title"><i class="fas fa-store"></i><span>إعدادات النشاط والفواتير</span></div></div><div class="section-body"><form onsubmit="saveBusinessSettings(event)"><div class="form-row"><div class="form-group"><label>اسم النشاط</label><input id="bizName" value="${escapeHtml(st.name||'SeMo0o FRP')}" required></div><div class="form-group"><label>رقم الهاتف / WhatsApp</label><input id="bizPhone" value="${escapeHtml(st.phone||'')}"></div></div><div class="form-row"><div class="form-group"><label>العنوان</label><input id="bizAddress" value="${escapeHtml(st.address||'')}"></div><div class="form-group"><label>نسبة الضريبة %</label><input id="bizTax" type="number" min="0" value="${Number(st.tax||0)}"></div></div><div class="form-group"><label>سياسة الاسترجاع</label><textarea id="bizReturnPolicy">${escapeHtml(st.returnPolicy||'الاسترجاع خلال 7 أيام مع الفاتورة')}</textarea></div><button class="btn btn-primary" type="submit"><i class="fas fa-save"></i> حفظ إعدادات النشاط</button></form></div></div>`;
+        }
+        async function saveBusinessSettings(event){ event.preventDefault(); if(!checkUserPermission('admin')) return showNotification('الإعدادات متاحة للمدير فقط','error'); const settings={name:document.getElementById('bizName').value.trim(),phone:document.getElementById('bizPhone').value.trim(),address:document.getElementById('bizAddress').value.trim(),tax:Number(document.getElementById('bizTax').value)||0,returnPolicy:document.getElementById('bizReturnPolicy').value.trim(),updatedAt:new Date().toISOString()}; await db.ref('settings/main').set(settings); AppState.settings=settings; await writeAudit('update','settings','main',settings); showNotification('تم حفظ إعدادات النشاط','success'); }
+        function renderCustomerCatalogPage(container){ const products=AppState.products.filter(p=>Number(p.quantity||0)>0); container.innerHTML=`<div class="section-card"><div class="section-header"><div class="section-title"><i class="fas fa-store"></i><span>كتالوج المنتجات للعملاء</span></div><button class="btn btn-sm btn-primary" onclick="shareCatalog()"><i class="fas fa-share-alt"></i> مشاركة</button></div><div class="section-body"><div class="catalog-grid">${products.map(p=>`<article class="catalog-card"><div class="catalog-card-icon"><i class="fas fa-box"></i></div><h3>${escapeHtml(p.name)}</h3><small>${escapeHtml(p.categoryName||'منتجات')}</small><strong>${formatCurrency(p.salePrice)}</strong><button class="btn btn-sm btn-primary" onclick="addCatalogOrder('${p.id}')">إضافة للطلب</button></article>`).join('')||'<div class="empty-state">لا توجد منتجات متاحة</div>'}</div></div></div>`; }
+        function shareCatalog(){ if(navigator.share) navigator.share({title:'SeMo0o FRP',text:'كتالوج المنتجات',url:location.href}); else navigator.clipboard?.writeText(location.href).then(()=>showNotification('تم نسخ رابط الكتالوج','success')); }
+        async function addCatalogOrder(productId){ const p=AppState.products.find(x=>x.id===productId); if(!p)return; const phone=prompt('رقم هاتف العميل'); if(!phone)return; const name=prompt('اسم العميل')||'عميل الكتالوج'; await db.ref('orders').push({customerName:name,phone,items:[{productId:p.id,name:p.name,quantity:1,price:p.salePrice}],total:Number(p.salePrice||0),status:'new',createdAt:new Date().toISOString(),createdBy:AppState.currentUser?.uid||''}); await writeAudit('create','order','',{product:p.name,phone}); showNotification('تم تسجيل طلب العميل','success'); }
+        async function renderCustomerOrdersPage(container){ const snap=await db.ref('orders').once('value'); const orders=[]; snap.forEach(c=>orders.push({id:c.key,...c.val()})); container.innerHTML=`<div class="section-card"><div class="section-header"><div class="section-title"><i class="fas fa-shopping-bag"></i><span>طلبات العملاء</span></div></div><div class="section-body"><div class="table-responsive"><table class="data-table"><thead><tr><th>التاريخ</th><th>العميل</th><th>الهاتف</th><th>الإجمالي</th><th>الحالة</th></tr></thead><tbody>${orders.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).map(o=>`<tr><td>${formatDate(o.createdAt)}</td><td>${escapeHtml(o.customerName)}</td><td>${escapeHtml(o.phone)}</td><td>${formatCurrency(o.total)}</td><td><select onchange="updateOrderStatus('${o.id}',this.value)"><option value="new" ${o.status==='new'?'selected':''}>جديد</option><option value="preparing" ${o.status==='preparing'?'selected':''}>قيد التجهيز</option><option value="ready" ${o.status==='ready'?'selected':''}>جاهز</option><option value="delivered" ${o.status==='delivered'?'selected':''}>تم التسليم</option></select></td></tr>`).join('')||'<tr><td colspan="5">لا توجد طلبات</td></tr>'}</tbody></table></div></div></div>`; }
+        async function updateOrderStatus(id,status){ await db.ref('orders/'+id).update({status,updatedAt:new Date().toISOString(),updatedBy:AppState.currentUser?.uid||''}); await writeAudit('update','order',id,{status}); showNotification('تم تحديث حالة الطلب','success'); }
+        async function renderActivityPage(container){ if(!checkUserPermission('admin')) { container.innerHTML='<div class="empty-state"><div class="empty-state-text">سجل النشاط متاح للمدير فقط</div></div>'; return; } const snap=await db.ref('activity').limitToLast(100).once('value'); const rows=[]; snap.forEach(c=>rows.push({id:c.key,...c.val()})); container.innerHTML=`<div class="section-card"><div class="section-header"><div class="section-title"><i class="fas fa-history"></i><span>سجل النشاط</span></div></div><div class="section-body"><div class="table-responsive"><table class="data-table"><thead><tr><th>التاريخ</th><th>المستخدم</th><th>العملية</th><th>القسم</th></tr></thead><tbody>${rows.reverse().map(r=>`<tr><td>${formatDate(r.createdAt)}</td><td>${escapeHtml(r.userName)}</td><td>${escapeHtml(r.action)}</td><td>${escapeHtml(r.entity)}</td></tr>`).join('')||'<tr><td colspan="4">لا يوجد نشاط مسجل</td></tr>'}</tbody></table></div></div></div>`; }
 
         // ============================================
         // === PAGE RENDERING FUNCTIONS ===
@@ -3616,7 +3720,15 @@
             };
             
             try {
+                for (const item of AppState.cart) {
+                    const available = Number(AppState.products.find(p => p.id === item.productId)?.quantity || 0);
+                    if (Number(item.quantity || 0) > available) {
+                        showNotification(t('الكمية المطلوبة أكبر من المخزون المتاح: ' + (item.name || ''), 'Requested quantity exceeds stock: ' + (item.name || '')), 'error');
+                        return;
+                    }
+                }
                 const saleRef = await db.ref('sales').push(saleData);
+                await writeAudit('create','sale',saleRef.key,{total:saleData.total,items:AppState.cart.length});
                 
                 for (const item of AppState.cart) {
                     const product = AppState.products.find(p => p.id === item.productId);
@@ -3860,6 +3972,7 @@
 
         async function saveProduct(event) {
             event.preventDefault();
+            if (!checkUserPermission('cashier')) { showNotification(t('ليس لديك صلاحية إدارة المنتجات','You do not have permission to manage products'),'error'); return; }
             
             const productId = document.getElementById('productId').value;
             const productData = {
@@ -3890,10 +4003,12 @@
             try {
                 if (productId) {
                     await db.ref('products/' + productId).update(productData);
+                    await writeAudit('update','product',productId,{name:productData.name,salePrice:productData.salePrice,quantity:productData.quantity});
                     showNotification(t('تم تحديث المنتج بنجاح', 'Product updated successfully'), 'success');
                 } else {
                     productData.createdAt = new Date().toISOString();
-                    await db.ref('products').push(productData);
+                    const productRef = await db.ref('products').push(productData);
+                    await writeAudit('create','product',productRef.key,{name:productData.name,salePrice:productData.salePrice,quantity:productData.quantity});
                     showNotification(t('تم إضافة المنتج بنجاح', 'Product added successfully'), 'success');
                 }
                 
