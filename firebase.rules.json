@@ -1,0 +1,35 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || !data.exists())",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".validate": "newData.hasChildren(['email', 'role', 'isActive'])",
+        "products": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "customers": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "suppliers": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "categories": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "sales": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "purchases": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "expenses": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "revenues": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "debts": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "supplierDebts": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "cashbox": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "returns": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "branches": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "settings": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "orders": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "activity": { ".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid" },
+        "accountingEntries": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid",
+          ".indexOn": ["operationId", "date", "source"]
+        }
+      }
+    }
+  }
+}
