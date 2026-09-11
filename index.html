@@ -1560,6 +1560,8 @@
         @media(max-width:1000px){.ops-kpis{grid-template-columns:repeat(3,1fr)}} @media(max-width:700px){.ops-hero{display:block;padding:20px}.ops-hero-actions{margin-top:16px}.ops-columns{grid-template-columns:1fr}.ops-kpis{grid-template-columns:1fr 1fr}}
 
         .import-preview { max-height:260px; overflow:auto; margin:12px 0; } .import-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:10px 0; } .import-summary div { background:#f8fafc; border-radius:11px; padding:10px; text-align:center; } .import-summary strong { display:block; color:var(--primary); font-size:1.2rem; } .import-status { margin-top:12px; line-height:1.7; } .import-ok { color:#15803d; } .import-warn { color:#b45309; } @media(max-width:700px){.import-summary{grid-template-columns:1fr 1fr}}
+
+        .phone-auth-box{margin-top:6px;padding:14px;border:1px solid #ddd6fe;border-radius:16px;background:#fafaff}.phone-auth-box .btn{width:100%;}.phone-auth-box input{direction:ltr;text-align:left}.sidebar-toggle{display:inline-flex!important}.sidebar-nav{max-height:calc(100vh - 220px);overflow-y:auto}
     </style>
 </head>
 <body>
@@ -1676,6 +1678,14 @@
                         <i class="fas fa-user-plus"></i>
                         <span data-ar="إنشاء الحساب" data-en="Create Account">إنشاء الحساب</span>
                     </button>
+                    <div class="auth-divider"><span>أو التسجيل برقم الهاتف</span></div>
+                    <div class="phone-auth-box">
+                        <div class="form-group"><label>رقم الهاتف مع مفتاح الدولة</label><input type="tel" id="registerPhone" placeholder="+218XXXXXXXXX" autocomplete="tel"></div>
+                        <div id="phoneRecaptcha"></div>
+                        <button type="button" class="btn btn-outline btn-lg" id="sendPhoneCodeBtn" onclick="sendPhoneCode()"><i class="fas fa-mobile-screen-button"></i> إرسال رمز SMS</button>
+                        <div id="phoneCodeArea" style="display:none;margin-top:12px"><div class="form-group"><label>رمز التحقق</label><input type="text" id="phoneCode" inputmode="numeric" maxlength="6" placeholder="123456"></div><button type="button" class="btn btn-primary btn-lg" onclick="verifyPhoneCode()"><i class="fas fa-check"></i> تأكيد الرقم وإنشاء الحساب</button></div>
+                        <div id="phoneAuthError" class="text-center text-danger" style="display:none;margin-top:8px"></div>
+                    </div>
                 </form>
             </div>
         </div>
@@ -2673,13 +2683,10 @@
             return sources[source] || source;
         }
 
+        function normalizeRole(role){const r=String(role||'').toLowerCase();if(['admin','manager','owner','مدير'].includes(r))return 'admin';if(['cashier','employee','staff','موظف','موظف مبيعات'].includes(r))return 'cashier';return 'viewer';}
         function getUserRoleName(role) {
-            const roles = {
-                'admin': t('مدير', 'Manager'),
-                'cashier': t('موظف', 'Employee'),
-                'viewer': t('مشاهد', 'Viewer')
-            };
-            return roles[role] || role;
+            const roles = { 'admin': t('مدير', 'Manager'), 'cashier': t('موظف', 'Employee'), 'viewer': t('مشاهد', 'Viewer') };
+            return roles[normalizeRole(role)] || t('مشاهد','Viewer');
         }
 
         function getPaymentMethodName(method) {
@@ -2695,7 +2702,7 @@
         function checkUserPermission(requiredRole) {
             if (!AppState.currentUser || AppState.currentUser.isActive === false) return false;
             
-            const userRole = AppState.currentUser.role || 'viewer';
+            const userRole = normalizeRole(AppState.currentUser.role || 'viewer');
             const userPermissions = AppState.currentUser.permissions || [];
             
             const roleHierarchy = {
@@ -2883,6 +2890,13 @@
             try { const credential=await auth.signInWithEmailAndPassword(email,password); await credential.user.reload(); if (credential.user.emailVerified) { showNotification(t('تم تأكيد البريد، أهلاً بك','Email verified; welcome'),'success'); } else { await auth.signOut(); showNotification(t('لم يتم تأكيد البريد بعد','Email is not verified yet'),'error'); } } catch(e) { showNotification(t('تعذر التحقق من الحساب','Could not check the account'),'error'); }
         }
 
+        let phoneConfirmationResult=null;
+        function phoneAuthError(message){const el=document.getElementById('phoneAuthError');if(el){el.textContent=message;el.style.display='block';}showNotification(message,'error');}
+        async function sendPhoneCode(){
+            const raw=document.getElementById('registerPhone').value.trim();const check=validateWhatsAppPhone(raw);if(!check.ok)return phoneAuthError(check.message);
+            try{if(!window.phoneRecaptchaVerifier){window.phoneRecaptchaVerifier=new firebase.auth.RecaptchaVerifier('phoneRecaptcha',{size:'invisible'});}phoneConfirmationResult=await auth.signInWithPhoneNumber('+'+check.phone,window.phoneRecaptchaVerifier);document.getElementById('phoneCodeArea').style.display='block';document.getElementById('sendPhoneCodeBtn').disabled=true;showNotification('تم إرسال رمز التحقق برسالة SMS','success');}catch(e){console.error(e);if(window.phoneRecaptchaVerifier){try{window.phoneRecaptchaVerifier.clear();}catch(_){ }window.phoneRecaptchaVerifier=null;}phoneAuthError(e.code==='auth/operation-not-allowed'?'فعّل تسجيل الدخول برقم الهاتف من Firebase Authentication':(e.code==='auth/too-many-requests'?'تم تجاوز حد المحاولات، حاول لاحقاً':'تعذر إرسال رمز SMS، تحقق من الرقم'));}}
+        async function verifyPhoneCode(){const code=document.getElementById('phoneCode').value.trim();if(!phoneConfirmationResult||!/^[0-9]{6}$/.test(code))return phoneAuthError('أدخل رمز التحقق المكوّن من 6 أرقام');try{const result=await phoneConfirmationResult.confirm(code);const user=result.user;const snap=await db.ref('users').once('value').catch(()=>null);const first=!snap||!snap.exists();await db.ref('users/'+user.uid).set({name:'مستخدم الهاتف',email:user.phoneNumber||'',phone:user.phoneNumber||'',role:first?'admin':'cashier',permissions:first?['admin']:['sales','products'],currency:document.getElementById('registerCurrency').value||'LYD',isActive:true,provider:'phone',createdAt:new Date().toISOString()});showNotification(first?'تم إنشاء حساب المدير وتأكيد الهاتف':'تم إنشاء حساب الموظف وتأكيد الهاتف','success');}catch(e){console.error(e);phoneAuthError(e.code==='auth/invalid-verification-code'?'رمز التحقق غير صحيح':'تعذر تأكيد الرقم، حاول مرة أخرى');}}
+
         async function handleLogout() {
             if (confirm(t('هل أنت متأكد من تسجيل الخروج؟', 'Are you sure you want to logout?'))) {
                 try {
@@ -2969,10 +2983,15 @@
                         if (sidebarRole) sidebarRole.textContent = getUserRoleName(AppState.currentUser.role || 'viewer');
                         const headerAccountName = document.getElementById('headerAccountName');
                         if (headerAccountName) headerAccountName.textContent = AppState.currentUser.name || AppState.currentUser.email || 'حسابي';
+                    } else {
+                        AppState.currentUser = {...AppState.currentUser, name:user.displayName||user.email||'المستخدم', role:'cashier', permissions:['sales','products'], isActive:true, currency:'LYD'};
+                        try { await db.ref('users/'+user.uid).set({name:AppState.currentUser.name,email:user.email||'',role:'cashier',permissions:['sales','products'],isActive:true,currency:'LYD',createdAt:new Date().toISOString()}); } catch(profileError){ console.warn('Profile provisioning:',profileError); }
                     }
                 } catch (error) {
                     console.error('Error loading user data:', error);
+                    AppState.currentUser = {...AppState.currentUser, role:'cashier', permissions:['sales','products'], isActive:true, currency:'LYD'};
                 }
+                AppState.currentUser.role=normalizeRole(AppState.currentUser.role);
                 
                 document.getElementById('authSection').classList.remove('active');
                 document.getElementById('appSection').classList.add('active');
