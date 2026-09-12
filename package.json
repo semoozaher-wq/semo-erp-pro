@@ -1,0 +1,13 @@
+{
+  "name": "semo-erp-pro",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SeMo0o FRP - Arabic sales and inventory PWA",
+  "type": "module",
+  "scripts": {
+    "check:security": "node scripts/verify-security.mjs",
+    "check:json": "python3 -m json.tool firebase.json >/dev/null && python3 -m json.tool firebase.rules.json >/dev/null && python3 -m json.tool manifest.json >/dev/null",
+    "check:syntax": "node scripts/check-inline-js.mjs"
+  },
+  "engines": { "node": ">=20" }
+}
