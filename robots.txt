@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://semoozaher-wq.github.io/semo-erp-pro/sitemap.xml
