@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /$
+
+Sitemap: https://semo-erp-pro13.web.app/sitemap.xml
