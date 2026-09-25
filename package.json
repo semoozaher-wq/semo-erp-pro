@@ -13,10 +13,13 @@
     "check:syntax": "node scripts/check-inline-js.mjs",
     "check:smoke": "node scripts/browser-smoke.mjs",
     "check": "npm run check:json && npm run check:syntax && npm run check:security && npm run check:deploy && npm run check:placeholders && npm run check:logic",
-    "check:all": "npm run check && npm run check:smoke",
-    "serve": "python3 -m http.server 4173"
+    "check:all": "npm run check && npm run check:smoke && npm run check:accounting",
+    "serve": "python3 -m http.server 4173",
+    "check:accounting": "node scripts/verify-accounting.mjs"
   },
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "devDependencies": {
     "playwright": "^1.63.0"
   }

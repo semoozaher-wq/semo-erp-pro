@@ -1,4 +1,4 @@
-const CACHE_NAME = 'semoo-frp-v4';
+const CACHE_NAME = 'semoo-frp-v5';
 const APP_SHELL = [
   './', './index.html', './manifest.json', './css/main.css',
   './js/config.js', './js/firebase.js', './js/gemini.js', './js/app.js',
