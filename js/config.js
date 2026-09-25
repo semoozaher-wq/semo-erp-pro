@@ -7,4 +7,11 @@ window.semoFirebaseConfig = {
             messagingSenderId: "915256659491",
             appId: "1:915256659491:web:242f82ba1cfaee4b7c6b96"
         };
-window.SEMOO_CONFIG = { appName: "SeMo0o FRP", firebaseProject: window.semoFirebaseConfig.projectId };
+window.SEMOO_CONFIG = {
+            appName: "SeMo0o FRP",
+            firebaseProject: window.semoFirebaseConfig.projectId,
+            // مفتاح VAPID الخاص بإشعارات الويب. ليس سرًّا، لكن اتركه فارغًا حتى تُنشئه.
+            // الخطوات: Firebase Console ← Cloud Messaging ← Web Push certificates ← Generate key pair
+            // ثم الصق المفتاح هنا. إن بقي فارغًا، تُعطَّل الإشعارات بهدوء دون أي خطأ.
+            vapidKey: ""
+        };

@@ -4106,7 +4106,7 @@
                         
                         // الحصول على Token
                         const token = await messaging.getToken({
-                            vapidKey: 'YOUR_VAPID_KEY_HERE' // استبدل هذا بمفتاح VAPID من Firebase Console
+                            vapidKey: (window.SEMOO_CONFIG && window.SEMOO_CONFIG.vapidKey) || ''
                         });
                         
                         console.log('FCM Token:', token);
