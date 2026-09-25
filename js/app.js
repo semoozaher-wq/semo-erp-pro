@@ -24,6 +24,7 @@
             branches: [],
             returns: [],
             orders: [],
+            accountingEntries: [],
             activity: [],
             settings: {},
             
@@ -500,7 +501,8 @@
                     loadCashbox(),
                     loadUsers(),
                     loadBranches(),
-                    loadReturns()
+                    loadReturns(),
+                    loadAccountingEntries()
                 ]);
                 await seedDemoCatalog();
                 
@@ -718,6 +720,7 @@
             }
         }
 
+
         // ============================================
         // === REALTIME LISTENERS ===
         // ============================================
@@ -853,6 +856,9 @@
                 case 'wholesale':
                     renderWholesaleHubPage(content);
                     break;
+                case 'accounting':
+                    showAccountingPage(content);
+                    break;
                 default:
                     renderHomePage(content);
             }
@@ -968,10 +974,13 @@
         async function postAccountingEntry(entry){
             const operationId=entry.operationId||((crypto.randomUUID&&crypto.randomUUID())||generateId());
             const row={...entry,operationId,createdAt:entry.createdAt||new Date().toISOString(),createdBy:entry.createdBy||AppState.currentUser?.uid||'',branch:entry.branch||AppState.currentBranch||''};
-            const existing=await db.ref('accountingEntries').orderByChild('operationId').equalTo(operationId).once('value');
-            if(existing.exists())return;
+            try {
+                const existing=await db.ref('accountingEntries').orderByChild('operationId').equalTo(operationId).once('value');
+                if(existing.exists())return;
+            } catch (e) { console.warn('accounting duplicate check skipped', e); }
             await db.ref('accountingEntries').push(row);
             try{const localDb=await openLocalReliability();const tx=localDb.transaction('snapshots','readwrite');const r=await new Promise((res,rej)=>{const q=tx.objectStore('snapshots').get('accounting-ledger');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});const ledger=r?.entries||[];ledger.push(row);tx.objectStore('snapshots').put({id:'accounting-ledger',entries:ledger.slice(-500),createdAt:new Date().toISOString()});}catch(e){console.warn('local ledger unavailable',e)}
+            invalidateAccountingCache();
         }
         function accountingEntryFromSale(sale,ref){return {operationId:sale.operationId,source:'sale',sourceId:ref,debitAccount:'cash_or_receivable',creditAccount:'sales_revenue',amount:Number(sale.total||0),currency:sale.currency||AppState.currentUser?.currency||'LYD',description:'بيع '+(sale.customerName||'عميل نقدي'),date:sale.date};}
         function accountingEntryFromPurchase(purchase,ref){return {operationId:purchase.operationId,source:'purchase',sourceId:ref,debitAccount:'inventory',creditAccount:purchase.paymentMethod==='credit'?'supplier_payable':'cash',amount:Number(purchase.totalAmount||0),currency:purchase.currency||AppState.currentUser?.currency||'LYD',description:'شراء من '+purchase.supplierName,date:purchase.purchaseDate};}
@@ -979,6 +988,208 @@
 
         function accountingEntryFromExpense(expense,ref){return {operationId:expense.operationId,source:'expense',sourceId:ref,debitAccount:'expense:'+expense.category,creditAccount:expense.paymentMethod==='cash'?'cash':'bank',amount:Number(expense.amount||0),currency:AppState.currentUser?.currency||'LYD',description:expense.description,date:expense.date};}
         function accountingEntryFromRevenue(revenue,ref){return {operationId:revenue.operationId,source:'revenue',sourceId:ref,debitAccount:revenue.paymentMethod==='cash'?'cash':'bank',creditAccount:'other_revenue:'+revenue.source,amount:Number(revenue.amount||0),currency:AppState.currentUser?.currency||'LYD',description:revenue.description,date:revenue.date};}
+
+        // === Accounting engine: chart of accounts, journal, trial balance, P&L (double-entry) ===
+
+        const CHART_OF_ACCOUNTS = [
+            { code:'1000', ar:'النقدية', en:'Cash', type:'asset', nature:'debit' },
+            { code:'1010', ar:'البنك', en:'Bank', type:'asset', nature:'debit' },
+            { code:'1020', ar:'العملاء (مدينون)', en:'Accounts Receivable', type:'asset', nature:'debit' },
+            { code:'1200', ar:'المخزون', en:'Inventory', type:'asset', nature:'debit' },
+            { code:'2000', ar:'الموردون (دائنون)', en:'Accounts Payable', type:'liability', nature:'credit' },
+            { code:'2100', ar:'دفعات مقدمة من العملاء', en:'Customer Advances', type:'liability', nature:'credit' },
+            { code:'3000', ar:'حقوق الملكية', en:'Owner Equity', type:'equity', nature:'credit' },
+            { code:'4000', ar:'المبيعات', en:'Sales Revenue', type:'revenue', nature:'credit' },
+            { code:'4100', ar:'إيرادات أخرى', en:'Other Revenue', type:'revenue', nature:'credit' },
+            { code:'5000', ar:'تكلفة المبيعات', en:'Cost of Goods Sold', type:'expense', nature:'debit' },
+            { code:'5100', ar:'مرتجع المبيعات', en:'Sales Returns', type:'expense', nature:'debit' },
+            { code:'5200', ar:'المشتريات', en:'Purchases', type:'expense', nature:'debit' },
+            { code:'5300', ar:'المصروفات', en:'Expenses', type:'expense', nature:'debit' },
+            { code:'5400', ar:'خسائر المخزون', en:'Inventory Loss', type:'expense', nature:'debit' }
+        ];
+
+        const ACCOUNT_ALIASES = {
+            'cash':'1000', 'cash_or_receivable':'1000', 'bank':'1010', 'receivable':'1020',
+            'inventory':'1200', 'inventory_loss':'5400', 'supplier_payable':'2000', 'customer_advance':'2100',
+            'sales_revenue':'4000', 'sales_return':'5100', 'other_revenue':'4100',
+            'purchases':'5200', 'expense':'5300'
+        };
+
+        let ACCOUNTING_CACHE = { stamp:0, entries:[] };
+
+        function invalidateAccountingCache(){ ACCOUNTING_CACHE.stamp = 0; }
+
+        function accountInfo(code){ return CHART_OF_ACCOUNTS.find(a => a.code === code) || null; }
+
+        function accountLabel(code){
+            const c = accountInfo(code);
+            return c ? (c.ar + ' (' + c.code + ')') : String(code || '');
+        }
+
+        function normalizeAccountCode(account){
+            const raw = String(account || '').trim();
+            if (!raw) return '5300';
+            if (ACCOUNT_ALIASES[raw]) return ACCOUNT_ALIASES[raw];
+            if (accountInfo(raw)) return raw;
+            const lower = raw.toLowerCase();
+            if (ACCOUNT_ALIASES[lower]) return ACCOUNT_ALIASES[lower];
+            if (lower.indexOf('expense:') === 0) return '5300';
+            if (lower.indexOf('other_revenue:') === 0) return '4100';
+            return '5300';
+        }
+
+        function entryDebitCode(e){ return normalizeAccountCode(e.debitCode || e.debitAccount); }
+        function entryCreditCode(e){ return normalizeAccountCode(e.creditCode || e.creditAccount); }
+
+        async function loadAccountingEntries(force){
+            if (!force && ACCOUNTING_CACHE.stamp && (Date.now() - ACCOUNTING_CACHE.stamp) < 15000) return ACCOUNTING_CACHE.entries;
+            const list = [];
+            try {
+                const snapshot = await db.ref('accountingEntries').once('value');
+                snapshot.forEach(child => list.push({ id: child.key, ...child.val() }));
+                list.sort((a, b) => new Date(a.createdAt || a.date || 0) - new Date(b.createdAt || b.date || 0));
+                AppState.accountingEntries = list;
+                ACCOUNTING_CACHE = { stamp: Date.now(), entries: list };
+            } catch (error) {
+                console.error('Error loading accounting entries:', error);
+            }
+            return list;
+        }
+
+        async function removeAccountingEntriesBySource(source, sourceId){
+            try {
+                const snap = await db.ref('accountingEntries').once('value');
+                const removals = [];
+                snap.forEach(child => {
+                    const row = child.val() || {};
+                    if (row.source === source && String(row.sourceId) === String(sourceId)) removals.push(db.ref('accountingEntries/' + child.key).remove());
+                });
+                if (removals.length) await Promise.all(removals);
+                invalidateAccountingCache();
+            } catch (error) {
+                console.error('Error removing accounting entries:', error);
+            }
+        }
+
+        function accountingEntryFromReturn(ret, ref){
+            const isSales = ret.type === 'sales' || ret.returnType === 'sales';
+            const amount = Number(ret.totalAmount || 0);
+            return {
+                operationId: ret.operationId || ((crypto.randomUUID && crypto.randomUUID()) || generateId()),
+                source: isSales ? 'sales_return' : 'purchase_return',
+                sourceId: ref,
+                debitAccount: isSales ? 'sales_return' : 'inventory',
+                creditAccount: isSales ? 'cash' : 'supplier_payable',
+                amount: amount,
+                currency: AppState.currentUser?.currency || 'LYD',
+                description: (isSales ? 'مرتجع مبيعات: ' : 'مرتجع مشتريات: ') + (ret.productName || ''),
+                date: ret.date || new Date().toISOString()
+            };
+        }
+
+        function accountingEntryFromCustomerDebtPayment(payment){
+            return {
+                operationId: payment.operationId,
+                source: 'customer_debt_payment',
+                sourceId: payment.debtId,
+                debitAccount: payment.paymentMethod === 'cash' ? 'cash' : 'bank',
+                creditAccount: 'receivable',
+                amount: Number(payment.amount || 0),
+                currency: AppState.currentUser?.currency || 'LYD',
+                description: 'تحصيل دفعة من عميل',
+                date: payment.date || new Date().toISOString()
+            };
+        }
+
+        function trialBalance(entries){
+            const list = entries || [];
+            const map = {};
+            const ensure = code => { if (!map[code]) map[code] = { code: code, name: accountLabel(code), debit: 0, credit: 0 }; return map[code]; };
+            list.forEach(e => {
+                const d = entryDebitCode(e), c = entryCreditCode(e), amt = Number(e.amount || 0);
+                if (!amt) return;
+                ensure(d).debit += amt;
+                ensure(c).credit += amt;
+            });
+            const rows = Object.values(map).sort((a, b) => String(a.code).localeCompare(String(b.code)));
+            const totalDebit = rows.reduce((s, r) => s + r.debit, 0);
+            const totalCredit = rows.reduce((s, r) => s + r.credit, 0);
+            return {
+                rows: rows, totalDebit: totalDebit, totalCredit: totalCredit,
+                balanced: Math.abs(totalDebit - totalCredit) < 0.01,
+                normalized: list.some(e => e.debitCode || e.creditCode),
+                count: list.length
+            };
+        }
+
+        function ledgerLines(entries){
+            const lines = [];
+            (entries || []).forEach(e => {
+                const d = entryDebitCode(e), c = entryCreditCode(e), amt = Number(e.amount || 0);
+                lines.push({ date: e.date || e.createdAt, description: e.description || '', source: e.source || '', code: d, name: accountLabel(d), debit: amt, credit: 0 });
+                lines.push({ date: e.date || e.createdAt, description: (e.description || '') + ' / الطرف الدائن', source: e.source || '', code: c, name: accountLabel(c), debit: 0, credit: amt });
+            });
+            return lines;
+        }
+
+        function profitAndLoss(entries){
+            const list = entries || [];
+            const tb = trialBalance(list);
+            const ofType = nature => tb.rows.filter(r => { const a = accountInfo(r.code); return a && a.type === nature; });
+            const revenue = ofType('revenue').reduce((s, r) => s + (r.credit - r.debit), 0);
+            const expense = ofType('expense').reduce((s, r) => s + (r.debit - r.credit), 0);
+            const purchases = (tb.rows.find(r => r.code === '5200') || { debit:0, credit:0 });
+            const inventory = (tb.rows.find(r => r.code === '1200') || { debit:0, credit:0 });
+            const cogs = expense;
+            return {
+                revenue: revenue, expense: expense,
+                purchases: purchases.debit - purchases.credit,
+                inventory: inventory.debit - inventory.credit,
+                cogs: cogs, netProfit: revenue - expense,
+                balanced: tb.balanced,
+                needsReview: list.some(e => String(e.debitAccount || '').indexOf(':') > -1 || String(e.creditAccount || '').indexOf(':') > -1)
+            };
+        }
+
+        async function showAccountingPage(container){
+            if (!checkUserPermission('admin')) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-text">' + t('المحاسبة متاحة للمدير فقط', 'Accounting is available for admin only') + '</div></div>';
+                return;
+            }
+            container.innerHTML = '<div class="section-card"><div class="section-body"><div class="empty-state"><div class="empty-state-text">' + t('جاري تجهيز دفتر اليومية...', 'Loading journal...') + '</div></div></div></div>';
+            const entries = await loadAccountingEntries(true);
+            const tb = trialBalance(entries);
+            const pl = profitAndLoss(entries);
+            const lines = ledgerLines(entries).slice(-200).reverse();
+            const legacy = entries.filter(e => !e.debitCode && !e.creditCode);
+            const badge = (!tb.balanced)
+                ? '<span class="badge badge-danger">' + t('غير متوازن', 'Unbalanced') + '</span>'
+                : (legacy.length && !tb.normalized)
+                    ? '<span class="badge badge-warning">' + legacy.length + ' ' + t('قيد قديم يُصنَّف تلقائياً', 'legacy entries auto-classified') + '</span>'
+                    : '<span class="badge badge-success">' + t('متوازن', 'Balanced') + '</span>';
+            const balRows = tb.rows.map(r => '<tr><td>' + r.code + '</td><td>' + escapeHtml(r.name) + '</td><td>' + formatCurrency(r.debit) + '</td><td>' + formatCurrency(r.credit) + '</td><td>' + formatCurrency(r.debit - r.credit) + '</td></tr>').join('') || '<tr><td colspan="5">' + t('لا توجد حركات', 'No entries') + '</td></tr>';
+            const lineRows = lines.map(l => '<tr><td>' + formatDate(l.date) + '</td><td>' + escapeHtml(l.description) + '</td><td>' + escapeHtml(l.name) + '</td><td>' + (l.debit ? formatCurrency(l.debit) : '-') + '</td><td>' + (l.credit ? formatCurrency(l.credit) : '-') + '</td></tr>').join('') || '<tr><td colspan="5">' + t('لا توجد قيود', 'No journal lines') + '</td></tr>';
+            container.innerHTML =
+                '<div class="section-card"><div class="section-header"><div class="section-title"><i class="fas fa-scale-balanced"></i><span>' + t('دفتر اليومية والقيود المزدوجة', 'Journal & Double Entry') + '</span></div>' +
+                '<button class="btn btn-sm btn-primary" onclick="showPage(\'accounting\')"><i class="fas fa-rotate"></i> ' + t('تحديث', 'Refresh') + '</button></div>' +
+                '<div class="section-body"><div class="wholesale-stats">' +
+                '<div><strong>' + tb.count + '</strong><span>' + t('عدد القيود', 'Entries') + '</span></div>' +
+                '<div><strong>' + formatCurrency(tb.totalDebit) + '</strong><span>' + t('إجمالي المدين', 'Total Debit') + '</span></div>' +
+                '<div><strong>' + formatCurrency(tb.totalCredit) + '</strong><span>' + t('إجمالي الدائن', 'Total Credit') + '</span></div>' +
+                '<div><strong>' + (tb.balanced ? '0.00' : formatCurrency(tb.totalDebit - tb.totalCredit)) + '</strong><span>' + t('الفرق', 'Difference') + '</span></div>' +
+                '</div><p>' + badge + '</p>' +
+                (pl.needsReview ? '<p class="text-muted"><i class="fas fa-circle-info"></i> ' + t('قيود قديمة تستخدم تصنيفاً نصياً (expense:...) وتُعرض مجمّعة تحت حساب 5300.', 'legacy entries use text categories and roll up to 5300.') + '</p>' : '') +
+                '<h3>' + t('الأداء المالي', 'Financial performance') + '</h3><div class="wholesale-stats">' +
+                '<div><strong>' + formatCurrency(pl.revenue) + '</strong><span>' + t('الإيرادات', 'Revenue') + '</span></div>' +
+                '<div><strong>' + formatCurrency(pl.expense) + '</strong><span>' + t('المصروفات', 'Expenses') + '</span></div>' +
+                '<div><strong>' + formatCurrency(pl.netProfit) + '</strong><span>' + t('صافي الربح', 'Net Profit') + '</span></div>' +
+                '</div></div></div>' +
+                '<div class="section-card mt-2"><div class="section-header"><div class="section-title"><i class="fas fa-list-check"></i><span>' + t('ميزان المراجعة', 'Trial Balance') + '</span></div></div>' +
+                '<div class="section-body"><div class="table-responsive"><table class="data-table"><thead><tr><th>' + t('الكود', 'Code') + '</th><th>' + t('الحساب', 'Account') + '</th><th>' + t('مدين', 'Debit') + '</th><th>' + t('دائن', 'Credit') + '</th><th>' + t('الرصيد', 'Balance') + '</th></tr></thead><tbody>' + balRows + '</tbody></table></div></div></div>' +
+                '<div class="section-card mt-2"><div class="section-header"><div class="section-title"><i class="fas fa-book"></i><span>' + t('آخر 200 سطر في اليومية', 'Last 200 journal lines') + '</span></div>' +
+                '<button class="btn btn-sm btn-primary" onclick="window.print()"><i class="fas fa-print"></i> ' + t('طباعة', 'Print') + '</button></div>' +
+                '<div class="section-body"><div class="table-responsive"><table class="data-table"><thead><tr><th>' + t('التاريخ', 'Date') + '</th><th>' + t('البيان', 'Description') + '</th><th>' + t('الحساب', 'Account') + '</th><th>' + t('مدين', 'Debit') + '</th><th>' + t('دائن', 'Credit') + '</th></tr></thead><tbody>' + lineRows + '</tbody></table></div></div></div>';
+        }
 
         function renderOperationsCenter(container){
             const low=AppState.products.filter(p=>Number(p.quantity||0)<=Number(p.minStock||5));
@@ -1426,6 +1637,7 @@
                     reference: saleRef.key
                 });
                 await postAccountingEntry(accountingEntryFromSale(saleData,saleRef.key));
+                invalidateAccountingCache();
                 
                 AppState.cart = [];
                 
@@ -2316,6 +2528,7 @@
                 }
                 
                 await db.ref('expenses/' + expenseId).remove();
+                await removeAccountingEntriesBySource('expense', expenseId);
                 showNotification(t('تم حذف المصروف', 'Expense deleted'), 'success');
             } catch (error) {
                 console.error('Error deleting expense:', error);
@@ -2443,6 +2656,7 @@
                 cashboxSnap.forEach(child => removals.push(db.ref('cashbox/' + child.key).remove()));
                 await Promise.all(removals);
                 await db.ref('revenues/' + revenueId).remove();
+                await removeAccountingEntriesBySource('revenue', revenueId);
                 showNotification(t('تم حذف الإيراد', 'Revenue deleted'), 'success');
                 showPage('revenues');
             } catch (error) {
@@ -2726,7 +2940,9 @@
                         createdBy: AppState.currentUser?.uid || ''
                     });
                 }
-                if(type==='supplier') await postAccountingEntry(accountingEntryFromDebtPayment({operationId,debtId,amount,paymentMethod,date:new Date().toISOString()}));
+                const _debtPay = {operationId, debtId, amount, paymentMethod, date:new Date().toISOString()};
+                await postAccountingEntry(type==='supplier' ? accountingEntryFromDebtPayment(_debtPay) : accountingEntryFromCustomerDebtPayment(_debtPay));
+                invalidateAccountingCache();
                 
                 closeModal('debtPaymentModal');
                 showNotification(t('تم سداد الدين بنجاح', 'Debt paid successfully'), 'success');
@@ -3233,6 +3449,9 @@
                     });
                 }
                 
+                await postAccountingEntry(accountingEntryFromReturn(returnData, returnRef.key));
+                invalidateAccountingCache();
+
                 closeModal('returnModal');
                 showNotification(t('تم حفظ المرتجع بنجاح', 'Return saved successfully'), 'success');
                 showPage('returns');
@@ -4249,7 +4468,7 @@
 
         function openBackupTools() { document.getElementById('backupModal').classList.add('active'); document.getElementById('backupStatus').textContent = 'آخر مزامنة: ' + new Date().toLocaleString('ar'); }
         function backupPayload() {
-            const keys=['products','customers','suppliers','categories','sales','purchases','expenses','revenues','debts','supplierDebts','cashbox','users','branches','returns'];
+            const keys=['products','customers','suppliers','categories','sales','purchases','expenses','revenues','debts','supplierDebts','cashbox','users','branches','returns','accountingEntries','orders'];
             return { app:'SeMo0o FRP', version:1, exportedAt:new Date().toISOString(), data:Object.fromEntries(keys.map(k=>[k,AppState[k]||[]])) };
         }
         function downloadBackup() {
@@ -4435,7 +4654,7 @@
         async function recoverLocalSnapshot(){ try{const db=await openLocalReliability();const snap=await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.snapshotStore,'readonly');const r=tx.objectStore(LocalReliability.snapshotStore).get('latest');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});if(!snap||!snap.cart?.length)return;const age=Date.now()-new Date(snap.createdAt).getTime();if(age>24*60*60*1000)return;if(confirm('وجدنا سلة بيع محفوظة من '+new Date(snap.createdAt).toLocaleString('ar')+'\nهل تريد استعادتها؟')){AppState.cart=snap.cart;showNotification('تمت استعادة السلة المحفوظة','success');if(AppState.currentPage==='pos')showPage('pos')}}catch(e){console.warn('Recovery skipped',e)} }
         async function queueOfflineOperation(path,payload,method='set'){ try{const db=await openLocalReliability();const op={id:crypto.randomUUID?crypto.randomUUID():generateId(),path,payload,method,createdAt:new Date().toISOString(),attempts:0};await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).put(op);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});updatePendingCount()}catch(e){console.warn('Outbox queue failed',e)} }
         async function updatePendingCount(){try{const db=await openLocalReliability();const count=await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readonly');const r=tx.objectStore(LocalReliability.outboxStore).count();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});AppState.pendingOperations=count;const pill=document.getElementById('syncPill');if(pill&&count)pill.innerHTML=`<i class="fas fa-cloud-arrow-up"></i><span>${navigator.onLine?'متصل — '+count+' معلقة':'بدون إنترنت — '+count+' معلقة'}</span>`;}catch(e){}}
-        async function processOfflineOutbox(){ if(!navigator.onLine)return showNotification('لا يوجد اتصال حالياً','warning'); try{const db=await openLocalReliability();const ops=await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readonly');const r=tx.objectStore(LocalReliability.outboxStore).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});let done=0;for(const op of ops){try{const ref=dbRefForOfflinePath(op.path);if(!ref)continue;if(op.method==='offlinePurchase'){const purchase={...op.payload};const existing=await db.ref('purchases').orderByChild('operationId').equalTo(purchase.operationId).once('value');if(existing.exists()){await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).delete(op.id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});continue;}const purchaseRef=await db.ref('purchases').push(purchase);for(const item of (purchase.items||[])){const product=AppState.products.find(p=>p.id===item.productId);if(product)await db.ref('products/'+product.id).update({quantity:Number(product.quantity||0)+Number(item.quantity||0),lastPurchaseDate:new Date().toISOString(),lastCostPrice:item.costPrice});}if(purchase.paymentMethod==='credit')await db.ref('supplierDebts').push({supplierId:purchase.supplierId,supplierName:purchase.supplierName,purchaseId:purchaseRef.key,amount:purchase.totalAmount,remaining:purchase.totalAmount,status:'pending',dueDate:purchase.purchaseDate,notes:purchase.notes,createdAt:new Date().toISOString(),operationId:purchase.operationId});else await db.ref('cashbox').push({type:'expense',amount:purchase.totalAmount,description:'شراء مؤجل من المورد: '+purchase.supplierName,category:'purchases',referenceType:'purchase',referenceId:purchaseRef.key,date:purchase.purchaseDate});await postAccountingEntry(accountingEntryFromPurchase(purchase,purchaseRef.key));}else if(op.method==='offlineDebtPayment'){const pay=op.payload;const path=pay.type==='supplier'?'supplierDebts':'debts';const debtSnap=await db.ref(path+'/'+pay.debtId).once('value');const debt=debtSnap.val();if(!debt||debt.lastPaymentOperationId===pay.operationId){await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).delete(op.id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});continue;}const remaining=Math.max(0,Number(debt.remaining||debt.amount||0)-Number(pay.amount||0));await db.ref(path+'/'+pay.debtId).update({remaining,status:remaining<=0?'paid':'partial',lastPaymentDate:pay.date,lastPaymentAmount:pay.amount,lastPaymentOperationId:pay.operationId});if(pay.paymentMethod==='cash')await db.ref('cashbox').push({type:pay.type==='customer'?'income':'expense',amount:pay.amount,description:pay.type==='customer'?'سداد دين عميل':'سداد دين مورد',category:'debt_payment',referenceType:pay.type+'_debt_payment',referenceId:pay.debtId,date:pay.date});if(pay.type==='supplier')await postAccountingEntry(accountingEntryFromDebtPayment(pay));}else if(op.method==='offlineSale'){const sale={...op.payload};const cart=sale._offlineCart||[];delete sale._offlineCart;delete sale._offlineQueuedAt;const existing=await db.ref('sales').orderByChild('operationId').equalTo(sale.operationId).once('value');if(existing.exists()){await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).delete(op.id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});continue;}const saleRef=await db.ref('sales').push(sale);for(const item of cart){const product=AppState.products.find(p=>p.id===item.productId);if(product)await db.ref('products/'+product.id).update({quantity:Math.max(0,Number(product.quantity||0)-Number(item.quantity||0))});}await db.ref('cashbox').push({type:'income',amount:sale.total,description:'مبيعات مؤجلة - '+saleRef.key.slice(-8),date:new Date().toISOString(),reference:saleRef.key});}else if(op.method==='update')await ref.update(op.payload);else if(op.method==='push')await ref.push(op.payload);else await ref.set(op.payload);await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).delete(op.id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});done++;}catch(e){console.warn('Pending operation failed',e)}}updatePendingCount();showNotification(done?'تمت مزامنة '+done+' عملية':'لا توجد عمليات قابلة للمزامنة الآن',done?'success':'info');}catch(e){showNotification('تعذر فحص العمليات المعلقة','error')} }
+        async function processOfflineOutbox(){ if(!navigator.onLine)return showNotification('لا يوجد اتصال حالياً','warning'); try{const db=await openLocalReliability();const ops=await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readonly');const r=tx.objectStore(LocalReliability.outboxStore).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});let done=0;for(const op of ops){try{const ref=dbRefForOfflinePath(op.path);if(!ref)continue;if(op.method==='offlinePurchase'){const purchase={...op.payload};const existing=await db.ref('purchases').orderByChild('operationId').equalTo(purchase.operationId).once('value');if(existing.exists()){await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).delete(op.id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});continue;}const purchaseRef=await db.ref('purchases').push(purchase);for(const item of (purchase.items||[])){const product=AppState.products.find(p=>p.id===item.productId);if(product)await db.ref('products/'+product.id).update({quantity:Number(product.quantity||0)+Number(item.quantity||0),lastPurchaseDate:new Date().toISOString(),lastCostPrice:item.costPrice});}if(purchase.paymentMethod==='credit')await db.ref('supplierDebts').push({supplierId:purchase.supplierId,supplierName:purchase.supplierName,purchaseId:purchaseRef.key,amount:purchase.totalAmount,remaining:purchase.totalAmount,status:'pending',dueDate:purchase.purchaseDate,notes:purchase.notes,createdAt:new Date().toISOString(),operationId:purchase.operationId});else await db.ref('cashbox').push({type:'expense',amount:purchase.totalAmount,description:'شراء مؤجل من المورد: '+purchase.supplierName,category:'purchases',referenceType:'purchase',referenceId:purchaseRef.key,date:purchase.purchaseDate});await postAccountingEntry(accountingEntryFromPurchase(purchase,purchaseRef.key));}else if(op.method==='offlineDebtPayment'){const pay=op.payload;const path=pay.type==='supplier'?'supplierDebts':'debts';const debtSnap=await db.ref(path+'/'+pay.debtId).once('value');const debt=debtSnap.val();if(!debt||debt.lastPaymentOperationId===pay.operationId){await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).delete(op.id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});continue;}const remaining=Math.max(0,Number(debt.remaining||debt.amount||0)-Number(pay.amount||0));await db.ref(path+'/'+pay.debtId).update({remaining,status:remaining<=0?'paid':'partial',lastPaymentDate:pay.date,lastPaymentAmount:pay.amount,lastPaymentOperationId:pay.operationId});if(pay.paymentMethod==='cash')await db.ref('cashbox').push({type:pay.type==='customer'?'income':'expense',amount:pay.amount,description:pay.type==='customer'?'سداد دين عميل':'سداد دين مورد',category:'debt_payment',referenceType:pay.type+'_debt_payment',referenceId:pay.debtId,date:pay.date});await postAccountingEntry(pay.type==='supplier'?accountingEntryFromDebtPayment(pay):accountingEntryFromCustomerDebtPayment(pay));invalidateAccountingCache();}else if(op.method==='offlineSale'){const sale={...op.payload};const cart=sale._offlineCart||[];delete sale._offlineCart;delete sale._offlineQueuedAt;const existing=await db.ref('sales').orderByChild('operationId').equalTo(sale.operationId).once('value');if(existing.exists()){await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).delete(op.id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});continue;}const saleRef=await db.ref('sales').push(sale);for(const item of cart){const product=AppState.products.find(p=>p.id===item.productId);if(product)await db.ref('products/'+product.id).update({quantity:Math.max(0,Number(product.quantity||0)-Number(item.quantity||0))});}await db.ref('cashbox').push({type:'income',amount:sale.total,description:'مبيعات مؤجلة - '+saleRef.key.slice(-8),date:new Date().toISOString(),reference:saleRef.key});await postAccountingEntry(accountingEntryFromSale(sale,saleRef.key));}else if(op.method==='update')await ref.update(op.payload);else if(op.method==='push')await ref.push(op.payload);else await ref.set(op.payload);await new Promise((res,rej)=>{const tx=db.transaction(LocalReliability.outboxStore,'readwrite');tx.objectStore(LocalReliability.outboxStore).delete(op.id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});done++;}catch(e){console.warn('Pending operation failed',e)}}updatePendingCount();showNotification(done?'تمت مزامنة '+done+' عملية':'لا توجد عمليات قابلة للمزامنة الآن',done?'success':'info');}catch(e){showNotification('تعذر فحص العمليات المعلقة','error')} }
         function dbRefForOfflinePath(path){return (typeof db!=='undefined'&&db&&path)?db.ref(path):null}
         async function runSystemHealthCheck(){const box=document.getElementById('healthChecks');if(!box)return;box.innerHTML='<div class="health-row">جاري الفحص...</div>';const checks=[];checks.push(['الاتصال بالإنترنت',navigator.onLine,'متصل','غير متصل']);checks.push(['Firebase Authentication',(typeof auth!=='undefined'&&!!auth&&!!auth.currentUser),((typeof auth!=='undefined'&&auth?.currentUser)?'حساب مسجل':'لا يوجد حساب')]);checks.push(['قاعدة Firebase',(typeof db!=='undefined'&&!!db),'تم تحميلها','غير متاحة']);checks.push(['IndexedDB للحفظ المحلي',!!window.indexedDB,'متاح','غير متاح']);checks.push(['Service Worker',!!navigator.serviceWorker,'متاح','غير مسجل']);checks.push(['المزامنة المحلية',true,(localStorage.getItem('semoo-last-local-save')?'آخر حفظ '+new Date(localStorage.getItem('semoo-last-local-save')).toLocaleTimeString('ar'):'جاهز للحفظ'),'لم يتم الحفظ بعد']);box.innerHTML=checks.map(c=>`<div class="health-row"><span>${c[0]}</span><b class="${c[1]?'health-ok':'health-warn'}"><i class="fas fa-${c[1]?'check':'triangle-exclamation'}"></i> ${c[1]?c[2]:c[3]}</b></div>`).join('');updatePendingCount()}
         function openSystemHealth(){document.getElementById('systemHealthModal')?.classList.add('active');runSystemHealthCheck()}
