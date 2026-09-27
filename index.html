@@ -253,6 +253,10 @@
                     <div class="nav-icon"><i class="fas fa-cash-register"></i></div>
                     <span class="nav-label" data-ar="البيع" data-en="POS">البيع</span>
                 </div>
+                <div class="nav-item" onclick="showPage('customers')" data-page="customers">
+                    <div class="nav-icon"><i class="fas fa-users"></i></div>
+                    <span class="nav-label" data-ar="العملاء" data-en="Customers">العملاء</span>
+                </div>
                 <div class="nav-item" onclick="showPage('products')" data-page="products">
                     <div class="nav-icon"><i class="fas fa-boxes"></i></div>
                     <span class="nav-label" data-ar="المنتجات" data-en="Products">المنتجات</span>
@@ -310,14 +314,33 @@
                     <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div class="form-group">
                             <label data-ar="الفئة" data-en="Category">الفئة</label>
-                            <select id="productCategory">
-                                <option value="">-- اختر --</option>
-                            </select>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <select id="productCategory" style="flex:1;">
+                                    <option value="">-- اختر --</option>
+                                </select>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="quickAddCategory()" title="إضافة فئة جديدة"><i class="fas fa-plus"></i></button>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label data-ar="الباركود" data-en="Barcode">الباركود</label>
                             <input type="text" id="productBarcode">
                         </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label data-ar="المورد" data-en="Supplier">المورد</label>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <select id="productSupplier" style="flex:1;"><option value="">-- بدون --</option></select>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="quickAddSupplier()" title="إضافة مورد"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label data-ar="المسوق" data-en="Marketer">المسوق</label>
+                            <select id="productMarketer"><option value="">-- بدون --</option></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label data-ar="ملاحظة الربط" data-en="Linking note">يجب ربط البضاعة بمورد أو مسوق على الأقل حتى تُحسب في حسابه.</label>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -512,7 +535,9 @@
                     <label data-ar="اختر العميل" data-en="Select Customer">اختر العميل</label>
                     <select id="saleCustomer" onchange="applySaleCustomerPricing()">
                         <option value="" data-ar="عميل نقدي" data-en="Cash Customer">عميل نقدي</option>
+                        <option value="__walkin__" data-ar="عميل طياري (غير معروف)" data-en="Walk-in (unknown)">عميل طياري (غير معروف)</option>
                     </select>
+                    <small class="text-muted">العميل الطياري: تُخصم البضاعة من حساب المورد/المسوق.</small>
                 </div>
                 <div class="form-group">
                     <label data-ar="طريقة الدفع" data-en="Payment Method">طريقة الدفع</label>
@@ -890,6 +915,29 @@
                     <span data-ar="تصدير PDF" data-en="Export PDF">تصدير PDF</span>
                 </button>
                 <button class="btn btn-success flex-1" onclick="exportReportToExcel()">
+                    <i class="fas fa-file-excel"></i>
+                    <span data-ar="تصدير Excel" data-en="Export Excel">تصدير Excel</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Party Statement Modal (customer / supplier / marketer) -->
+    <div id="statementModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="statementModalTitle" data-ar="كشف حساب" data-en="Account Statement">كشف حساب</h3>
+                <button class="modal-close" onclick="closeModal('statementModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="statementModalBody">
+                <!-- Statement content will be rendered here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary flex-1" onclick="exportStatementPDF()">
+                    <i class="fas fa-file-pdf"></i>
+                    <span data-ar="تصدير PDF" data-en="Export PDF">تصدير PDF</span>
+                </button>
+                <button class="btn btn-success flex-1" onclick="exportStatementExcel()">
                     <i class="fas fa-file-excel"></i>
                     <span data-ar="تصدير Excel" data-en="Export Excel">تصدير Excel</span>
                 </button>
