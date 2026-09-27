@@ -26,6 +26,9 @@
             orders: [],
             accountingEntries: [],
             activity: [],
+            customerStatements: [],
+            consignorStatements: [],
+            marketers: [],
             settings: {},
             
             // POS state
@@ -163,6 +166,93 @@
                 'credit': t('آجل', 'Credit')
             };
             return methods[method] || method;
+        }
+
+        // ============================================
+        // === CATEGORY / CONSIGNOR / STATEMENT HELPERS ===
+        // ============================================
+        // Resolve a category display name from a product, whether the product stores
+        // the category id, the category name, or a cached categoryName field.
+        function categoryName(product) {
+            if (!product) return '-';
+            const cats = Array.isArray(AppState.categories) ? AppState.categories : [];
+            const raw = product.category;
+            if (raw) {
+                const byId = cats.find(c => c.id === raw);
+                if (byId) return byId.name;
+                const byName = cats.find(c => c.name === raw);
+                if (byName) return byName.name;
+                if (product.categoryName) return product.categoryName;
+                return raw; // legacy value already a readable name
+            }
+            return product.categoryName || '-';
+        }
+
+        function findCategoryByName(name) {
+            const key = String(name || '').trim().toLowerCase();
+            if (!key) return null;
+            return (AppState.categories || []).find(c => String(c.name || '').trim().toLowerCase() === key) || null;
+        }
+
+        // A product is consigned by a supplier (مورد) or a marketer (مسوق).
+        function consignorFor(product) {
+            if (!product) return null;
+            if (product.marketerId) return { type: 'marketer', id: product.marketerId, name: product.marketerName || '' };
+            if (product.supplierId) return { type: 'supplier', id: product.supplierId, name: product.supplierName || '' };
+            return null;
+        }
+
+        function supplierDisplayName(id) {
+            const s = (AppState.suppliers || []).find(x => x.id === id);
+            return s ? s.name : '';
+        }
+
+        function marketerDisplayName(id) {
+            const m = (AppState.marketers || []).find(x => x.id === id) || (AppState.users || []).find(x => x.id === id);
+            return m ? (m.name || m.email || '') : '';
+        }
+
+        // Marketers list = dedicated marketers collection + sales/driver employees.
+        function availableMarketers() {
+            const list = [];
+            (AppState.marketers || []).forEach(m => list.push({ id: m.id, name: m.name || m.phone || t('\u0645\u0633\u0648\u0642', 'Marketer') }));
+            (AppState.users || []).filter(u => ['sales', 'driver', 'cashier'].includes(String(u.role || '').toLowerCase())).forEach(u => {
+                if (!list.find(x => x.id === u.id)) list.push({ id: u.id, name: u.name || u.email });
+            });
+            return list;
+        }
+
+        // --- Persistent party statements (survive over time, like large companies) ---
+        async function postCustomerStatement(entry) {
+            try {
+                const payload = { ...entry, createdAt: entry.date || new Date().toISOString() };
+                const ref = await db.ref('customerStatements').push(payload);
+                AppState.customerStatements = AppState.customerStatements || [];
+                AppState.customerStatements.push({ id: ref.key, ...payload });
+                return ref.key;
+            } catch (e) { console.warn('customer statement failed', e); return null; }
+        }
+
+        async function postConsignorStatement(entry) {
+            try {
+                const payload = { ...entry, createdAt: entry.date || new Date().toISOString() };
+                const ref = await db.ref('consignorStatements').push(payload);
+                AppState.consignorStatements = AppState.consignorStatements || [];
+                AppState.consignorStatements.push({ id: ref.key, ...payload });
+                return ref.key;
+            } catch (e) { console.warn('consignor statement failed', e); return null; }
+        }
+
+        function customerStatementLines(customerId) {
+            return (AppState.customerStatements || [])
+                .filter(s => s.customerId === customerId)
+                .sort((a, b) => new Date(a.date || a.createdAt || 0) - new Date(b.date || b.createdAt || 0));
+        }
+
+        function consignorStatementLines(type, id) {
+            return (AppState.consignorStatements || [])
+                .filter(s => s.consignorType === type && s.consignorId === id)
+                .sort((a, b) => new Date(a.date || a.createdAt || 0) - new Date(b.date || b.createdAt || 0));
         }
 
         function checkUserPermission(requiredRole) {
@@ -799,6 +889,9 @@
                 case 'products':
                     renderProductsPage(content);
                     break;
+                case 'customers':
+                    showCustomersPage(content);
+                    break;
                 case 'categories':
                     renderCategoriesPage(content);
                     break;
@@ -867,10 +960,34 @@
         function renderCategoriesPage(container) {
             const categories = Array.isArray(AppState.categories) ? AppState.categories : [];
             const counts = categories.reduce((map, category) => {
-                map[category.id] = AppState.products.filter(product => product.categoryId === category.id).length;
+                map[category.id] = AppState.products.filter(product =>
+                    product.category === category.id ||
+                    product.category === category.name ||
+                    product.categoryName === category.name
+                ).length;
                 return map;
             }, {});
-            container.innerHTML = `<div class="page-header"><div><span class="eyebrow">CATALOG / 02</span><h1>الفئات</h1><p>تنظيم المنتجات في مجموعات واضحة وسهلة البحث.</p></div><button class="btn btn-primary" onclick="openCategoryModal()"><i class="fas fa-plus"></i> إضافة فئة</button></div><div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>الفئة</th><th>الوصف</th><th>عدد المنتجات</th><th>إجراء</th></tr></thead><tbody>${categories.map(category => `<tr><td><strong>${escapeHtml(category.name || '')}</strong></td><td>${escapeHtml(category.description || '—')}</td><td>${counts[category.id] || 0}</td><td><button class="btn btn-sm btn-secondary" onclick="showPage('products')">عرض المنتجات</button></td></tr>`).join('') || '<tr><td colspan="4">لا توجد فئات بعد</td></tr>'}</tbody></table></div></div>`;
+            container.innerHTML = `<div class="page-header"><div><span class="eyebrow">CATALOG / 02</span><h1>الفئات</h1><p>تنظيم المنتجات في مجموعات واضحة وسهلة البحث.</p></div><button class="btn btn-primary" onclick="openCategoryModal()"><i class="fas fa-plus"></i> إضافة فئة</button></div><div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>الفئة</th><th>الوصف</th><th>عدد المنتجات</th><th>إجراء</th></tr></thead><tbody>${categories.map(category => `<tr><td><strong>${escapeHtml(category.name || '')}</strong></td><td>${escapeHtml(category.description || '—')}</td><td>${counts[category.id] || 0}</td><td><button class="btn btn-sm btn-warning" onclick="editCategory('${category.id}')"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="deleteCategory('${category.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('') || '<tr><td colspan="4">لا توجد فئات بعد</td></tr>'}</tbody></table></div></div>`;
+        }
+
+        function editCategory(categoryId) {
+            const c = (AppState.categories || []).find(x => x.id === categoryId);
+            if (!c) return;
+            document.getElementById('categoryModalTitle').textContent = t('تعديل الفئة', 'Edit Category');
+            document.getElementById('categoryId').value = c.id;
+            document.getElementById('categoryName').value = c.name || '';
+            document.getElementById('categoryDescription').value = c.description || '';
+            document.getElementById('categoryColor').value = c.color || '#4361ee';
+            document.getElementById('categoryModal').classList.add('active');
+        }
+        async function deleteCategory(categoryId) {
+            if (!confirm(t('هل أنت متأكد من حذف هذه الفئة؟', 'Delete this category?'))) return;
+            try {
+                await db.ref('categories/' + categoryId).remove();
+                AppState.categories = (AppState.categories || []).filter(c => c.id !== categoryId);
+                showNotification(t('تم حذف الفئة', 'Category deleted'), 'success');
+                if (AppState.currentPage === 'categories') showPage('categories');
+            } catch (e) { console.error(e); showNotification(t('تعذر حذف الفئة', 'Could not delete category'), 'error'); }
         }
 
         function renderPurchasesPage(container) {
@@ -1320,7 +1437,7 @@
                             <div class="product-info">
                                 <div class="product-name">${escapeHtml(product.name)}</div>
                                 <div class="product-meta">
-                                    <span>${product.category || '-'}</span>
+                                    <span>${escapeHtml(categoryName(product))}</span>
                                     <span class="product-stock ${getStockClass(product)}">${product.quantity || 0}</span>
                                 </div>
                             </div>
@@ -1402,7 +1519,7 @@
                         <div class="d-flex align-center justify-between p-2 mb-1" style="border-bottom: 1px solid var(--gray-100); cursor: pointer;" onclick="addToCart('${product.id}')">
                             <div>
                                 <div class="fw-semibold">${escapeHtml(product.name)}</div>
-                                <div class="text-small text-muted">${product.category || '-'} | ${product.quantity || 0} ${t('متوفر', 'in stock')}</div>
+                                <div class="text-small text-muted">${escapeHtml(categoryName(product))} | ${product.quantity || 0} ${t('متوفر', 'in stock')}</div>
                             </div>
                             <div class="fw-bold text-primary">${formatCurrency(product.salePrice)}</div>
                         </div>
@@ -1451,7 +1568,7 @@
                         <div class="d-flex align-center justify-between p-2 mb-1" style="border-bottom: 1px solid var(--gray-100); cursor: pointer;" onclick="addToCart('${product.id}')">
                             <div>
                                 <div class="fw-semibold">${escapeHtml(product.name)}</div>
-                                <div class="text-small text-muted">${product.category || '-'} | ${product.quantity || 0} ${t('متوفر', 'in stock')}</div>
+                                <div class="text-small text-muted">${escapeHtml(categoryName(product))} | ${product.quantity || 0} ${t('متوفر', 'in stock')}</div>
                             </div>
                             <div class="fw-bold text-primary">${formatCurrency(product.salePrice)}</div>
                         </div>
@@ -1550,10 +1667,9 @@
             }
             
             const customerSelect = document.getElementById('saleCustomer');
-            customerSelect.innerHTML = '<option value="">' + t('عميل نقدي', 'Cash Customer') + '</option>';
-            AppState.customers.forEach(c => {
-                customerSelect.innerHTML += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
-            });
+            customerSelect.innerHTML = '<option value="">' + t('عميل نقدي', 'Cash Customer') + '</option>'
+                + '<option value="__walkin__">' + t('عميل طياري (غير معروف)', 'Walk-in (unknown)') + '</option>'
+                + AppState.customers.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
             
             renderSaleSummary();
             
@@ -1590,16 +1706,20 @@
             const customerId = document.getElementById('saleCustomer').value;
             const paymentMethod = document.getElementById('salePaymentMethod').value;
             const notes = document.getElementById('saleNotes')?.value || '';
-            const selectedCustomer = AppState.customers.find(c=>c.id===customerId);
-            const projectedBalance = Number(selectedCustomer?.balance||0) + calculateCartTotal();
-            if (paymentMethod==='credit' && selectedCustomer && Number(selectedCustomer.creditLimit||0)>0 && projectedBalance>Number(selectedCustomer.creditLimit)) { showNotification(t('تجاوز الحد الائتماني للعميل','Customer credit limit exceeded'),'error'); return; }
+            const isWalkIn = customerId === '__walkin__';
+            const selectedCustomer = AppState.customers.find(c => c.id === customerId);
+            const projectedBalance = Number(selectedCustomer?.balance || 0) + calculateCartTotal();
+            if (paymentMethod === 'credit' && selectedCustomer && Number(selectedCustomer.creditLimit || 0) > 0 && projectedBalance > Number(selectedCustomer.creditLimit)) { showNotification(t('تجاوز الحد الائتماني للعميل','Customer credit limit exceeded'),'error'); return; }
+            if (paymentMethod === 'credit' && isWalkIn) { showNotification(t('لا يمكن البيع الآجل لعميل طياري', 'Credit is not allowed for a walk-in customer'), 'error'); return; }
+            if (paymentMethod === 'credit' && !selectedCustomer) { showNotification(t('اختر عميلاً للبيع الآجل', 'Select a customer for a credit sale'), 'error'); return; }
             
             const operationId = (crypto.randomUUID ? crypto.randomUUID() : generateId());
             AppState.lastOperationId = operationId;
             const saleData = {
                 operationId,
-                customerId: customerId,
-                customerName: customerId ? (AppState.customers.find(c => c.id === customerId)?.name || '') : '',
+                customerId: isWalkIn ? '' : customerId,
+                customerName: isWalkIn ? t('عميل طياري', 'Walk-in customer') : (selectedCustomer?.name || ''),
+                isWalkIn: isWalkIn,
                 paymentMethod: paymentMethod,
                 notes: notes,
                 items: [...AppState.cart],
@@ -1626,6 +1746,7 @@
                     if (product) {
                         const newQuantity = Math.max(0, (product.quantity || 0) - item.quantity);
                         await db.ref('products/' + product.id).update({ quantity: newQuantity });
+                        product.quantity = newQuantity;
                     }
                 }
                 
@@ -1638,6 +1759,56 @@
                 });
                 await postAccountingEntry(accountingEntryFromSale(saleData,saleRef.key));
                 invalidateAccountingCache();
+                
+                // === Company-grade account linking ===
+                if (isWalkIn) {
+                    // Goods are deducted from the consignor (supplier/marketer) account.
+                    for (const item of AppState.cart) {
+                        const product = AppState.products.find(p => p.id === item.productId);
+                        const consignor = consignorFor(product);
+                        if (!consignor) continue;
+                        const unitCost = Number(item.costPrice || product?.costPrice || 0);
+                        const qty = Number(item.quantity || 0);
+                        const cName = consignor.name || (consignor.type === 'supplier' ? supplierDisplayName(consignor.id) : marketerDisplayName(consignor.id));
+                        await postConsignorStatement({
+                            consignorType: consignor.type,
+                            consignorId: consignor.id,
+                            consignorName: cName,
+                            type: 'consignment_sale',
+                            direction: 'debit',
+                            productId: product?.id || '',
+                            productName: item.name || product?.name || '',
+                            quantity: qty,
+                            unitCost: unitCost,
+                            costAmount: unitCost * qty,
+                            saleAmount: Number(item.price || 0) * qty,
+                            margin: (Number(item.price || 0) - unitCost) * qty,
+                            description: t('بيع طياري - خصم من حساب ', 'Walk-in sale - deducted from ') + cName,
+                            reference: saleRef.key,
+                            date: saleData.date
+                        });
+                    }
+                } else if (selectedCustomer) {
+                    // Every sale to a known customer is recorded in the customer account.
+                    const isCredit = paymentMethod === 'credit';
+                    const newBalance = Number(selectedCustomer.balance || 0) + (isCredit ? saleData.total : 0);
+                    await db.ref('customers/' + selectedCustomer.id).update({ balance: newBalance, lastTransactionAt: saleData.date });
+                    selectedCustomer.balance = newBalance;
+                    await postCustomerStatement({
+                        customerId: selectedCustomer.id,
+                        customerName: selectedCustomer.name,
+                        type: 'sale',
+                        paymentMethod: paymentMethod,
+                        debit: saleData.total,
+                        credit: isCredit ? 0 : saleData.total,
+                        balanceAfter: newBalance,
+                        items: AppState.cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })),
+                        total: saleData.total,
+                        description: t('فاتورة بيع', 'Sales invoice') + ' - ' + saleRef.key.substr(-8),
+                        reference: saleRef.key,
+                        date: saleData.date
+                    });
+                }
                 
                 AppState.cart = [];
                 
@@ -1750,6 +1921,7 @@
                         <tr>
                             <th>${t('المنتج', 'Product')}</th>
                             <th>${t('الفئة', 'Category')}</th>
+                            <th>${t('المورد/المسوق', 'Supplier/Marketer')}</th>
                             <th>${t('سعر البيع', 'Price')}</th>
                             <th>${t('المخزون', 'Stock')}</th>
                             <th>${t('الإجراءات', 'Actions')}</th>
@@ -1762,7 +1934,7 @@
                                     <div class="fw-semibold">${escapeHtml(product.name)}</div>
                                     <div class="text-small text-muted">${product.barcode || ''}</div>
                                 </td>
-                                <td>${product.category || '-'}</td>
+                                <td>${escapeHtml(categoryName(product))}</td><td class="text-small">${consignorFor(product) ? escapeHtml((consignorFor(product).type==='marketer'?t('مسوق','Marketer'):t('مورد','Supplier')) + ': ' + (consignorFor(product).name || '')) : '-'}</td>
                                 <td class="fw-bold">${formatCurrency(product.salePrice)}</td>
                                 <td><span class="badge ${getStockClass(product) === 'out' ? 'badge-danger' : getStockClass(product) === 'low' ? 'badge-warning' : 'badge-success'}">${product.quantity || 0}</span></td>
                                 <td>
@@ -1796,6 +1968,7 @@
                         <tr>
                             <th>${t('المنتج', 'Product')}</th>
                             <th>${t('الفئة', 'Category')}</th>
+                            <th>${t('المورد/المسوق', 'Supplier/Marketer')}</th>
                             <th>${t('سعر البيع', 'Price')}</th>
                             <th>${t('المخزون', 'Stock')}</th>
                             <th>${t('الإجراءات', 'Actions')}</th>
@@ -1808,7 +1981,7 @@
                                     <div class="fw-semibold">${escapeHtml(product.name)}</div>
                                     <div class="text-small text-muted">${product.barcode || ''}</div>
                                 </td>
-                                <td>${product.category || '-'}</td>
+                                <td>${escapeHtml(categoryName(product))}</td><td class="text-small">${consignorFor(product) ? escapeHtml((consignorFor(product).type==='marketer'?t('مسوق','Marketer'):t('مورد','Supplier')) + ': ' + (consignorFor(product).name || '')) : '-'}</td>
                                 <td class="fw-bold">${formatCurrency(product.salePrice)}</td>
                                 <td><span class="badge ${getStockClass(product) === 'out' ? 'badge-danger' : getStockClass(product) === 'low' ? 'badge-warning' : 'badge-success'}">${product.quantity || 0}</span></td>
                                 <td>
@@ -1830,15 +2003,55 @@
             document.getElementById('productModalTitle').textContent = t('إضافة منتج جديد', 'Add New Product');
             document.getElementById('productForm').reset();
             document.getElementById('productId').value = '';
-            document.getElementById('productImagePreview').style.display = 'none';
-            
-            const categorySelect = document.getElementById('productCategory');
-            categorySelect.innerHTML = '<option value="">-- اختر --</option>';
-            AppState.categories.forEach(cat => {
-                categorySelect.innerHTML += `<option value="${cat.id}">${escapeHtml(cat.name)}</option>`;
-            });
-            
+            const prev = document.getElementById('productImagePreview');
+            if (prev) prev.style.display = 'none';
+            refreshProductCategoryOptions();
+            refreshProductSupplierOptions();
+            refreshProductMarketerOptions();
             document.getElementById('productModal').classList.add('active');
+        }
+
+        function refreshProductCategoryOptions(selectedId) {
+            const sel = document.getElementById('productCategory');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">-- اختر --</option>' + (AppState.categories || []).map(cat => `<option value="${cat.id}">${escapeHtml(cat.name)}</option>`).join('');
+            if (selectedId) sel.value = selectedId;
+        }
+        function refreshProductSupplierOptions(selectedId) {
+            const sel = document.getElementById('productSupplier');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">-- بدون --</option>' + (AppState.suppliers || []).map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+            if (selectedId) sel.value = selectedId;
+        }
+        function refreshProductMarketerOptions(selectedId) {
+            const sel = document.getElementById('productMarketer');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">-- بدون --</option>' + availableMarketers().map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('');
+            if (selectedId) sel.value = selectedId;
+        }
+        async function quickAddCategory() {
+            const name = prompt(t('اسم الفئة الجديدة', 'New category name'));
+            if (!name || !name.trim()) return;
+            const existing = findCategoryByName(name);
+            if (existing) { refreshProductCategoryOptions(existing.id); showNotification(t('الفئة موجودة بالفعل', 'Category already exists'), 'info'); return; }
+            try {
+                const data = { name: name.trim(), description: '', color: '#4361ee', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+                const ref = await db.ref('categories').push(data);
+                AppState.categories.push({ id: ref.key, ...data });
+                refreshProductCategoryOptions(ref.key);
+                showNotification(t('تمت إضافة الفئة', 'Category added'), 'success');
+            } catch (e) { console.error(e); showNotification(t('تعذر إضافة الفئة', 'Could not add category'), 'error'); }
+        }
+        async function quickAddSupplier() {
+            const name = prompt(t('اسم المورد الجديد', 'New supplier name'));
+            if (!name || !name.trim()) return;
+            try {
+                const data = { name: name.trim(), phone: '', address: '', notes: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+                const ref = await db.ref('suppliers').push(data);
+                AppState.suppliers.push({ id: ref.key, ...data });
+                refreshProductSupplierOptions(ref.key);
+                showNotification(t('تمت إضافة المورد', 'Supplier added'), 'success');
+            } catch (e) { console.error(e); showNotification(t('تعذر إضافة المورد', 'Could not add supplier'), 'error'); }
         }
 
         function editProduct(productId) {
@@ -1848,7 +2061,9 @@
             document.getElementById('productModalTitle').textContent = t('تعديل المنتج', 'Edit Product');
             document.getElementById('productId').value = product.id;
             document.getElementById('productName').value = product.name || '';
-            document.getElementById('productCategory').value = product.category || '';
+            refreshProductCategoryOptions(product.category || '');
+            refreshProductSupplierOptions(product.supplierId || '');
+            refreshProductMarketerOptions(product.marketerId || '');
             document.getElementById('productBarcode').value = product.barcode || '';
             document.getElementById('productCostPrice').value = product.costPrice || '';
             document.getElementById('productSalePrice').value = product.salePrice || '';
@@ -1876,9 +2091,22 @@
             if (!checkUserPermission('cashier')) { showNotification(t('ليس لديك صلاحية إدارة المنتجات','You do not have permission to manage products'),'error'); return; }
             
             const productId = document.getElementById('productId').value;
+            const categoryId = document.getElementById('productCategory').value;
+            const supplierId = document.getElementById('productSupplier')?.value || '';
+            const marketerId = document.getElementById('productMarketer')?.value || '';
+            if (!supplierId && !marketerId) {
+                showNotification(t('يجب ربط البضاعة بمورد أو مسوق على الأقل', 'Link the product to a supplier or a marketer'), 'error');
+                return;
+            }
+            const catObj = (AppState.categories || []).find(c => c.id === categoryId);
             const productData = {
                 name: document.getElementById('productName').value.trim(),
-                category: document.getElementById('productCategory').value,
+                category: categoryId,
+                categoryName: catObj ? catObj.name : '',
+                supplierId: supplierId,
+                supplierName: supplierDisplayName(supplierId),
+                marketerId: marketerId,
+                marketerName: marketerDisplayName(marketerId),
                 barcode: document.getElementById('productBarcode').value.trim(),
                 costPrice: parseFloat(document.getElementById('productCostPrice').value) || 0,
                 salePrice: parseFloat(document.getElementById('productSalePrice').value) || 0,
@@ -1918,6 +2146,7 @@
                 }
                 
                 closeModal('productModal');
+                if (AppState.currentPage === 'products') showPage('products');
             } catch (error) {
                 console.error('Error saving product:', error);
                 showNotification(t('حدث خطأ أثناء حفظ المنتج', 'Error saving product'), 'error');
@@ -2463,6 +2692,7 @@
                         <tr>
                             <th>${t('التاريخ', 'Date')}</th>
                             <th>${t('الفئة', 'Category')}</th>
+                            <th>${t('المورد/المسوق', 'Supplier/Marketer')}</th>
                             <th>${t('الوصف', 'Description')}</th>
                             <th>${t('المبلغ', 'Amount')}</th>
                             <th>${t('الإجراءات', 'Actions')}</th>
@@ -3800,6 +4030,7 @@
                         <tr>
                             <th>${t('المنتج', 'Product')}</th>
                             <th>${t('الفئة', 'Category')}</th>
+                            <th>${t('المورد/المسوق', 'Supplier/Marketer')}</th>
                             <th>${t('سعر البيع', 'Price')}</th>
                             <th>${t('المخزون', 'Stock')}</th>
                         </tr>
@@ -3811,7 +4042,7 @@
                 html += `
                     <tr>
                         <td>${escapeHtml(product.name)}</td>
-                        <td>${product.category || '-'}</td>
+                        <td>${escapeHtml(categoryName(product))}</td><td class="text-small">${consignorFor(product) ? escapeHtml((consignorFor(product).type==='marketer'?t('مسوق','Marketer'):t('مورد','Supplier')) + ': ' + (consignorFor(product).name || '')) : '-'}</td>
                         <td class="fw-bold">${formatCurrency(product.salePrice)}</td>
                         <td><span class="badge ${getStockClass(product) === 'out' ? 'badge-danger' : getStockClass(product) === 'low' ? 'badge-warning' : 'badge-success'}">${product.quantity || 0}</span></td>
                     </tr>
@@ -3882,6 +4113,138 @@
             modalBody.innerHTML = html;
             document.getElementById('reportModal').classList.add('active');
         }
+
+        function showCustomersPage(container) {
+            const customers = [...AppState.customers].sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ar'));
+            const totalDebt = customers.reduce((s, c) => s + Number(c.balance || 0), 0);
+            container.innerHTML = `
+                <div class="page-header">
+                    <div>
+                        <span class="eyebrow">ACCOUNTS / CUSTOMERS</span>
+                        <h1>${t('العملاء', 'Customers')}</h1>
+                        <p>${t('كل عميل له كشف حساب دائم يبقى محفوظاً حتى بعد سنة، وكل بضاعة مسجّلة تبقى كما هي.', 'Each customer has a permanent statement that stays saved even after a year, with every item kept intact.')}</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="openCustomerModal()"><i class="fas fa-user-plus"></i> ${t('عميل جديد', 'New Customer')}</button>
+                </div>
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title"><i class="fas fa-users"></i><span>${t('قائمة العملاء', 'Customer list')}</span></div>
+                        <span class="badge badge-warning">${t('إجمالي الآجل', 'Total credit')}: ${formatCurrency(totalDebt)}</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead><tr>
+                                    <th>${t('العميل', 'Customer')}</th>
+                                    <th>${t('الهاتف', 'Phone')}</th>
+                                    <th>${t('النوع', 'Tier')}</th>
+                                    <th>${t('الرصيد', 'Balance')}</th>
+                                    <th>${t('الحد الائتماني', 'Limit')}</th>
+                                    <th>${t('إجراءات', 'Actions')}</th>
+                                </tr></thead>
+                                <tbody>
+                                    ${customers.map(c => `<tr>
+                                        <td>${escapeHtml(c.name)}</td>
+                                        <td>${escapeHtml(c.phone || '-')}</td>
+                                        <td>${c.tier === 'vip' ? t('مميز', 'VIP') : c.tier === 'wholesale' ? t('جملة', 'Wholesale') : t('قطاعي', 'Retail')}</td>
+                                        <td class="fw-bold ${Number(c.balance || 0) > 0 ? 'text-danger' : 'text-success'}">${formatCurrency(c.balance)}</td>
+                                        <td>${formatCurrency(c.creditLimit)}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary" onclick="showCustomerStatement('${c.id}')"><i class="fas fa-file-invoice-dollar"></i> ${t('كشف حساب', 'Statement')}</button>
+                                            <button class="btn btn-sm btn-warning" onclick="editCustomer('${c.id}')"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${c.id}')"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>`).join('') || `<tr><td colspan="6">${t('لا يوجد عملاء', 'No customers')}</td></tr>`}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function editCustomer(customerId) {
+            const c = AppState.customers.find(x => x.id === customerId);
+            if (!c) return;
+            document.getElementById('customerModalTitle').textContent = t('تعديل العميل', 'Edit Customer');
+            document.getElementById('customerId').value = c.id;
+            document.getElementById('customerName').value = c.name || '';
+            document.getElementById('customerPhone').value = c.phone || '';
+            document.getElementById('customerAddress').value = c.address || '';
+            document.getElementById('customerBalance').value = c.balance || 0;
+            if (document.getElementById('customerTier')) document.getElementById('customerTier').value = c.tier || 'retail';
+            if (document.getElementById('customerCreditLimit')) document.getElementById('customerCreditLimit').value = c.creditLimit || 0;
+            if (document.getElementById('customerPaymentDays')) document.getElementById('customerPaymentDays').value = c.paymentDays || 0;
+            if (document.getElementById('customerMinOrder')) document.getElementById('customerMinOrder').value = c.minOrder || 0;
+            if (document.getElementById('customerNotes')) document.getElementById('customerNotes').value = c.notes || '';
+            document.getElementById('customerModal').classList.add('active');
+        }
+
+        async function deleteCustomer(customerId) {
+            if (!confirm(t('هل أنت متأكد من حذف هذا العميل؟', 'Delete this customer?'))) return;
+            try {
+                await db.ref('customers/' + customerId).remove();
+                AppState.customers = AppState.customers.filter(c => c.id !== customerId);
+                showNotification(t('تم حذف العميل', 'Customer deleted'), 'success');
+                if (AppState.currentPage === 'customers') showPage('customers');
+            } catch (e) { console.error(e); showNotification(t('تعذر حذف العميل', 'Could not delete customer'), 'error'); }
+        }
+
+        function showCustomerStatement(customerId) {
+            const c = AppState.customers.find(x => x.id === customerId);
+            if (!c) return;
+            const lines = customerStatementLines(customerId);
+            let running = 0;
+            const rows = lines.map(l => {
+                running += Number(l.debit || 0) - Number(l.credit || 0);
+                return `<tr><td>${formatDate(l.date || l.createdAt)}</td><td>${escapeHtml(l.description || '')}</td><td>${formatCurrency(l.debit || 0)}</td><td>${formatCurrency(l.credit || 0)}</td><td>${formatCurrency(running)}</td></tr>`;
+            }).join('');
+            document.getElementById('statementModalTitle').textContent = t('كشف حساب: ', 'Statement: ') + c.name;
+            document.getElementById('statementModalBody').innerHTML = `
+                <div class="d-flex justify-between mb-2"><span>${t('الرصيد الحالي', 'Current balance')}</span><strong>${formatCurrency(c.balance)}</strong></div>
+                <div class="table-responsive"><table class="data-table"><thead><tr><th>${t('التاريخ', 'Date')}</th><th>${t('البيان', 'Description')}</th><th>${t('مدين', 'Debit')}</th><th>${t('دائن', 'Credit')}</th><th>${t('الرصيد', 'Balance')}</th></tr></thead><tbody>${rows || `<tr><td colspan="5">${t('لا توجد حركات مسجلة', 'No transactions yet')}</td></tr>`}</tbody></table></div>`;
+            AppState._statementParty = { type: 'customer', id: customerId, name: c.name };
+            document.getElementById('statementModal').classList.add('active');
+        }
+
+        function showConsignorStatement(type, id, name) {
+            const lines = consignorStatementLines(type, id);
+            let running = 0;
+            const rows = lines.map(l => {
+                running += Number(l.costAmount || 0);
+                return `<tr><td>${formatDate(l.date || l.createdAt)}</td><td>${escapeHtml(l.productName || '')}</td><td>${l.quantity || 0}</td><td>${formatCurrency(l.costAmount || 0)}</td><td>${formatCurrency(running)}</td></tr>`;
+            }).join('');
+            document.getElementById('statementModalTitle').textContent = t('كشف حساب: ', 'Statement: ') + name;
+            document.getElementById('statementModalBody').innerHTML = `
+                <div class="d-flex justify-between mb-2"><span>${t('إجمالي البضاعة المخصومة', 'Total goods deducted')}</span><strong>${formatCurrency(running)}</strong></div>
+                <div class="table-responsive"><table class="data-table"><thead><tr><th>${t('التاريخ', 'Date')}</th><th>${t('المنتج', 'Product')}</th><th>${t('الكمية', 'Qty')}</th><th>${t('قيمة التكلفة', 'Cost value')}</th><th>${t('الإجمالي', 'Running')}</th></tr></thead><tbody>${rows || `<tr><td colspan="5">${t('لا توجد حركات مسجلة', 'No transactions yet')}</td></tr>`}</tbody></table></div>`;
+            AppState._statementParty = { type: type, id: id, name: name };
+            document.getElementById('statementModal').classList.add('active');
+        }
+
+        function exportStatementExcel() {
+            const party = AppState._statementParty;
+            if (!party) return;
+            let lines, headers;
+            if (party.type === 'customer') {
+                lines = customerStatementLines(party.id); headers = ['Date', 'Description', 'Debit', 'Credit', 'Balance'];
+            } else {
+                lines = consignorStatementLines(party.type, party.id); headers = ['Date', 'Product', 'Qty', 'Cost', 'Running'];
+            }
+            let running = 0;
+            const rows = [headers];
+            lines.forEach(l => {
+                if (party.type === 'customer') { running += Number(l.debit || 0) - Number(l.credit || 0); rows.push([l.date || l.createdAt || '', l.description || '', Number(l.debit || 0), Number(l.credit || 0), running]); }
+                else { running += Number(l.costAmount || 0); rows.push([l.date || l.createdAt || '', l.productName || '', Number(l.quantity || 0), Number(l.costAmount || 0), running]); }
+            });
+            const csv = '\ufeff' + rows.map(r => r.map(x => '"' + String(x).replace(/"/g, '""') + '"').join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'statement-' + (party.name || 'party') + '.csv';
+            a.click();
+        }
+        function exportStatementPDF() { window.print(); }
 
         function showCustomersReport() {
             const modalTitle = document.getElementById('reportModalTitle');
@@ -4086,13 +4449,20 @@
         }
 
         function buildLocalAssistantReply(message) {
-            const q = message.toLowerCase();
-            const sales = AppState.sales.reduce((sum, x) => sum + Number(x.totalAmount || x.total || 0), 0);
-            const stock = AppState.products.filter(x => Number(x.quantity || 0) <= Number(x.minStock || 5)).length;
-            if (q.includes('مبيعات') || q.includes('sales')) return `إجمالي المبيعات المسجلة حالياً ${formatCurrency(sales)}.`;
-            if (q.includes('مخزون') || q.includes('stock')) return `يوجد ${stock} منتجاً عند حد إعادة الطلب أو أقل.`;
-            if (q.includes('موظف') || q.includes('مستخدم')) return `عدد الحسابات المسجلة ${AppState.users.length}، وإدارة المستخدمين متاحة للمدير فقط.`;
-            return 'أستطيع مساعدتك في قراءة المبيعات، المخزون، الموظفين والتقارير. جرّب: ما إجمالي المبيعات؟';
+            const q = String(message || '').toLowerCase();
+            const salesTotal = AppState.sales.reduce((s, x) => s + Number(x.totalAmount || x.total || 0), 0);
+            const lowStock = AppState.products.filter(x => Number(x.quantity || 0) <= Number(x.minStock || 5));
+            const totalDebt = AppState.customers.reduce((s, c) => s + Number(c.balance || 0), 0);
+            const has = (...w) => w.some(k => q.includes(k));
+            if (has('مبيعات', 'sales')) return `إجمالي المبيعات المسجلة ${formatCurrency(salesTotal)} من ${AppState.sales.length} فاتورة.`;
+            if (has('ربح', 'أرباح', 'profit')) { const cost = AppState.sales.reduce((s, x) => s + (x.items || []).reduce((a, i) => a + Number(i.costPrice || 0) * Number(i.quantity || 0), 0), 0); return `إجمالي المبيعات ${formatCurrency(salesTotal)} والتكلفة ${formatCurrency(cost)} والربح التقديري ${formatCurrency(salesTotal - cost)}.`; }
+            if (has('مخزون', 'stock', 'بضاعة')) return `لديك ${AppState.products.length} منتج، منها ${lowStock.length} عند حد إعادة الطلب أو أقل.`;
+            if (has('عملاء', 'زبون', 'customers')) return `عدد العملاء ${AppState.customers.length}، وإجمالي الأرصدة المستحقة ${formatCurrency(totalDebt)}.`;
+            if (has('مورد', 'موردين', 'suppliers')) return `عدد الموردين ${AppState.suppliers.length}.`;
+            if (has('موظف', 'مستخدم', 'users')) return `عدد الحسابات ${AppState.users.length}، وإدارة المستخدمين متاحة للمدير فقط.`;
+            if (has('فئة', 'فئات', 'categories')) return `عدد الفئات ${AppState.categories.length}.`;
+            if (has('صندوق', 'خزنة', 'cash')) { const inc = AppState.cashbox.filter(c => c.type === 'income').reduce((s, c) => s + Number(c.amount || 0), 0); const exp = AppState.cashbox.filter(c => c.type === 'expense').reduce((s, c) => s + Number(c.amount || 0), 0); return `الصندوق: إيرادات ${formatCurrency(inc)} ومصروفات ${formatCurrency(exp)} والرصيد ${formatCurrency(inc - exp)}.`; }
+            return 'أستطيع مساعدتك في: المبيعات، المخزون، العملاء والأرصدة، الموردين، الموظفين، الفئات، الصندوق، والأرباح. اسأل مثلاً: ما إجمالي المبيعات؟';
         }
 
         function speakText(text) {
@@ -4468,7 +4838,7 @@
 
         function openBackupTools() { document.getElementById('backupModal').classList.add('active'); document.getElementById('backupStatus').textContent = 'آخر مزامنة: ' + new Date().toLocaleString('ar'); }
         function backupPayload() {
-            const keys=['products','customers','suppliers','categories','sales','purchases','expenses','revenues','debts','supplierDebts','cashbox','users','branches','returns','accountingEntries','orders'];
+            const keys=['products','customers','suppliers','categories','sales','purchases','expenses','revenues','debts','supplierDebts','cashbox','users','branches','returns','accountingEntries','orders','customerStatements','consignorStatements','marketers'];
             return { app:'SeMo0o FRP', version:1, exportedAt:new Date().toISOString(), data:Object.fromEntries(keys.map(k=>[k,AppState[k]||[]])) };
         }
         function downloadBackup() {
@@ -4478,11 +4848,27 @@
         }
         async function restoreBackup(event) {
             const file=event.target.files?.[0]; if(!file) return;
-            try { const payload=JSON.parse(await file.text()); if(!payload.data) throw new Error('invalid');
+            try {
+                const payload=JSON.parse(await file.text());
+                const data = payload.data || payload;
+                if(!data || typeof data!=='object') throw new Error('invalid');
                 if(!checkUserPermission('admin')) throw new Error('permission');
-                for(const [key,items] of Object.entries(payload.data)) { if(!Array.isArray(items)) continue; const ref=db.ref(key); for(const item of items) { if(item.id) { const copy={...item}; delete copy.id; await ref.child(item.id).set(copy); } } }
-                await loadUserData(); showPage(AppState.currentPage); showNotification('تمت استعادة النسخة الاحتياطية','success');
-            } catch(e) { showNotification(e.message==='permission'?'الاستعادة متاحة للمدير فقط':'ملف النسخة الاحتياطية غير صالح','error'); }
+                const knownKeys=['products','customers','suppliers','categories','sales','purchases','expenses','revenues','debts','supplierDebts','cashbox','users','branches','returns','accountingEntries','orders','customerStatements','consignorStatements','marketers'];
+                let restored=0;
+                for(const [key,val] of Object.entries(data)) {
+                    if(!knownKeys.includes(key)) continue;
+                    const items = Array.isArray(val) ? val : Object.values(val || {});
+                    const ref = db.ref(key);
+                    for(const item of items) {
+                        if(!item || typeof item!=='object') continue;
+                        const copy={...item}; const id=copy.id; delete copy.id;
+                        if(id) await ref.child(id).set(copy); else await ref.push(copy);
+                        restored++;
+                    }
+                }
+                await loadUserData(); showPage(AppState.currentPage);
+                showNotification(t('تمت استعادة النسخة الاحتياطية ('+restored+' سجل)', 'Backup restored ('+restored+' records)'), 'success');
+            } catch(e) { console.error(e); showNotification(e.message==='permission'?t('الاستعادة متاحة للمدير فقط','Restore is for the manager only'):t('ملف النسخة الاحتياطية غير صالح','Invalid backup file'),'error'); }
             event.target.value='';
         }
         function updateSyncIndicator() {
@@ -4541,7 +4927,10 @@
                     categoriesSnap,
                     branchesSnap,
                     returnsSnap,
-                    ordersSnap
+                    ordersSnap,
+                    customerStatementsSnap,
+                    consignorStatementsSnap,
+                    marketersSnap
                 ] = await Promise.all([
                     db.ref('products').once('value'),
                     db.ref('customers').once('value'),
@@ -4557,7 +4946,10 @@
                     db.ref('categories').once('value'),
                     db.ref('branches').once('value'),
                     db.ref('returns').once('value'),
-                    db.ref('orders').once('value')
+                    db.ref('orders').once('value'),
+                    db.ref('customerStatements').once('value'),
+                    db.ref('consignorStatements').once('value'),
+                    db.ref('marketers').once('value')
                 ]);
                 
                 AppState.products = [];
@@ -4633,6 +5025,12 @@
                 });
                 AppState.orders = [];
                 ordersSnap.forEach(child => { AppState.orders.push({ id: child.key, ...child.val() }); });
+                AppState.customerStatements = [];
+                customerStatementsSnap.forEach(child => { AppState.customerStatements.push({ id: child.key, ...child.val() }); });
+                AppState.consignorStatements = [];
+                consignorStatementsSnap.forEach(child => { AppState.consignorStatements.push({ id: child.key, ...child.val() }); });
+                AppState.marketers = [];
+                marketersSnap.forEach(child => { AppState.marketers.push({ id: child.key, ...child.val() }); });
                 
                 if (!AppState.branches.find(b => b.id === 'main')) {
                     AppState.branches.push({

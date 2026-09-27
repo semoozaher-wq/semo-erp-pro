@@ -13,7 +13,7 @@
         accountAuth = accountApp.auth();
         if (typeof firebase.messaging !== 'undefined') messaging = firebase.messaging();
         const rawDatabaseRef = db.ref.bind(db);
-        const workspaceCollections = new Set(['products','customers','suppliers','categories','sales','purchases','expenses','revenues','debts','supplierDebts','cashbox','returns','branches','settings','orders','activity','accountingEntries']);
+        const workspaceCollections = new Set(['products','customers','suppliers','categories','sales','purchases','expenses','revenues','debts','supplierDebts','cashbox','returns','branches','settings','orders','activity','accountingEntries','customerStatements','consignorStatements','marketers']);
         db.ref = function scopedDatabaseRef(path) {
             const value = typeof path === 'string' ? path : '';
             const root = value.split('/')[0];
